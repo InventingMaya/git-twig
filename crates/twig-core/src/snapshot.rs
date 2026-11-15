@@ -113,8 +113,9 @@ fn clone_tracked_directory(
         fs::symlink_metadata(source)?.is_dir(),
         "source directory changed type"
     );
+    // mkdir already applies umask/default ACL and inherits SGID/GID like Git.
+    // Even chmod(mode | SGID) clears SGID when its group is not in our groups.
     fs::create_dir(target)?;
-    modes.apply_directory(target)?;
     for (name, node) in &directory.children {
         let source = source.join(name);
         let target = target.join(name);

@@ -17,14 +17,17 @@ impl Fixture {
         Self::with_object_format("sha1")
     }
     fn with_object_format(format: &str) -> Result<Self> {
-        let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../../target/test-fixtures")
-            .join(format!(
-                "{}-{}-{}",
-                std::process::id(),
-                SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos(),
-                NEXT.fetch_add(1, Ordering::Relaxed)
-            ));
+        let fixtures = std::env::var_os("TWIG_TEST_FIXTURE_ROOT")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| {
+                Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/test-fixtures")
+            });
+        let root = fixtures.join(format!(
+            "{}-{}-{}",
+            std::process::id(),
+            SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos(),
+            NEXT.fetch_add(1, Ordering::Relaxed)
+        ));
         fs::create_dir_all(&root)?;
         let root = fs::canonicalize(root)?;
         let source = root.join("source");
@@ -226,10 +229,12 @@ fn destination_setgid_directories_match_git() -> Result<()> {
     fs::write(f.source.join("tree/nested/file"), "data")?;
     git(&f.source, &["add", "."])?;
     git(&f.source, &["commit", "-m", "nested"])?;
-    if let Some(group) = std::env::var_os("TWIG_TEST_SHARED_GID") {
-        chown(&f.root, None, Some(group.to_str().unwrap().parse::<u32>()?))?;
+    if fs::metadata(&f.root)?.permissions().mode() & 0o2000 == 0 {
+        if let Some(group) = std::env::var_os("TWIG_TEST_SHARED_GID") {
+            chown(&f.root, None, Some(group.to_str().unwrap().parse::<u32>()?))?;
+        }
+        fs::set_permissions(&f.root, fs::Permissions::from_mode(0o2770))?;
     }
-    fs::set_permissions(&f.root, fs::Permissions::from_mode(0o2770))?;
     let output = checked(f.add()?)?;
     native(&output);
     git(&f.source, &["worktree", "add", "--detach", "../stock"])?;
