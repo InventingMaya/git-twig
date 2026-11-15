@@ -92,6 +92,31 @@ fn native(output: &Output) {
 }
 
 #[test]
+fn skill_is_embedded_and_does_not_require_git() -> Result<()> {
+    let output = checked(
+        Command::new(env!("CARGO_BIN_EXE_git-twig"))
+            .arg("--skill")
+            .env("PATH", "")
+            .current_dir(std::env::temp_dir())
+            .output()?,
+    )?;
+    assert_eq!(output.stdout, include_bytes!("../skills/git-twig/SKILL.md"));
+    assert!(output.stderr.is_empty());
+    Ok(())
+}
+
+#[test]
+fn help_advertises_the_skill() -> Result<()> {
+    let output = checked(
+        Command::new(env!("CARGO_BIN_EXE_git-twig"))
+            .arg("--help")
+            .output()?,
+    )?;
+    assert!(String::from_utf8(output.stdout)?.contains("git twig --skill"));
+    Ok(())
+}
+
+#[test]
 fn creates_real_clean_worktree_without_source_hardlinks() -> Result<()> {
     let f = Fixture::new()?;
     let output = checked(f.add()?)?;

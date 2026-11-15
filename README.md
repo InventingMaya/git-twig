@@ -16,6 +16,8 @@ git twig add -b my-feature ../my-feature
 git twig list
 ```
 
+For coding agents: `git twig --skill` prints the bundled skill.
+
 macOS/APFS. Creates ordinary linked worktrees from committed files; local changes
 and ignored files aren't copied. Unsupported options use `git worktree`.
 
