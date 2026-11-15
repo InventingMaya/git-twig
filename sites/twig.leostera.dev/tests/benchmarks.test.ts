@@ -7,6 +7,7 @@ test("uses verified checked-in allocation measurements", () => {
     "Linux kernel",
     "Axo",
     "git-twig",
+    "Workers starter",
   ]);
   expect(data[0]!.gitBytes).toBeGreaterThan(data[0]!.twigBytes);
   expect(

@@ -1,10 +1,10 @@
 {
   "entries": [
     {
-      "name": "new repo (empty commit)",
-      "repository": "empty",
-      "timing": "bench/results/2026-11-15-real/empty-directory-host.json",
-      "allocation": "bench/results/2026-11-15-real/empty-directory-images.json"
+      "name": "Workers starter",
+      "repository": "workers-starter",
+      "timing": "bench/results/2026-11-15-real/workers-starter-host.json",
+      "allocation": "bench/results/2026-11-15-real/workers-starter-images-complete.json"
     },
     {
       "name": "git-twig",
@@ -28,12 +28,12 @@
   ],
   "notes": [
     "These are local, warm-cache results on a shared Mac, not universal speed guarantees. Input commits and hardware are recorded in each raw run.",
-    "The empty and kernel rows use the directory-clone release (cf9b046); the git-twig and Axo rows retain the earlier per-file release measurements. See the [old/new kernel comparison](bench/results/2026-11-15-real/kernel-directory-comparison.summary.md) and [chart](bench/results/2026-11-15-real/kernel-directory-comparison.svg). One sequential local round per variant is not a stable speedup estimate.",
+    "The Workers starter and kernel rows use the directory-clone release (cf9b046); the git-twig and Axo rows retain the earlier per-file release measurements. See the [old/new kernel comparison](bench/results/2026-11-15-real/kernel-directory-comparison.summary.md) and [chart](bench/results/2026-11-15-real/kernel-directory-comparison.svg). One sequential local round per variant is not a stable speedup estimate.",
     "Only tracked committed files are included in finished worktrees. Ignored dependencies and build artifacts inside bulk-cloned subtrees are pruned before registration.",
     "For host-APFS rows, allocation was measured separately on isolated images using the same pinned trees and candidate binary. The kernel row uses matched case-sensitive APFS images for both timing and allocation. Round counts are shown.",
     "Plain Git's nonzero failure count is an observed concurrent commondir-registration race. Failed attempts remain in the timing samples; a fast failed batch is not a complete successful cohort.",
-    "The empty fixture has one empty initial commit and zero tracked files. Its allocation is filesystem metadata, measured on isolated APFS images; its private-write probe is not applicable.",
     "The Linux kernel row is one paired round of ten sequential creates per backend (maximum one in flight), not a hundred-way result. Its case-sensitive APFS image environment differs from the host-APFS timing rows; do not compare absolute times across workloads as if environments were identical.",
-    "Earlier kernel parallel attempts were [budget-stopped](bench/results/2026-11-15-real/kernel-n100-git-event.json) or user-interrupted ([Git](bench/results/2026-11-15-real/kernel-git-user-interrupted.json), [Twig](bench/results/2026-11-15-real/kernel-twig-user-interrupted.json)). Those artifacts are retained but their cutoff times are not completed timings or speedup baselines."
+    "Earlier kernel parallel attempts were [budget-stopped](bench/results/2026-11-15-real/kernel-n100-git-event.json) or user-interrupted ([Git](bench/results/2026-11-15-real/kernel-git-user-interrupted.json), [Twig](bench/results/2026-11-15-real/kernel-twig-user-interrupted.json)). Those artifacts are retained but their cutoff times are not completed timings or speedup baselines.",
+    "Workers starter is the unmodified cf@1.0.0-beta.32 hello-world scaffold. Timing uses three complete host rounds. Allocation uses two complete paired image rounds; the third pair is excluded because stock Git failed one commondir registration. The [full raw run](bench/results/2026-11-15-real/workers-starter-images.json) retains that failure."
   ]
 }

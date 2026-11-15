@@ -105,6 +105,7 @@ export const sources = [
   },
   { name: "Axo", repository: "axo", file: "images.json" },
   { name: "git-twig", repository: "twig", file: "images.json" },
+  { name: "Workers starter", repository: "workers-starter", file: "workers-starter-images-complete.json" },
 ];
 
 export function loadBenchmarks(): DiskComparison[] {
