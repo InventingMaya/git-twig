@@ -1,0 +1,148 @@
+import { useState } from "react";
+import { Button } from "@ui-sdk/react/button";
+import benchmarks from "virtual:twig-benchmarks";
+import type { DiskComparison } from "../scripts/benchmarks";
+
+export const onboardCommand = "curl -fsSL https://twig.leostera.dev/llms.txt";
+
+function AgentMarks() {
+  return (
+    <svg
+      className="agent-marks"
+      width="132"
+      height="32"
+      viewBox="0 0 132 32"
+      fill="none"
+      aria-hidden="true"
+    >
+      <g stroke="#d47b5e" strokeWidth="2.2" strokeLinecap="round">
+        {Array.from({ length: 12 }, (_, i) => (
+          <path key={i} d="M15 3v7" transform={`rotate(${i * 30} 15 16)`} />
+        ))}
+      </g>
+      <path
+        d="M49 3c3-2 6 0 7 3 4-1 7 2 7 6 3 2 3 6 0 8 0 5-4 8-8 7-3 3-7 2-9-1-5 1-8-3-7-7-3-3-2-7 1-9-1-4 3-7 6-6l3-1Z"
+        fill="#171918"
+      />
+      <path
+        d="m46 12 3 4-3 4m7 0h5"
+        stroke="white"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="m82 2 14 8v15l-14 7-14-8V10l14-8Z" fill="#171918" />
+      <path d="m69 10 13 7 13-7M82 17v14" stroke="white" strokeWidth="1.8" />
+      <path d="M105 3h24v27h-24z" fill="#171918" />
+      <path d="M111 9h12v15h-12z" fill="white" />
+      <path d="M111 9h12v5h-12z" fill="#b5b7b3" />
+    </svg>
+  );
+}
+
+function disk(bytes: number): string {
+  return bytes >= 1024 ** 3
+    ? `${(bytes / 1024 ** 3).toFixed(1)} GiB`
+    : `${(bytes / 1024 ** 2).toFixed(bytes < 10 * 1024 ** 2 ? 1 : 0)} MiB`;
+}
+function DiskChart({ data }: { data: DiskComparison[] }) {
+  const scale = Math.max(
+    1,
+    ...data.map((repo) => repo.twigBytes / repo.gitBytes),
+  );
+  return (
+    <figure className="disk-chart">
+      <figcaption>
+        <h2>Disk use</h2>
+        <span>Git = 100%</span>
+      </figcaption>
+      {data.map((repo) => {
+        const saved = (1 - repo.twigBytes / repo.gitBytes) * 100;
+        const rows = [
+          { label: "git worktree", bytes: repo.gitBytes, kind: "git" },
+          { label: "git twig", bytes: repo.twigBytes, kind: "twig" },
+        ];
+        return (
+          <section className="repo-group" key={repo.name}>
+            <div className="repo-heading">
+              <h3>
+                <a href={repo.source}>{repo.name}</a>
+              </h3>
+              <span className={saved >= 0 ? "less" : "more"}>
+                {Math.abs(saved).toFixed(1)}% {saved >= 0 ? "less" : "more"}
+              </span>
+            </div>
+            <p className="sr-only">
+              {repo.worktrees} worktrees, {repo.concurrency} in flight.
+              Additional APFS allocation after first status; {repo.rounds} local
+              rounds. Bar lengths are relative to Git for each repo, not
+              absolute across repos.
+            </p>
+            <div className="bars">
+              {rows.map(({ label, bytes, kind }) => (
+                <div className="bar-row" key={label}>
+                  <code>{label}</code>
+                  <div className="bar-track">
+                    <div
+                      className={`bar ${kind}`}
+                      style={{
+                        width: `${(bytes / repo.gitBytes / scale) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <span>{disk(bytes)}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </figure>
+  );
+}
+
+export default function App() {
+  const [copy, setCopy] = useState<"ready" | "copied" | "manual">("ready");
+  async function onboard() {
+    try {
+      await navigator.clipboard.writeText(onboardCommand);
+      setCopy("copied");
+    } catch {
+      setCopy("manual");
+    }
+  }
+  return (
+    <div className="page">
+      <main>
+        <section className="hero" aria-labelledby="title">
+          <div className="twig-mark">
+            <img src="/twig.svg" width="96" height="96" alt="" />
+          </div>
+          <h1 id="title">twig</h1>
+          <p className="tagline">git-worktrees for agents</p>
+          <Button className="onboard" onClick={onboard}>
+            <span>{copy === "copied" ? "Copied!" : "Onboard your agent"}</span>
+            <AgentMarks />
+          </Button>
+          <p className="sr-only" role="status">
+            {copy === "copied"
+              ? "Copied. Paste it into your agent."
+              : copy === "manual"
+                ? "Copy the command below and paste it into your agent."
+                : ""}
+          </p>
+          {copy === "manual" && (
+            <code className="copy-fallback">{onboardCommand}</code>
+          )}
+        </section>
+        <section className="benchmarks" aria-label="Disk usage comparison">
+          <DiskChart data={benchmarks} />
+        </section>
+      </main>
+      <footer>
+        made with {"<3"} by <a href="https://github.com/leostera">@leostera</a>{" "}
+        at <a href="https://cloudflare.com">@cloudflare</a>
+      </footer>
+    </div>
+  );
+}

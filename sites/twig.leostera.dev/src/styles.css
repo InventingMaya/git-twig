@@ -1,0 +1,292 @@
+:root {
+  font-family:
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: #283b2b;
+  background: #f7f7f0;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+a {
+  color: inherit;
+  text-underline-offset: 4px;
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid #90ac67;
+  outline-offset: 5px;
+}
+::selection {
+  background: #dce9bb;
+}
+code {
+  font-family: "SFMono-Regular", Consolas, monospace;
+}
+.page {
+  max-width: 760px;
+  margin: auto;
+  padding: 0 28px;
+}
+.hero {
+  text-align: center;
+  padding: 48px 0 50px;
+}
+.twig-mark {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  margin: 0 auto 12px;
+  background: #eeefdf;
+  border-radius: 41% 59% 54% 46% / 48% 46% 54% 52%;
+  transform: rotate(-5deg);
+}
+.twig-mark img {
+  transform: rotate(5deg);
+}
+h1 {
+  font-family: "Leckerli One", cursive;
+  font-size: 108px;
+  font-weight: 400;
+  letter-spacing: -1.5px;
+  font-kerning: normal;
+  line-height: 1.25;
+  margin: 0 0 6px;
+}
+.tagline {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 19px;
+  color: #626c5b;
+  margin: 0 0 32px;
+  letter-spacing: -0.4px;
+}
+.onboard {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 19px;
+  background: #fff;
+  color: #191b19;
+  border: 1.5px solid #dedfdc;
+  border-radius: 999px;
+  min-height: 66px;
+  padding: 12px 23px;
+  font: inherit;
+  font-weight: 500;
+  font-size: 20px;
+  box-shadow: 0 1px 2px #2530230c;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.onboard:hover {
+  background: #fffefb;
+  border-color: #acb59e;
+}
+.onboard > span {
+  min-width: 190px;
+  text-align: left;
+}
+.agent-marks {
+  flex: none;
+}
+.copy-fallback {
+  display: block;
+  margin: 22px 0 0;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.benchmarks {
+  max-width: 620px;
+  margin: 0 auto;
+}
+.disk-chart {
+  margin: 0;
+  background: #fffef9;
+  border: 1px solid #e1e5d8;
+  border-radius: 18px;
+  padding: 27px 31px 32px;
+}
+.disk-chart figcaption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+.disk-chart figcaption > span {
+  font-size: 16px;
+  color: #6a755f;
+}
+h2 {
+  font-size: 22px;
+  font-weight: 560;
+  margin: 0;
+}
+.repo-group + .repo-group {
+  margin-top: 28px;
+  padding-top: 25px;
+  border-top: 1px solid #e8ebdf;
+}
+.repo-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+h3 {
+  font-size: 18px;
+  font-weight: 560;
+  margin: 0;
+}
+h3 a {
+  text-decoration: none;
+}
+h3 a:hover {
+  text-decoration: underline;
+}
+.repo-heading > span {
+  font-size: 18px;
+}
+.less {
+  color: #648247;
+}
+.more {
+  color: #9b704a;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 80px;
+  align-items: center;
+  gap: 14px;
+}
+.bar-row + .bar-row {
+  margin-top: 12px;
+}
+.bar-row code {
+  font-size: 14px;
+  color: #606a57;
+}
+.bar-row > span {
+  text-align: right;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  color: #505c49;
+}
+.bar-track {
+  height: 14px;
+  border-radius: 3px;
+  background: #f0f1e8;
+  overflow: hidden;
+}
+.bar {
+  height: 100%;
+  border-radius: 3px;
+}
+.bar.git {
+  background: #a8aea1;
+}
+.bar.twig {
+  background: #85a65f;
+}
+footer {
+  padding: 31px 0 32px;
+  text-align: center;
+  font-size: 15px;
+  color: #6a755f;
+}
+footer a {
+  text-decoration: none;
+}
+footer a:hover {
+  text-decoration: underline;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@media (max-width: 620px) {
+  .page {
+    padding: 0 20px;
+  }
+  .hero {
+    padding: 32px 0 38px;
+  }
+  h1 {
+    font-size: 96px;
+    letter-spacing: -1.3px;
+  }
+  .twig-mark {
+    width: 100px;
+    height: 100px;
+  }
+  .tagline {
+    font-size: 16px;
+  }
+  .onboard {
+    gap: 12px;
+    padding: 11px 17px;
+    font-size: 17px;
+    min-height: 59px;
+    max-width: 100%;
+  }
+  .onboard > span {
+    min-width: 159px;
+  }
+  .agent-marks {
+    width: 112px;
+    height: 28px;
+  }
+  .disk-chart {
+    padding: 23px 19px;
+  }
+  .bar-row {
+    grid-template-columns: 94px 1fr 65px;
+    gap: 8px;
+  }
+  .bar-row code {
+    font-size: 13px;
+  }
+  .bar-row > span {
+    font-size: 14px;
+  }
+  .repo-heading > span {
+    font-size: 16px;
+  }
+  h3 {
+    font-size: 17px;
+  }
+  footer {
+    font-size: 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}

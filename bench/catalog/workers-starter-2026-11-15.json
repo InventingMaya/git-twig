@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-15T18:15:31.306081+00:00",
+  "generator": "cf@1.0.0-beta.32",
+  "command": "cf init workers-starter --no-install --package-manager bun",
+  "commit": "d0b1ee485dc1cf2bc0b2a3511cf8cf1057624d02",
+  "tree": "d4e01b1be340f6770de5b6b6e4bbcc090312b1aa",
+  "notes": [
+    "Unmodified hello-world Worker scaffold; dependencies are not installed in the fixture.",
+    "Generated source files are versioned under bench/fixtures/workers-starter."
+  ]
+}

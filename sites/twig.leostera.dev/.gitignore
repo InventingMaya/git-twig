@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.cloudflare/
+playwright-report/
+test-results/
+.env
+.dev.vars
