@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "reason": "User requested stopping plain Git and proceeding with Twig only",
+  "requestedAtUnix": 1794750526.632364,
+  "suiteElapsedSecondsAtStop": 3234.0491268634796,
+  "elapsedIncludesSetupAndWarmup": true,
+  "completedVerifiedCohorts": 0,
+  "lastRecordedCompletedCliCalls": 0,
+  "lastOperationalSnapshot": {
+    "schemaVersion": 1,
+    "phase": "running",
+    "startedAtUnix": 1794747292.5832372,
+    "timeLimitSeconds": null,
+    "scratchLimitGiB": 250,
+    "imageCapacityGiB": 224,
+    "minimumHostFreeGiB": 128,
+    "sourceCommit": "23c62304dde29abe92013d85910d03a77dada35d",
+    "trackedFiles": 97371,
+    "candidateSha256": "65efbfe49fac73fcf9f75a85366bc020f8a5dd62bf0baa7f1c5d1b3e26a92d50",
+    "harnessSha256": "9a6e1a0fbd367e6eb1909ae44c6882e4043398bcc62e83443c39e91618915528",
+    "supervisorPid": 9409,
+    "output": "results.json",
+    "log": "run.log",
+    "cleanupErrors": [],
+    "childPid": 9413,
+    "processGroup": 9413,
+    "progress": [],
+    "volumes": [
+      {
+        "name": "linux-git-0.mount",
+        "diagnosticAllocatedGiB": 21.741985321044922,
+        "diagnosticInodesInUse": 2515957
+      }
+    ],
+    "diagnosticBackingGiB": 21.78231430053711,
+    "hostFreeGiB": 860.1815223693848,
+    "elapsedSeconds": 3232.1453256607056,
+    "lastUpdatedUtc": "2026-11-15T13:48:44.728566+00:00",
+    "cohorts": [],
+    "measurementFailures": []
+  },
+  "notACompletedPerformanceMeasurement": true
+}
