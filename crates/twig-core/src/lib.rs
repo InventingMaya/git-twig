@@ -147,6 +147,32 @@ fn prepare(cwd: &Path, request: &AddRequest) -> Result<Option<Prepared>> {
     if entries.iter().any(|entry| entry.kind == Kind::Submodule) {
         return Ok(None);
     }
+    // These semantics are owned by Git, not by the CoW materializer.
+    if git(&root)
+        .args(["config", "--bool", "--get", "core.symlinks"])
+        .output()?
+        .stdout
+        == b"false\n"
+    {
+        return Ok(None);
+    }
+    // Reference/index hooks run while Git registers or initializes the worktree.
+    // They may themselves call Twig: never hold our registrar lock across them.
+    let hook = output_path(checked(git(&root).args(["rev-parse", "--git-path", "hooks"]))?.stdout)?;
+    let configured_hooks = git(&root)
+        .args(["config", "--get-regexp", r"^hook\..*\.event$"])
+        .output()?;
+    let hooks = root.join(hook);
+    if ["reference-transaction", "post-index-change"]
+        .iter()
+        .any(|event| fs::symlink_metadata(hooks.join(event)).is_ok())
+        || configured_hooks
+            .stdout
+            .split(|byte| byte.is_ascii_whitespace())
+            .any(|word| word == b"reference-transaction" || word == b"post-index-change")
+    {
+        return Ok(None);
+    }
     if has_conversion_attributes(&root, &entries)? {
         return Ok(None);
     }
@@ -300,6 +326,7 @@ fn has_conversion_attributes(root: &Path, entries: &[Entry]) -> Result<bool> {
             "ident",
             "text",
             "eol",
+            "crlf",
         ])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

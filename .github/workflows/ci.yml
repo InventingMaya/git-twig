@@ -9,7 +9,13 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        include:
+          - os: macos-latest
+            filesystem: apfs
+          - os: ubuntu-latest
+            filesystem: xfs
+          - os: ubuntu-latest
+            filesystem: btrfs
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -26,11 +32,16 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y xfsprogs
-          truncate -s 1G "$RUNNER_TEMP/twig-xfs.img"
-          mkfs.xfs -m reflink=1 "$RUNNER_TEMP/twig-xfs.img"
+          sudo apt-get install -y xfsprogs btrfs-progs
+          image="$RUNNER_TEMP/twig-${{ matrix.filesystem }}.img"
+          truncate -s 1G "$image"
+          if [ "${{ matrix.filesystem }}" = xfs ]; then
+            mkfs.xfs -m reflink=1 "$image"
+          else
+            mkfs.btrfs "$image"
+          fi
           mkdir -p target/test-fixtures
-          sudo mount -o loop "$RUNNER_TEMP/twig-xfs.img" target/test-fixtures
+          sudo mount -o loop "$image" target/test-fixtures
           sudo chown "$(id -u):$(id -g)" target/test-fixtures
       - name: Require native Linux reflinks
         if: runner.os == 'Linux'

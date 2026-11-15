@@ -14,6 +14,9 @@ struct Fixture {
 }
 impl Fixture {
     fn new() -> Result<Self> {
+        Self::with_object_format("sha1")
+    }
+    fn with_object_format(format: &str) -> Result<Self> {
         let root = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../target/test-fixtures")
             .join(format!(
@@ -26,7 +29,10 @@ impl Fixture {
         let root = fs::canonicalize(root)?;
         let source = root.join("source");
         fs::create_dir(&source)?;
-        git(&source, &["init", "-b", "main"])?;
+        git(
+            &source,
+            &["init", &format!("--object-format={format}"), "-b", "main"],
+        )?;
         git(&source, &["config", "user.name", "Fixture"])?;
         git(
             &source,
@@ -54,10 +60,44 @@ fn command(program: impl AsRef<std::ffi::OsStr>, cwd: &Path) -> Command {
     c.current_dir(cwd)
         .env("GIT_CONFIG_NOSYSTEM", "1")
         .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("XDG_CONFIG_HOME", "/nonexistent/twig-tests")
         .env("GIT_TERMINAL_PROMPT", "0")
         .env("TWIG_TRACE", "1");
     c
 }
+#[cfg(unix)]
+fn bounded_output(mut command: Command) -> Result<Output> {
+    use std::{os::unix::process::CommandExt, sync::mpsc, time::Duration};
+    // SAFETY: setpgid is async-signal-safe; isolate only this child and its descendants.
+    unsafe {
+        command.pre_exec(|| {
+            if libc::setpgid(0, 0) != 0 {
+                return Err(std::io::Error::last_os_error());
+            }
+            Ok(())
+        });
+    }
+    let child = command
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()?;
+    let pid = child.id() as libc::pid_t;
+    let (done, finished) = mpsc::channel();
+    let watchdog = std::thread::spawn(move || {
+        if finished.recv_timeout(Duration::from_secs(10)).is_err() {
+            // SAFETY: the child created this process group. Kill its descendants too,
+            // since a deadlocked grandchild can otherwise keep output pipes open.
+            unsafe {
+                libc::kill(-pid, libc::SIGKILL);
+            }
+        }
+    });
+    let result = child.wait_with_output();
+    let _ = done.send(());
+    watchdog.join().expect("watchdog panicked");
+    Ok(result?)
+}
+
 fn checked(output: Output) -> Result<Output> {
     ensure!(
         output.status.success(),
@@ -128,6 +168,294 @@ fn linux_selects_reflinks_or_delegates_on_unsupported_filesystems() -> Result<()
     fs::write(f.destination().join("hello.txt"), "private")?;
     assert_eq!(fs::read(f.source.join("hello.txt"))?, b"hello\n");
     Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn disabled_symlinks_delegate_for_root_and_nested_entries() -> Result<()> {
+    let f = Fixture::new()?;
+    fs::create_dir(f.source.join("tree"))?;
+    for name in ["link", "tree/link"] {
+        std::os::unix::fs::symlink("missing", f.source.join(name))?;
+    }
+    git(&f.source, &["add", "."])?;
+    git(&f.source, &["commit", "-m", "links"])?;
+    git(&f.source, &["config", "core.symlinks", "false"])?;
+    let output = checked(f.add()?)?;
+    assert!(!String::from_utf8_lossy(&output.stderr).contains("CoW: verified"));
+    for name in ["link", "tree/link"] {
+        assert!(fs::symlink_metadata(f.destination().join(name))?.is_file());
+        assert_eq!(fs::read(f.destination().join(name))?, b"missing");
+        assert!(fs::symlink_metadata(f.source.join(name))?.is_symlink());
+    }
+    clean(&f.destination())
+}
+
+#[test]
+fn legacy_crlf_attributes_cannot_hide_dirty_raw_bytes() -> Result<()> {
+    for attribute in ["crlf", "crlf=input"] {
+        let f = Fixture::new()?;
+        fs::create_dir(f.source.join("tree"))?;
+        fs::write(f.source.join("tree/file.txt"), "hello\n")?;
+        fs::write(
+            f.source.join(".gitattributes"),
+            format!("*.txt {attribute}\n"),
+        )?;
+        git(&f.source, &["add", "."])?;
+        git(&f.source, &["commit", "-m", "legacy conversion"])?;
+        for name in ["hello.txt", "tree/file.txt"] {
+            fs::write(f.source.join(name), "hello\r\n")?;
+        }
+        let output = checked(f.add()?)?;
+        assert!(!String::from_utf8_lossy(&output.stderr).contains("CoW: verified"));
+        for name in ["hello.txt", "tree/file.txt"] {
+            assert_eq!(fs::read(f.destination().join(name))?, b"hello\n");
+            assert_eq!(fs::read(f.source.join(name))?, b"hello\r\n");
+        }
+        clean(&f.destination())?;
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn destination_setgid_directories_match_git() -> Result<()> {
+    use std::os::unix::fs::{MetadataExt, PermissionsExt, chown};
+    let f = Fixture::new()?;
+    fs::create_dir_all(f.source.join("tree/nested"))?;
+    fs::write(f.source.join("tree/nested/file"), "data")?;
+    git(&f.source, &["add", "."])?;
+    git(&f.source, &["commit", "-m", "nested"])?;
+    if let Some(group) = std::env::var_os("TWIG_TEST_SHARED_GID") {
+        chown(&f.root, None, Some(group.to_str().unwrap().parse::<u32>()?))?;
+    }
+    fs::set_permissions(&f.root, fs::Permissions::from_mode(0o2770))?;
+    let output = checked(f.add()?)?;
+    native(&output);
+    git(&f.source, &["worktree", "add", "--detach", "../stock"])?;
+    let expected_group = fs::metadata(&f.root)?.gid();
+    for name in ["tree", "tree/nested", "tree/nested/file"] {
+        let ours = fs::metadata(f.destination().join(name))?;
+        let stock = fs::metadata(f.root.join("stock").join(name))?;
+        assert_eq!(ours.gid(), expected_group, "group for {name}");
+        assert_eq!(
+            ours.permissions().mode() & 0o7777,
+            stock.permissions().mode() & 0o7777,
+            "mode for {name}"
+        );
+    }
+    clean(&f.destination())
+}
+
+#[cfg(unix)]
+#[test]
+fn reference_and_index_hooks_can_reenter_without_registrar_deadlock() -> Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+    for event in ["reference-transaction", "post-index-change"] {
+        for style in ["legacy", "relative", "absolute", "configured"] {
+            let f = Fixture::new()?;
+            if style == "configured"
+                && !command("git", &f.source)
+                    .args([
+                        "-c",
+                        &format!("hook.twig-probe.event={event}"),
+                        "-c",
+                        "hook.twig-probe.command=true",
+                        "hook",
+                        "list",
+                        event,
+                    ])
+                    .output()?
+                    .status
+                    .success()
+            {
+                continue; // Config-defined hooks are new in Git 2.56.
+            }
+            let hooks = if style == "legacy" {
+                f.source.join(".git/hooks")
+            } else {
+                f.root.join("custom-hooks")
+            };
+            fs::create_dir_all(&hooks)?;
+            let script = hooks.join(event);
+            fs::write(
+                &script,
+                "#!/bin/sh\nif [ \"$TWIG_HOOK_ACTIVE\" != 1 ] && [ ! -e \"$TWIG_HOOK_SOURCE/../hook-child/.git\" ]; then\n  (cd \"$TWIG_HOOK_SOURCE\" && TWIG_HOOK_ACTIVE=1 \"$TWIG_HOOK_BINARY\" add --detach ../hook-child HEAD) || exit $?\nfi\nexit 0\n",
+            )?;
+            fs::set_permissions(&script, fs::Permissions::from_mode(0o755))?;
+            match style {
+                "relative" => {
+                    git(&f.source, &["config", "core.hooksPath", "../custom-hooks"])?;
+                }
+                "absolute" => {
+                    git(
+                        &f.source,
+                        &["config", "core.hooksPath", hooks.to_str().unwrap()],
+                    )?;
+                }
+                "configured" => {
+                    git(
+                        &f.source,
+                        &[
+                            "config",
+                            "hook.twig-test.command",
+                            "sh \"$TWIG_HOOK_SCRIPT\"",
+                        ],
+                    )?;
+                    git(&f.source, &["config", "hook.twig-test.event", event])?;
+                }
+                _ => {}
+            }
+            let mut child = command(env!("CARGO_BIN_EXE_git-twig"), &f.source);
+            child
+                .args(["add", "-b", "feature", "../feature"])
+                .env("TWIG_HOOK_BINARY", env!("CARGO_BIN_EXE_git-twig"))
+                .env("TWIG_HOOK_SOURCE", &f.source)
+                .env("TWIG_HOOK_SCRIPT", &script);
+            let output = checked(bounded_output(child)?)?;
+            assert!(
+                !String::from_utf8_lossy(&output.stderr).contains("CoW: verified"),
+                "{event}/{style}"
+            );
+            clean(&f.destination())?;
+            clean(&f.root.join("hook-child"))?;
+        }
+    }
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn non_utf8_empty_large_and_sparse_files_have_private_writes() -> Result<()> {
+    use std::{
+        io::{Seek, SeekFrom, Write},
+        os::unix::ffi::OsStringExt,
+    };
+    let f = Fixture::new()?;
+    let name = std::ffi::OsString::from_vec(b"non-utf8-\xff".to_vec());
+    fs::create_dir(f.source.join(&name))?;
+    fs::write(f.source.join(&name).join("empty"), b"")?;
+    fs::write(
+        f.source.join(&name).join("large"),
+        vec![0x5a; 2 * 1024 * 1024],
+    )?;
+    let mut sparse = fs::File::create(f.source.join(&name).join("sparse"))?;
+    sparse.set_len(16 * 1024 * 1024)?;
+    sparse.seek(SeekFrom::Start(8 * 1024 * 1024))?;
+    sparse.write_all(b"middle")?;
+    drop(sparse);
+    git(&f.source, &["add", "."])?;
+    git(&f.source, &["commit", "-m", "file shapes"])?;
+    let output = checked(f.add()?)?;
+    native(&output);
+    for file in ["empty", "large", "sparse"] {
+        let source = f.source.join(&name).join(file);
+        let target = f.destination().join(&name).join(file);
+        let expected = fs::read(&source)?;
+        assert_eq!(fs::read(&target)?, expected);
+        fs::OpenOptions::new()
+            .write(true)
+            .open(&target)?
+            .write_all(b"destination")?;
+        assert_eq!(fs::read(&source)?, expected);
+        let private = fs::read(&target)?;
+        fs::write(&source, "source truncated")?;
+        assert_eq!(fs::read(&target)?, private);
+        fs::OpenOptions::new()
+            .write(true)
+            .open(&target)?
+            .set_len(0)?;
+        assert_eq!(fs::read(&source)?, b"source truncated");
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn nested_tracked_fifo_falls_back_without_blocking_or_touching_source() -> Result<()> {
+    let f = Fixture::new()?;
+    fs::create_dir(f.source.join("tree"))?;
+    fs::write(f.source.join("tree/file"), "committed")?;
+    git(&f.source, &["add", "."])?;
+    git(&f.source, &["commit", "-m", "regular"])?;
+    fs::rename(f.source.join("tree/file"), f.root.join("original"))?;
+    let fifo = std::ffi::CString::new(f.source.join("tree/file").as_os_str().as_encoded_bytes())?;
+    // SAFETY: fifo is a live C path and the permission mode is valid.
+    assert_eq!(unsafe { libc::mkfifo(fifo.as_ptr(), 0o600) }, 0);
+    let mut child = command(env!("CARGO_BIN_EXE_git-twig"), &f.source);
+    child.args(["add", "--detach", "../feature"]);
+    let output = checked(bounded_output(child)?)?;
+    assert!(!String::from_utf8_lossy(&output.stderr).contains("CoW: verified"));
+    assert_eq!(fs::read(f.destination().join("tree/file"))?, b"committed");
+    assert_eq!(fs::read(f.root.join("original"))?, b"committed");
+    use std::os::unix::fs::FileTypeExt;
+    assert!(
+        fs::symlink_metadata(f.source.join("tree/file"))?
+            .file_type()
+            .is_fifo()
+    );
+    clean(&f.destination())
+}
+
+#[test]
+fn sha256_repositories_create_clean_worktrees() -> Result<()> {
+    let f = Fixture::with_object_format("sha256")?;
+    let output = checked(f.add()?)?;
+    native(&output);
+    assert_eq!(
+        git(&f.destination(), &["rev-parse", "HEAD"])?.stdout.len(),
+        65
+    );
+    clean(&f.destination())
+}
+
+#[test]
+fn same_size_dirty_bytes_with_restored_mtime_are_not_inherited() -> Result<()> {
+    let f = Fixture::new()?;
+    git(&f.source, &["config", "core.ignorestat", "true"])?;
+    let path = f.source.join("hello.txt");
+    let modified = fs::metadata(&path)?.modified()?;
+    fs::write(&path, b"jello\n")?;
+    fs::File::options()
+        .write(true)
+        .open(&path)?
+        .set_times(fs::FileTimes::new().set_modified(modified))?;
+    checked(f.add()?)?;
+    assert_eq!(fs::read(f.destination().join("hello.txt"))?, b"hello\n");
+    assert_eq!(fs::read(&path)?, b"jello\n");
+    clean(&f.destination())
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn cross_filesystem_reflink_failure_delegates_before_registration() -> Result<()> {
+    use std::os::unix::fs::MetadataExt;
+    let Some(other) = std::env::var_os("TWIG_TEST_CROSS_FILESYSTEM_ROOT") else {
+        return Ok(());
+    };
+    let f = Fixture::new()?;
+    let parent = PathBuf::from(other).join(f.root.file_name().unwrap());
+    fs::create_dir(&parent)?;
+    assert_ne!(fs::metadata(&parent)?.dev(), fs::metadata(&f.source)?.dev());
+    let destination = parent.join("feature");
+    let output = checked(
+        command(env!("CARGO_BIN_EXE_git-twig"), &f.source)
+            .args(["add", "--detach"])
+            .arg(&destination)
+            .output()?,
+    )?;
+    assert!(!String::from_utf8_lossy(&output.stderr).contains("CoW: verified"));
+    assert_eq!(fs::read(destination.join("hello.txt"))?, b"hello\n");
+    assert_eq!(
+        git(&f.source, &["worktree", "list", "--porcelain"])?
+            .stdout
+            .split(|byte| *byte == b'\n')
+            .filter(|line| line.starts_with(b"worktree "))
+            .count(),
+        2
+    );
+    clean(&destination)?;
+    clean(&f.source)
 }
 
 #[test]

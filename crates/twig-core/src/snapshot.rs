@@ -53,7 +53,6 @@ pub fn materialize(
             entry.kind,
         )?;
     }
-    let mut directories = 0;
     // Never snapshot the repository root: .git and unrelated root trees stay out entirely.
     for (name, node) in &tree.children {
         let source = root.join(name);
@@ -65,13 +64,15 @@ pub fn materialize(
                     "source directory changed type"
                 );
                 #[cfg(target_os = "linux")]
-                clone_tracked_directory(&source, &target, directory, modes)?;
+                {
+                    clone_tracked_directory(&source, &target, directory, modes)?;
+                    continue; // The Linux walker already establishes types and checkout modes.
+                }
                 #[cfg(not(target_os = "linux"))]
                 {
                     native::clone_path(&source, &target)?;
                     let _ = directory;
                 }
-                directories += usize::from(cfg!(target_os = "macos"));
             }
             Node::File { .. } => {
                 ensure!(
@@ -89,7 +90,14 @@ pub fn materialize(
             modes,
         )?;
     }
-    Ok(directories)
+    Ok(if cfg!(target_os = "macos") {
+        tree.children
+            .values()
+            .filter(|node| matches!(node, Node::Directory(_)))
+            .count()
+    } else {
+        0
+    })
 }
 
 // Linux FICLONE works on regular files, not directory trees. Walk only the

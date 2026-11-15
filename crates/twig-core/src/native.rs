@@ -70,7 +70,16 @@ impl FileModes {
     }
 
     pub fn apply_directory(&self, path: &Path) -> Result<()> {
-        std::fs::set_permissions(path, self.executable.clone())?;
+        let permissions = self.executable.clone();
+        #[cfg(target_os = "linux")]
+        let permissions = {
+            use std::os::unix::fs::PermissionsExt;
+            // Linux mkdir inherits the destination parent's setgid bit and group.
+            // Keep it before creating children, rather than replacing their group.
+            let inherited = std::fs::metadata(path)?.permissions().mode() & 0o2000;
+            std::fs::Permissions::from_mode(permissions.mode() | inherited)
+        };
+        std::fs::set_permissions(path, permissions)?;
         Ok(())
     }
 
