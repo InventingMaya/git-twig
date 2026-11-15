@@ -14,7 +14,10 @@ target/release/twig-real-bench \
 target/release/twig-real-plot target/real-results/100-way.json
 ```
 
-Each backend/repeat gets a fresh 8-GiB sparse APFS image. A seed clone uses
+Each image-backed backend/repeat gets a fresh sparse APFS image (8 GiB by default;
+configure capacity with `--image-gib`). Use `--filesystem case-sensitive-image`
+for trees with case-colliding paths, such as the Linux kernel. Never benchmark such
+a tree on case-insensitive APFS and silently accept an incomplete checkout. A seed clone uses
 shared Git objects through alternates into the original repository, then checks
 out the pinned commit inside the image. The seed and all created worktrees share
 the image's APFS filesystem; history remains external and identical for both.

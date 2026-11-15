@@ -18,13 +18,14 @@ use std::{
 #[serde(rename_all = "kebab-case")]
 enum Filesystem {
     IsolatedImage,
+    CaseSensitiveImage,
     Host,
 }
 
 impl Filesystem {
     fn snapshot(self, path: &Path) -> Result<Option<Space>> {
         match self {
-            Self::IsolatedImage => Ok(Some(settled_space(path)?)),
+            Self::IsolatedImage | Self::CaseSensitiveImage => Ok(Some(settled_space(path)?)),
             Self::Host => Ok(None),
         }
     }
@@ -42,6 +43,7 @@ struct Repository {
 struct Suite {
     schema_version: u32,
     filesystem: Filesystem,
+    image_size_gib: Option<u64>,
     suite: String,
     generated_at_unix_ms: u128,
     commit: String,
@@ -112,12 +114,14 @@ struct Image {
     path: PathBuf,
     mount: PathBuf,
     attached: bool,
+    filesystem: Filesystem,
+    size_gib: u64,
 }
 
 fn main() -> Result<()> {
     if env::args().any(|arg| arg == "--help") {
         println!(
-            "twig-real-bench --repo label=/absolute/repo [--repo ...] --concurrency 100 --repeats 3 --output target/real-results/run.json\nOptional: --filesystem host (retains fixtures, does not measure allocation), --revision label=COMMIT (after --repo).\nmacOS only. Creates, mounts, detaches and deletes disposable 8-GiB sparse APFS images.\nOriginal repositories are read-only inputs. Results default to target/ (not published)."
+            "twig-real-bench --repo label=/absolute/repo [--repo ...] --concurrency 100 --repeats 3 --output target/real-results/run.json\nOptional: --filesystem host (retains fixtures, does not measure allocation), --revision label=COMMIT (after --repo).\nmacOS only. --filesystem case-sensitive-image supports case-colliding trees; --image-gib configures sparse image capacity (default 8). Images are detached and deleted after measurement.\nOriginal repositories are read-only inputs. Results default to target/ (not published)."
         );
         return Ok(());
     }
@@ -131,6 +135,7 @@ fn main() -> Result<()> {
     let mut repeats = 3;
     let mut output = None;
     let mut filesystem = Filesystem::IsolatedImage;
+    let mut image_size_gib: u64 = 8;
     let mut args = env::args().skip(1);
     while let Some(arg) = args.next() {
         let value = args.next().context("option requires a value")?;
@@ -178,9 +183,13 @@ fn main() -> Result<()> {
                 filesystem = match value.as_str() {
                     "host" => Filesystem::Host,
                     "isolated-image" => Filesystem::IsolatedImage,
-                    _ => anyhow::bail!("filesystem must be host or isolated-image"),
+                    "case-sensitive-image" => Filesystem::CaseSensitiveImage,
+                    _ => anyhow::bail!(
+                        "filesystem must be host, isolated-image or case-sensitive-image"
+                    ),
                 }
             }
+            "--image-gib" => image_size_gib = value.parse()?,
             "--concurrency" => concurrency = value.parse()?,
             "--repeats" => repeats = value.parse()?,
             "--output" => output = Some(PathBuf::from(value)),
@@ -188,8 +197,11 @@ fn main() -> Result<()> {
         }
     }
     ensure!(
-        !repositories.is_empty() && (1..=128).contains(&concurrency) && repeats > 0,
-        "provide repositories, concurrency 1..128, positive repeats"
+        !repositories.is_empty()
+            && (1..=128).contains(&concurrency)
+            && repeats > 0
+            && (4..=256).contains(&image_size_gib),
+        "provide repositories, concurrency 1..128, positive repeats, image capacity 4..256 GiB"
     );
     let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
     let output =
@@ -212,20 +224,20 @@ fn main() -> Result<()> {
         ],
     )?;
     let mut suite = Suite {
-        schema_version: 2, filesystem, suite: "real-apfs-cohort".into(), generated_at_unix_ms: timestamp,
+        schema_version: 2, filesystem, image_size_gib: if filesystem == Filesystem::Host { None } else { Some(image_size_gib) }, suite: "real-apfs-cohort".into(), generated_at_unix_ms: timestamp,
         commit: git_text(&cwd, &["rev-parse", "HEAD"])?, dirty: !git_text(&cwd, &["status", "--porcelain"])?.is_empty(),
         candidate_sha256: digest.split_whitespace().next().context("missing candidate hash")?.into(),
         git_version: capture(&cwd, "git", &["--version".into()])?,
         platform: format!("{} {} {}", env::consts::OS, env::consts::ARCH, capture(&cwd, "uname", &["-r".into()])?),
         cpu: capture(&cwd, "sysctl", &["-n".into(), "machdep.cpu.brand_string".into()])?, concurrency, repeats, repositories: repositories.clone(),
         notes: vec![
-            "Each backend/repeat gets a fresh, isolated 8-GiB sparse APFS image. Seed uses git clone --shared --no-checkout plus explicit pinned-commit checkout. Original repositories and object stores are read-only inputs; seed history uses alternates outside image.".into(),
+            "Each image-backed backend/repeat gets a fresh, isolated sparse APFS image (capacity/format recorded in imageSizeGiB/filesystem). Seed uses git clone --shared --no-checkout plus explicit pinned-commit checkout. Original repositories and object stores are read-only inputs; seed history uses alternates outside image.".into(),
             "One warmup per backend removed before baseline space snapshot. Global/system Git config and hooks disabled for fixture setup; no ignored/untracked dependencies or build output copied. Backend order alternates by repeat.".into(),
             "A barrier releases all CLI workers simultaneously. Create wall time includes thread startup/barrier/join, per-operation latency starts at barrier release. No verification/generation competes with creates. No retries: failures are data.".into(),
             "First git status is measured sequentially after all creates and the initial space snapshot. Full byte/symlink/executable verification follows each first status; its CPU is outside creation timing. A first-status sum is not a concurrent-status wall time.".into(),
             "Allocated space is total minus free blocks from statvfs on the isolated APFS filesystem, sampled after sync until stable (or marked unstable). This includes working files, indexes, retained staging and filesystem metadata, not logical size/du/st_blocks. Host sparse-image allocation is not the metric.".into(),
             "After initial verification/space measurement, one byte in one regular file per successful checkout is changed in place. Additional filesystem allocation is sampled; seed file must remain unchanged. Images are detached and deleted after saving each cohort; no benchmark input paths or source file contents are serialized.".into(),
-            "Local warm-cache results. An 8-GiB virtual disk is a controlled filesystem, not a claim about native host-volume maximum throughput. Report failures alongside latency and allocation; do not compare unequal successful counts as identical capacity.".into(),
+            "Local warm-cache results. A sparse APFS image is a controlled filesystem, not a claim about native host-volume maximum throughput. Report failures alongside latency and allocation; do not compare unequal successful counts as identical capacity.".into(),
         ], cohorts: vec![], failures: vec![],
     };
     if filesystem == Filesystem::Host {
@@ -246,9 +258,9 @@ fn main() -> Result<()> {
                     repeat + 1
                 );
                 let stem = root.join(format!("{}-{backend}-{repeat}", repository.label));
-                let mut image = Image::new(&stem);
+                let mut image = Image::new(&stem, filesystem, image_size_gib);
                 let prepare = match filesystem {
-                    Filesystem::IsolatedImage => image.attach(),
+                    Filesystem::IsolatedImage | Filesystem::CaseSensitiveImage => image.attach(),
                     Filesystem::Host => fs::create_dir(&image.mount).map_err(Into::into),
                 };
                 let result = prepare.and_then(|()| {
@@ -282,7 +294,7 @@ fn main() -> Result<()> {
                     )),
                 }
                 save(&output, &suite)?;
-                if filesystem == Filesystem::IsolatedImage {
+                if filesystem != Filesystem::Host {
                     image.cleanup()?;
                 } else {
                     eprintln!("  host fixtures retained at {}", image.mount.display());
@@ -300,28 +312,27 @@ fn main() -> Result<()> {
 }
 
 impl Image {
-    fn new(stem: &Path) -> Self {
+    fn new(stem: &Path, filesystem: Filesystem, size_gib: u64) -> Self {
         Self {
             path: stem.with_extension("sparseimage"),
             mount: stem.with_extension("mount"),
             attached: false,
+            filesystem,
+            size_gib,
         }
     }
     fn attach(&mut self) -> Result<()> {
         checked(
             Command::new("hdiutil")
-                .args([
-                    "create",
-                    "-quiet",
-                    "-size",
-                    "8g",
-                    "-type",
-                    "SPARSE",
-                    "-fs",
-                    "APFS",
-                    "-volname",
-                    "TwigBench",
-                ])
+                .args(["create", "-quiet", "-size"])
+                .arg(format!("{}g", self.size_gib))
+                .args(["-type", "SPARSE", "-fs"])
+                .arg(if self.filesystem == Filesystem::CaseSensitiveImage {
+                    "Case-sensitive APFS"
+                } else {
+                    "APFS"
+                })
+                .args(["-volname", "TwigBench", "-nospotlight"])
                 .arg(&self.path)
                 .output()?,
         )?;
@@ -413,7 +424,7 @@ fn cohort(
         "warmup did not use expected backend: {:?}",
         warmup.error
     );
-    if filesystem == Filesystem::IsolatedImage {
+    if filesystem != Filesystem::Host {
         checked(
             command("git", &seed)
                 .args(["worktree", "remove", "--force"])
