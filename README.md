@@ -19,6 +19,18 @@ Performance depends on the workload; tiny repositories can be slower.
 
 | metric | [new repo (empty commit)](bench/results/2026-11-15-real/empty-host.json) | [git-twig](bench/results/2026-11-15-real/host.json) | [Axo](bench/results/2026-11-15-real/host.json) | [Linux kernel (10 sequential)](bench/results/2026-11-15-real/kernel-sequential10.json) |
 |---|---|---|---|---|
+| Git time | 1.79 s | 4.90 s | 279.81 s | 201.93 s |
+| Twig time | 8.02 s | 10.13 s | 138.79 s | 365.14 s |
+| Git space | not measured | 53.0 MiB | 3100.2–3101.2 MiB | 18762.4–18762.8 MiB |
+| Twig space | not measured | 7.1 MiB | 164.9 MiB | 573.0 MiB |
+
+Time is batch creation; space is additional APFS allocation after first status. Batch sizes differ by repository; see setup below.
+
+<details>
+<summary>Setup, verification and detailed measurements</summary>
+
+| metric | [new repo (empty commit)](bench/results/2026-11-15-real/empty-host.json) | [git-twig](bench/results/2026-11-15-real/host.json) | [Axo](bench/results/2026-11-15-real/host.json) | [Linux kernel (10 sequential)](bench/results/2026-11-15-real/kernel-sequential10.json) |
+|---|---|---|---|---|
 | tracked files | 0 | 45 | 2083 | 97371 |
 | worktrees per run | 100 | 100 | 100 | 10 |
 | simultaneous creates | 100 | 100 | 100 | 1 |
@@ -44,6 +56,8 @@ Creation is wall time for the entire batch at the recorded concurrency, excludin
 - Earlier kernel parallel attempts were [budget-stopped](bench/results/2026-11-15-real/kernel-n100-git-event.json) or user-interrupted ([Git](bench/results/2026-11-15-real/kernel-git-user-interrupted.json), [Twig](bench/results/2026-11-15-real/kernel-twig-user-interrupted.json)). Those artifacts are retained but their cutoff times are not completed timings or speedup baselines.
 
 [Methodology](bench/real-repositories.md) · [raw run index](bench/results/readme.json). First-status latency, p95/p99, errors, source revisions, candidate SHA-256, platform and full samples are in the linked raw runs.
+
+</details>
 
 <!-- twig-bench:end -->
 

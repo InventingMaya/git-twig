@@ -57,12 +57,38 @@ fn main() -> Result<()> {
     let mut block = String::from(
         "\n\n<!-- Generated from bench/results/readme.json by twig-readme-table. Do not edit numbers. -->\n\n",
     );
+    let summary = [
+        ("Git time", "Git create"),
+        ("Twig time", "Twig create"),
+        ("Git space", "Git allocation"),
+        ("Twig space", "Twig allocation"),
+    ];
+    let summary_columns = columns
+        .iter()
+        .map(|column| Column {
+            heading: column.heading.clone(),
+            cells: summary
+                .iter()
+                .map(|(_, source)| {
+                    let index = METRICS
+                        .iter()
+                        .position(|metric| metric == source)
+                        .expect("summary metric exists");
+                    column.cells[index].clone()
+                })
+                .collect(),
+        })
+        .collect::<Vec<_>>();
+    let labels = summary.iter().map(|(label, _)| *label).collect::<Vec<_>>();
+    block.push_str(&render_table(&labels, &summary_columns)?);
+    block.push_str("\nTime is batch creation; space is additional APFS allocation after first status. Batch sizes differ by repository; see setup below.\n\n<details>\n<summary>Setup, verification and detailed measurements</summary>\n\n");
     block.push_str(&render_table(METRICS, &columns)?);
     block.push_str("\nCreation is wall time for the entire batch at the recorded concurrency, excluding first status. Values are medians of the recorded timing rounds; one round is an observation, not a stable estimate. Allocation is additional **filesystem-allocated MiB after first status**, including indexes, retained staging and APFS metadata, measured separately on isolated images. Ranges retain observed allocator variation; they are not confidence intervals. Missing measurements are not zeros. Never infer exclusive APFS allocation from logical size or `du`.\n\n");
     for note in &manifest.notes {
         block.push_str(&format!("- {note}\n"));
     }
     block.push_str("\n[Methodology](bench/real-repositories.md) · [raw run index](bench/results/readme.json). First-status latency, p95/p99, errors, source revisions, candidate SHA-256, platform and full samples are in the linked raw runs.\n\n");
+    block.push_str("</details>\n\n");
     let readme = fs::read_to_string("README.md")?;
     ensure!(
         readme.matches(START).count() == 1 && readme.matches(END).count() == 1,
