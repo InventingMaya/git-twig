@@ -66,15 +66,6 @@ fn main() -> Result<()> {
     let mut block = String::from(
         "\n\n<!-- Generated from bench/results/readme.json by twig-readme-table. Do not edit numbers. -->\n\n",
     );
-    for (entry, column) in manifest.entries.iter().zip(&columns) {
-        if entry.repository == "linux" {
-            block.push_str(&format!(
-                "{}: {}.\n\n",
-                column.heading,
-                column.comparison.disk_saved()
-            ));
-        }
-    }
     block.push_str(&render_summary(&columns));
     block.push_str("\nEach cell is **creation time / additional disk space**. Batch sizes differ; creation excludes first status. † Includes failed Git attempts. [Setup and raw results](bench/results/readme-details.md).\n\n");
     let mut details = String::from(
@@ -284,17 +275,9 @@ impl Comparison {
             .into();
         };
         if twig < git {
-            format!(
-                "**{:.1}% less disk** ({:.1}× smaller)",
-                (1.0 - twig / git) * 100.0,
-                git / twig
-            )
+            format!("**{:.1}× less space**", git / twig)
         } else if twig > git {
-            format!(
-                "**{:.1}% more disk** ({:.1}× larger)",
-                (twig / git - 1.0) * 100.0,
-                twig / git
-            )
+            format!("{:.1}× more space", twig / git)
         } else {
             "same disk usage".into()
         }
@@ -338,15 +321,7 @@ fn render_summary(columns: &[Column]) -> String {
     for column in columns {
         let c = &column.comparison;
         let marker = if c.failed_attempts { "†" } else { "" };
-        let disk = match positive_pair(c.git_space_bytes, c.twig_space_bytes) {
-            Some((git, twig)) if twig < git => format!("**{:.1}× less space**", git / twig),
-            Some((git, twig)) if twig > git => format!("{:.1}× more space", twig / git),
-            Some(_) => "same space".into(),
-            None if c.git_space_bytes.is_some() && c.twig_space_bytes.is_some() => {
-                "space not comparable".into()
-            }
-            None => "space not measured".into(),
-        };
+        let disk = c.disk_saved();
         table.push_str(&format!(
             "| {}{marker} | {} / {} | {} / {} | {} / {disk} |\n",
             column.heading,
@@ -581,7 +556,7 @@ mod tests {
             twig_space_bytes: Some(20.0),
             failed_attempts: false,
         };
-        assert_eq!(c.disk_saved(), "**80.0% less disk** (5.0× smaller)");
+        assert_eq!(c.disk_saved(), "**5.0× less space**");
         assert_eq!(c.speed(), "2.00× slower");
         let opposite = Comparison {
             git_time_ms: Some(2000.0),
@@ -591,7 +566,7 @@ mod tests {
             failed_attempts: false,
         };
         assert_eq!(opposite.speed(), "2.00× faster");
-        assert_eq!(opposite.disk_saved(), "**400.0% more disk** (5.0× larger)");
+        assert_eq!(opposite.disk_saved(), "5.0× more space");
     }
     #[test]
     fn summary_has_repository_rows_and_no_setup_stats() {
