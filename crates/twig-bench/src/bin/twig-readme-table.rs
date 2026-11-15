@@ -81,7 +81,7 @@ fn main() -> Result<()> {
         .collect::<Vec<_>>();
     let labels = summary.iter().map(|(label, _)| *label).collect::<Vec<_>>();
     block.push_str(&render_table(&labels, &summary_columns)?);
-    block.push_str("\nTime is batch creation; space is additional APFS allocation after first status. Batch sizes differ by repository; see setup below.\n\n<details>\n<summary>Setup, verification and detailed measurements</summary>\n\n");
+    block.push_str("\nTime is batch creation; space is additional APFS allocation after first status. Batch sizes differ by repository. † Includes failed CLI attempts; see setup below.\n\n<details>\n<summary>Setup, verification and detailed measurements</summary>\n\n");
     block.push_str(&render_table(METRICS, &columns)?);
     block.push_str("\nCreation is wall time for the entire batch at the recorded concurrency, excluding first status. Values are medians of the recorded timing rounds; one round is an observation, not a stable estimate. Allocation is additional **filesystem-allocated MiB after first status**, including indexes, retained staging and APFS metadata, measured separately on isolated images. Ranges retain observed allocator variation; they are not confidence intervals. Missing measurements are not zeros. Never infer exclusive APFS allocation from logical size or `du`.\n\n");
     for note in &manifest.notes {
@@ -348,7 +348,15 @@ fn wall_cell(rows: &[&Value], missing: &str) -> Result<String> {
         .iter()
         .map(|row| row["createWallMs"].as_f64().context("create wall time"))
         .collect::<Result<_>>()?;
-    Ok(format!("{:.2} s", median(values) / 1000.0))
+    let marker = if rows
+        .iter()
+        .any(|row| row["failed"].as_u64().is_some_and(|count| count > 0))
+    {
+        "†"
+    } else {
+        ""
+    };
+    Ok(format!("{:.2} s{marker}", median(values) / 1000.0))
 }
 fn first_status_cell(rows: &[&Value]) -> Result<String> {
     let mut values = Vec::new();
@@ -444,6 +452,11 @@ mod tests {
             render_table(&["files", "creates"], &columns).unwrap(),
             "| metric | one | two |\n|---|---|---|\n| files | 1 | 3 |\n| creates | 2 | 4 |\n"
         );
+    }
+    #[test]
+    fn failed_creates_are_flagged_in_compact_time_cells() {
+        let row = serde_json::json!({"createWallMs":1000.0,"failed":1});
+        assert_eq!(wall_cell(&[&row], "not measured").unwrap(), "1.00 s†");
     }
     #[test]
     fn missing_measurements_are_not_zeros() {

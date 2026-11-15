@@ -19,12 +19,12 @@ Performance depends on the workload; tiny repositories can be slower.
 
 | metric | [new repo (empty commit)](bench/results/2026-11-15-real/empty-host.json) | [git-twig](bench/results/2026-11-15-real/host.json) | [Axo](bench/results/2026-11-15-real/host.json) | [Linux kernel (10 sequential)](bench/results/2026-11-15-real/kernel-sequential10.json) |
 |---|---|---|---|---|
-| Git time | 1.79 s | 4.90 s | 279.81 s | 201.93 s |
+| Git time | 1.79 s | 4.90 s† | 279.81 s | 201.93 s |
 | Twig time | 8.02 s | 10.13 s | 138.79 s | 365.14 s |
 | Git space | not measured | 53.0 MiB | 3100.2–3101.2 MiB | 18762.4–18762.8 MiB |
 | Twig space | not measured | 7.1 MiB | 164.9 MiB | 573.0 MiB |
 
-Time is batch creation; space is additional APFS allocation after first status. Batch sizes differ by repository; see setup below.
+Time is batch creation; space is additional APFS allocation after first status. Batch sizes differ by repository. † Includes failed CLI attempts; see setup below.
 
 <details>
 <summary>Setup, verification and detailed measurements</summary>
@@ -35,7 +35,7 @@ Time is batch creation; space is additional APFS allocation after first status. 
 | worktrees per run | 100 | 100 | 100 | 10 |
 | simultaneous creates | 100 | 100 | 100 | 1 |
 | timing filesystem | host APFS | host APFS | host APFS | case-sensitive APFS image |
-| Git create | 1.79 s | 4.90 s | 279.81 s | 201.93 s |
+| Git create | 1.79 s | 4.90 s† | 279.81 s | 201.93 s |
 | Twig create | 8.02 s | 10.13 s | 138.79 s | 365.14 s |
 | Git first status (median) | 0.01 s | 0.02 s | 0.04 s | 1.78 s |
 | Twig first status (median) | 0.01 s | 0.02 s | 0.32 s | 16.34 s |

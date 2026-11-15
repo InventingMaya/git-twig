@@ -268,10 +268,16 @@ fn run() -> Result<()> {
         fs::write(&temp, serde_json::to_vec_pretty(&state)?)?;
         fs::rename(temp, output.join("state.json"))?;
         if let Some(status) = status {
+            let mut sampling = Vec::new();
             for mut sampler in samplers {
                 let code = sampler.child.wait()?;
                 eprintln!("sample {}: {code}", sampler.pid);
+                sampling.push(serde_json::json!({"pid":sampler.pid,"exitCode":code.code()}));
             }
+            fs::write(
+                output.join("sampling.json"),
+                serde_json::to_vec_pretty(&sampling)?,
+            )?;
             ensure!(status.success(), "profile harness failed: {status}");
             break;
         }
