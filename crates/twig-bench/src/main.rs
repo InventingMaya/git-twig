@@ -313,7 +313,7 @@ fn measure(fixture: &Fixture, backend: &str, name: &str, result: &mut Operation)
     result.create_ms = ms(start);
     let output = checked(output)?;
     result.native_cow =
-        String::from_utf8_lossy(&output.stderr).contains("APFS CoW: verified tracked files");
+        String::from_utf8_lossy(&output.stderr).contains("CoW: verified tracked files");
     ensure!(
         backend != "twig" || !cfg!(target_os = "macos") || result.native_cow,
         "candidate silently fell back to Git: {}",

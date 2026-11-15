@@ -1,5 +1,5 @@
 use anyhow::Result;
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 use anyhow::bail;
 use std::{ffi::OsString, path::Path};
 
@@ -25,9 +25,34 @@ pub fn clone_path(source: &Path, destination: &Path) -> Result<()> {
     Ok(())
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "linux")]
+pub fn clone_path(source: &Path, destination: &Path) -> Result<()> {
+    use std::{
+        fs::OpenOptions,
+        os::{fd::AsRawFd, unix::fs::OpenOptionsExt},
+    };
+    // Never follow a leaf symlink or overwrite an existing destination.
+    let source = OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(source)?;
+    anyhow::ensure!(source.metadata()?.is_file(), "source is not a regular file");
+    let destination = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(destination)?;
+    // SAFETY: both descriptors are live; FICLONE takes a source fd, not a pointer.
+    let result = unsafe { libc::ioctl(destination.as_raw_fd(), libc::FICLONE, source.as_raw_fd()) };
+    if result != 0 {
+        return Err(std::io::Error::last_os_error().into());
+    }
+    Ok(())
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 pub fn clone_path(_: &Path, _: &Path) -> Result<()> {
-    bail!("native cloning requires macOS")
+    bail!("native cloning requires macOS or Linux")
 }
 
 /// Discover effective creation permissions without changing the process-global umask.
@@ -107,5 +132,47 @@ pub fn os_string(bytes: Vec<u8>) -> OsString {
     #[cfg(not(unix))]
     {
         OsString::from(String::from_utf8_lossy(&bytes).into_owned())
+    }
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod tests {
+    use super::*;
+    use std::{
+        fs,
+        os::unix::fs::symlink,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+
+    #[test]
+    fn reflink_rejects_links_special_files_and_existing_destinations() -> Result<()> {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../target/test-fixtures")
+            .join(format!(
+                "native-{}-{}",
+                std::process::id(),
+                SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos()
+            ));
+        fs::create_dir_all(&root)?;
+        let source = root.join("source");
+        let destination = root.join("destination");
+        fs::write(&source, "source bytes")?;
+        fs::write(&destination, "keep destination")?;
+        assert!(clone_path(&source, &destination).is_err());
+        assert_eq!(fs::read(&destination)?, b"keep destination");
+        symlink(&source, root.join("link"))?;
+        assert!(clone_path(&root.join("link"), &root.join("link-copy")).is_err());
+        assert!(!root.join("link-copy").exists());
+        assert!(clone_path(&root, &root.join("directory-copy")).is_err());
+        assert!(!root.join("directory-copy").exists());
+        // A tracked regular file replaced by a FIFO must fail without blocking.
+        let fifo = std::ffi::CString::new(path_bytes(&root.join("fifo")))?;
+        // SAFETY: fifo is a live NUL-terminated path; mode is a valid permission mask.
+        assert_eq!(unsafe { libc::mkfifo(fifo.as_ptr(), 0o600) }, 0);
+        assert!(clone_path(&root.join("fifo"), &root.join("fifo-copy")).is_err());
+        assert!(!root.join("fifo-copy").exists());
+        assert_eq!(fs::read(&source)?, b"source bytes");
+        eprintln!("fixture retained: {}", root.display());
+        Ok(())
     }
 }

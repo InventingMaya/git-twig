@@ -22,6 +22,21 @@ jobs:
       - run: cargo run -p twig-bench --bin twig-readme-table --locked -- --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
+      - name: Prepare reflink-capable Linux test filesystem
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xfsprogs
+          truncate -s 1G "$RUNNER_TEMP/twig-xfs.img"
+          mkfs.xfs -m reflink=1 "$RUNNER_TEMP/twig-xfs.img"
+          mkdir -p target/test-fixtures
+          sudo mount -o loop "$RUNNER_TEMP/twig-xfs.img" target/test-fixtures
+          sudo chown "$(id -u):$(id -g)" target/test-fixtures
+      - name: Require native Linux reflinks
+        if: runner.os == 'Linux'
+        env:
+          TWIG_TEST_REQUIRE_NATIVE: '1'
+        run: cargo test -p git-twig --locked
       - run: cargo build --workspace --release --locked
   msrv:
     runs-on: ubuntu-latest

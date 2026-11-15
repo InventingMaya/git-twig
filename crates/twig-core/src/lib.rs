@@ -91,7 +91,7 @@ struct Prepared {
 }
 
 fn prepare(cwd: &Path, request: &AddRequest) -> Result<Option<Prepared>> {
-    if !cfg!(target_os = "macos") {
+    if !cfg!(any(target_os = "macos", target_os = "linux")) {
         return Ok(None);
     }
     for key in [
@@ -156,7 +156,10 @@ fn prepare(cwd: &Path, request: &AddRequest) -> Result<Option<Prepared>> {
     fs::create_dir(&data)?;
     let modes = native::FileModes::new(&stage)?;
     let directories = snapshot::materialize(&root, &data, &entries, &modes)?;
+    #[cfg(target_os = "macos")]
     trace(&format!("APFS directory clones: {directories}"));
+    #[cfg(not(target_os = "macos"))]
+    let _ = directories;
     verify(&root, &data, &stage.join("index"), &commit)?;
     Ok(Some(Prepared {
         root,
@@ -202,28 +205,13 @@ fn verify(root: &Path, data: &Path, index: &Path, commit: &str) -> Result<()> {
 }
 
 fn install(cwd: &Path, args: &[OsString], prepared: Prepared) -> Result<i32> {
+    #[cfg(target_os = "macos")]
     trace("APFS CoW: verified tracked files");
+    #[cfg(target_os = "linux")]
+    trace("Linux reflink CoW: verified tracked files");
     // Git enumerates peer worktree metadata while registering. Serialize Twig registrars
     // so none observes a peer between mkdir and writing commondir/HEAD.
-    let common_dir = output_path(
-        checked(git(&prepared.root).args([
-            "rev-parse",
-            "--path-format=absolute",
-            "--git-common-dir",
-        ]))?
-        .stdout,
-    )?;
-    let state_dir = common_dir.join("twigs");
-    fs::create_dir_all(&state_dir)?;
-    let registration_lock = fs::OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .truncate(false)
-        .open(state_dir.join("registration.lock"))?;
-    registration_lock
-        .lock()
-        .context("cannot lock Git worktree registration")?;
+    let registration_lock = lock_registration(&prepared.root)?;
     // Preserve Git's branch validation and registration. No fallback after this mutation.
     let status = git(cwd)
         .args(["worktree", "add", "--no-checkout"])
@@ -257,6 +245,24 @@ fn install(cwd: &Path, args: &[OsString], prepared: Prepared) -> Result<i32> {
         .code()
         .unwrap_or(1);
     Ok(code)
+}
+
+fn lock_registration(root: &Path) -> Result<fs::File> {
+    let common_dir = output_path(
+        checked(git(root).args(["rev-parse", "--path-format=absolute", "--git-common-dir"]))?
+            .stdout,
+    )?;
+    let state_dir = common_dir.join("twigs");
+    fs::create_dir_all(&state_dir)?;
+    let lock = fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .open(state_dir.join("registration.lock"))?;
+    lock.lock()
+        .context("cannot lock Git worktree registration")?;
+    Ok(lock)
 }
 
 fn finish_install(prepared: &Prepared) -> Result<()> {

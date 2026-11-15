@@ -82,13 +82,52 @@ fn clean(path: &Path) -> Result<()> {
     Ok(())
 }
 fn native(output: &Output) {
-    if cfg!(target_os = "macos") {
+    if cfg!(target_os = "macos") || std::env::var_os("TWIG_TEST_REQUIRE_NATIVE").is_some() {
         assert!(
-            String::from_utf8_lossy(&output.stderr).contains("APFS CoW: verified tracked files"),
+            String::from_utf8_lossy(&output.stderr).contains("CoW: verified tracked files"),
             "{}",
             String::from_utf8_lossy(&output.stderr)
         );
     }
+}
+
+#[cfg(target_os = "linux")]
+fn linux_reflinks_available(f: &Fixture) -> Result<bool> {
+    // Probe independently with coreutils, not Twig, so a broken backend cannot
+    // disguise itself as an unsupported filesystem.
+    let output = command("cp", &f.source)
+        .arg("--reflink=always")
+        .arg(f.source.join("hello.txt"))
+        .arg(f.root.join("reflink-probe"))
+        .output()?;
+    if std::env::var_os("TWIG_TEST_REQUIRE_NATIVE").is_some() {
+        ensure!(
+            output.status.success(),
+            "test filesystem must support reflinks"
+        );
+    }
+    Ok(output.status.success())
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn linux_selects_reflinks_or_delegates_on_unsupported_filesystems() -> Result<()> {
+    let f = Fixture::new()?;
+    let supported = linux_reflinks_available(&f)?;
+    let output = checked(f.add()?)?;
+    let trace = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(
+        trace.contains("Linux reflink CoW: verified tracked files"),
+        supported,
+        "{trace}"
+    );
+    if !supported {
+        assert!(trace.contains("stock Git:"), "{trace}");
+    }
+    clean(&f.destination())?;
+    fs::write(f.destination().join("hello.txt"), "private")?;
+    assert_eq!(fs::read(f.source.join("hello.txt"))?, b"hello\n");
+    Ok(())
 }
 
 #[test]
@@ -276,7 +315,19 @@ fn executable_symlink_and_unusual_names() -> Result<()> {
             .permissions()
             .mode()
             & 0o777,
-        0o755
+        // Match Git's creation permissions under the caller's umask, not a fixed 022.
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .mode(0o777)
+                .open(f.root.join("mode-probe"))?
+                .metadata()?
+                .permissions()
+                .mode()
+                & 0o777
+        }
     );
     clean(&f.destination())
 }
@@ -320,7 +371,7 @@ fn filters_and_sparse_checkouts_delegate() -> Result<()> {
             git(&f.source, &["commit", "-m", "attributes"])?;
         }
         let output = checked(f.add()?)?;
-        assert!(!String::from_utf8_lossy(&output.stderr).contains("APFS CoW:"));
+        assert!(!String::from_utf8_lossy(&output.stderr).contains("CoW:"));
         clean(&f.destination())?;
     }
     Ok(())
@@ -383,7 +434,7 @@ fn line_ending_conversions_delegate() -> Result<()> {
     let f = Fixture::new()?;
     git(&f.source, &["config", "core.autocrlf", "true"])?;
     let output = checked(f.add()?)?;
-    assert!(!String::from_utf8_lossy(&output.stderr).contains("APFS CoW:"));
+    assert!(!String::from_utf8_lossy(&output.stderr).contains("CoW:"));
     assert_eq!(fs::read(f.destination().join("hello.txt"))?, b"hello\r\n");
     clean(&f.destination())
 }
@@ -413,8 +464,12 @@ fn relative_destination_from_subdirectory_is_resolved_correctly() -> Result<()> 
 }
 
 #[test]
-fn sixteen_independent_creators_register_safely() -> Result<()> {
+fn sixteen_independent_native_creators_register_safely() -> Result<()> {
     let f = Fixture::new()?;
+    #[cfg(target_os = "linux")]
+    if !linux_reflinks_available(&f)? {
+        return Ok(());
+    }
     let handles: Vec<_> = (0..16)
         .map(|index| {
             let source = f.source.clone();
@@ -437,6 +492,12 @@ fn sixteen_independent_creators_register_safely() -> Result<()> {
 #[test]
 fn concurrent_creators_do_not_overwrite_each_other() -> Result<()> {
     let f = Fixture::new()?;
+    // This is a native registrar guarantee. Stock Git can reuse a concurrent
+    // creator's empty directory; delegated operations retain Git's semantics.
+    #[cfg(target_os = "linux")]
+    if !linux_reflinks_available(&f)? {
+        return Ok(());
+    }
     let a = f.source.clone();
     let b = a.clone();
     let first = std::thread::spawn(move || twig(&a, &["add", "--detach", "../feature"]));
@@ -556,7 +617,7 @@ fn replaced_directory_symlink_delegates_without_traversing_it() -> Result<()> {
     fs::rename(f.source.join("tree/sub"), f.root.join("outside"))?;
     symlink(f.root.join("outside"), f.source.join("tree/sub"))?;
     let output = checked(f.add()?)?;
-    assert!(!String::from_utf8_lossy(&output.stderr).contains("APFS CoW: verified"));
+    assert!(!String::from_utf8_lossy(&output.stderr).contains("CoW: verified"));
     assert_eq!(
         fs::read(f.destination().join("tree/sub/file"))?,
         b"committed"

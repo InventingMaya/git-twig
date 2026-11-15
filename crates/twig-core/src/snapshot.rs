@@ -1,4 +1,4 @@
-//! Bulk-clone tracked root subtrees, then reduce the private snapshot to the Git tree.
+//! Clone tracked entries; macOS bulk-clones subtrees before pruning to the Git tree.
 use crate::{
     native,
     tree::{Entry, Kind},
@@ -59,13 +59,19 @@ pub fn materialize(
         let source = root.join(name);
         let target = data.join(name);
         match node {
-            Node::Directory(_) => {
+            Node::Directory(directory) => {
                 ensure!(
                     fs::symlink_metadata(&source)?.is_dir(),
                     "source directory changed type"
                 );
-                native::clone_path(&source, &target)?;
-                directories += 1;
+                #[cfg(target_os = "linux")]
+                clone_tracked_directory(&source, &target, directory, modes)?;
+                #[cfg(not(target_os = "linux"))]
+                {
+                    native::clone_path(&source, &target)?;
+                    let _ = directory;
+                }
+                directories += usize::from(cfg!(target_os = "macos"));
             }
             Node::File { .. } => {
                 ensure!(
@@ -84,6 +90,38 @@ pub fn materialize(
         )?;
     }
     Ok(directories)
+}
+
+// Linux FICLONE works on regular files, not directory trees. Walk only the
+// committed inventory so ignored files and unrelated special files are never opened.
+#[cfg(target_os = "linux")]
+fn clone_tracked_directory(
+    source: &Path,
+    target: &Path,
+    directory: &Directory,
+    modes: &native::FileModes,
+) -> Result<()> {
+    ensure!(
+        fs::symlink_metadata(source)?.is_dir(),
+        "source directory changed type"
+    );
+    fs::create_dir(target)?;
+    modes.apply_directory(target)?;
+    for (name, node) in &directory.children {
+        let source = source.join(name);
+        let target = target.join(name);
+        match node {
+            Node::Directory(directory) => {
+                clone_tracked_directory(&source, &target, directory, modes)?;
+            }
+            Node::File { executable } => {
+                native::clone_path(&source, &target)?;
+                modes.apply(&target, *executable)?;
+            }
+            Node::Symlink => native::symlink(&fs::read_link(&source)?, &target)?,
+        }
+    }
+    Ok(())
 }
 
 fn normalize(
