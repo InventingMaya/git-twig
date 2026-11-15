@@ -73,8 +73,36 @@ h1 {
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 16px;
   color: #626c5b;
-  margin: 0 0 20px;
+  margin: 0 0 8px;
   letter-spacing: -0.4px;
+}
+.description {
+  max-width: 520px;
+  margin: 0 auto 20px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #626c5b;
+}
+.onboard-action {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+.copy-toast {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 10px 16px;
+  border: 1px solid #dedfdc;
+  border-radius: 12px;
+  background: #fff;
+  color: #191b19;
+  box-shadow: 0 4px 12px #25302314;
+  font-size: 14px;
+  white-space: nowrap;
+  pointer-events: none;
 }
 .onboard {
   display: inline-flex;
@@ -261,7 +289,7 @@ footer a:hover {
     min-width: 144px;
   }
   .agent-marks {
-    width: 96px;
+    width: 80px;
     height: 24px;
   }
   .disk-chart {

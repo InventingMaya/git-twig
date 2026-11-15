@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@ui-sdk/react/button";
 import benchmarks from "virtual:twig-benchmarks";
 import type { DiskComparison } from "../scripts/benchmarks";
 
-export const onboardCommand = "curl -fsSL https://twig.leostera.dev/llms.txt";
+export const onboardPrompt =
+  "Fetch and execute the appropriate instructions to set me up for Twig from https://twig.leostera.dev/llms.txt";
 
 function AgentMarks() {
   return (
@@ -103,9 +104,14 @@ function DiskChart({ data }: { data: DiskComparison[] }) {
 
 export default function App() {
   const [copy, setCopy] = useState<"ready" | "copied" | "manual">("ready");
+  useEffect(() => {
+    if (copy !== "copied") return;
+    const timeout = setTimeout(() => setCopy("ready"), 3000);
+    return () => clearTimeout(timeout);
+  }, [copy]);
   async function onboard() {
     try {
-      await navigator.clipboard.writeText(onboardCommand);
+      await navigator.clipboard.writeText(onboardPrompt);
       setCopy("copied");
     } catch {
       setCopy("manual");
@@ -119,20 +125,27 @@ export default function App() {
             <img src="/twig.svg" width="96" height="96" alt="" />
           </div>
           <h1 id="title">twig</h1>
-          <p className="tagline">git-worktrees for agents</p>
-          <Button className="onboard" onClick={onboard}>
-            <span>{copy === "copied" ? "Copied!" : "Onboard your agent"}</span>
-            <AgentMarks />
-          </Button>
-          <p className="sr-only" role="status">
-            {copy === "copied"
-              ? "Copied. Paste it into your agent."
-              : copy === "manual"
-                ? "Copy the command below and paste it into your agent."
-                : ""}
+          <p className="tagline">lightweight git-worktrees for agents</p>
+          <p className="description">
+            With twig, your agents can create cheap lightweight worktrees and use
+            up to 97% less space on disk. Imagine all the worktrees you could now
+            make!
           </p>
+          <div className="onboard-action">
+            <Button className="onboard" onClick={onboard}>
+              <span>Onboard your agent to Twig</span>
+              <AgentMarks />
+            </Button>
+            <p className={copy === "copied" ? "copy-toast" : "sr-only"} role="status">
+              {copy === "copied"
+                ? "Setup prompt copied"
+                : copy === "manual"
+                  ? "Copy the prompt below and paste it into your agent."
+                  : ""}
+            </p>
+          </div>
           {copy === "manual" && (
-            <code className="copy-fallback">{onboardCommand}</code>
+            <code className="copy-fallback">{onboardPrompt}</code>
           )}
         </section>
         <section className="benchmarks" aria-label="Disk usage comparison">

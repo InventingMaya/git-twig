@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+const setupPrompt =
+  "Fetch and execute the appropriate instructions to set me up for Twig from https://twig.leostera.dev/llms.txt";
 test("onboards an agent and shows source-backed space savings", async ({
   page,
   request,
@@ -14,25 +16,54 @@ test("onboards an agent and shows source-backed space savings", async ({
   });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("twig");
-  await expect(page.getByText("git-worktrees for agents")).toBeVisible();
+  await expect(page.getByText("lightweight git-worktrees for agents", { exact: true })).toBeVisible();
+  await expect(page.locator(".description")).toHaveText(
+    "With twig, your agents can create cheap lightweight worktrees and use up to 97% less space on disk. Imagine all the worktrees you could now make!",
+  );
   await page.evaluate(() => document.fonts.ready);
+  const artworkCenter = await page.locator(".twig-mark img").evaluate(async (element) => {
+    const image = element as HTMLImageElement;
+    await image.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 192;
+    const context = canvas.getContext("2d")!;
+    context.drawImage(image, 0, 0, 192, 192);
+    const pixels = context.getImageData(0, 0, 192, 192).data;
+    let mass = 0, x = 0, y = 0;
+    for (let i = 0; i < pixels.length; i += 4) {
+      const alpha = pixels[i + 3];
+      mass += alpha;
+      x += (i / 4 % 192) * alpha;
+      y += Math.floor(i / 4 / 192) * alpha;
+    }
+    return { x: x / mass / 192, y: y / mass / 192 };
+  });
+  expect(Math.abs(artworkCenter.x - 0.5)).toBeLessThan(0.015);
+  expect(Math.abs(artworkCenter.y - 0.5)).toBeLessThan(0.015);
   if (test.info().project.name === "desktop") {
     const height = await page.evaluate(() => document.documentElement.scrollHeight);
-    expect(height).toBeLessThanOrEqual(850);
+    expect(height).toBeLessThanOrEqual(920);
   }
   await page.screenshot({
     path: `test-results/landing-${test.info().project.name}.png`,
     fullPage: true,
   });
-  await page.getByRole("button", { name: "Onboard your agent" }).click();
-  await expect(page.getByRole("status")).toHaveText(
-    "Copied. Paste it into your agent.",
-  );
+  const button = page.getByRole("button", { name: "Onboard your agent to Twig" });
+  const buttonBounds = await button.boundingBox();
+  await button.click();
+  await expect(page.getByRole("status")).toHaveText("Setup prompt copied");
+  await expect(page.getByRole("status")).toBeVisible();
+  await expect(button).toHaveText("Onboard your agent to Twig");
+  expect(await button.boundingBox()).toEqual(buttonBounds);
+  await page.screenshot({
+    path: `test-results/onboard-${test.info().project.name}.png`,
+    fullPage: true,
+  });
   expect(
     await page.evaluate(
       () => (window as typeof window & { copied?: string }).copied,
     ),
-  ).toBe("curl -fsSL https://twig.leostera.dev/llms.txt");
+  ).toBe(setupPrompt);
   await expect(
     page.getByRole("heading", { name: "Linux kernel", exact: true }),
   ).toBeVisible();
@@ -46,8 +77,9 @@ test("onboards an agent and shows source-backed space savings", async ({
   const instructions = await request.get("/llms.txt");
   expect(instructions.headers()["content-type"]).toContain("text/plain");
   expect(await instructions.text()).toContain("brew install --HEAD");
+  await expect(page.getByRole("status")).toHaveText("", { timeout: 5000 });
 });
-test("clipboard failure leaves a selectable command, not a false copied message", async ({
+test("clipboard failure leaves a selectable prompt, not a false copied message", async ({
   page,
 }) => {
   await page.addInitScript(() => {
@@ -60,13 +92,9 @@ test("clipboard failure leaves a selectable command, not a false copied message"
     });
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Onboard your agent" }).click();
-  await expect(page.getByRole("status")).toContainText(
-    "Copy the command below",
-  );
+  await page.getByRole("button", { name: "Onboard your agent to Twig" }).click();
+  await expect(page.getByRole("status")).toContainText("Copy the prompt below");
   await expect(
-    page.getByText("curl -fsSL https://twig.leostera.dev/llms.txt", {
-      exact: true,
-    }),
+    page.getByText(setupPrompt, { exact: true }),
   ).toBeVisible();
 });
