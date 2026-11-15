@@ -1,0 +1,2458 @@
+{
+  "schemaVersion": 2,
+  "generatedAtUnixMs": 1794740702388,
+  "commit": "5dd59c7635cd15231eb7552e8e7f0a3f840692e8",
+  "dirty": false,
+  "gitVersion": "git version 2.56.0",
+  "rustVersion": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "platform": "macos aarch64 25.5.0",
+  "cpu": "Apple M1 Ultra",
+  "twigVersion": "git-twig 0.1.0",
+  "candidateSha256": "51e21596eaf17a948769b2fc7e9637463c95be28272013ca51fb0993dfd42a5a",
+  "fixtureTree": "3ff6d874c0436d8bd1a9ff749633e267fa344100",
+  "config": {
+    "files": 64,
+    "bytes_per_file": 262144,
+    "samples": 5,
+    "concurrency": [
+      1,
+      2,
+      4,
+      8,
+      16
+    ],
+    "seed": 42
+  },
+  "notes": [
+    "Local real CLI benchmark, warm caches; no cold-cache claim. Baseline: installed git worktree add --detach; candidate: release git-twig add --detach.",
+    "One unmeasured warmup per backend. Backend order alternates per sample. Monotonic Instant measures CLI completion and first/warm/modified git status separately.",
+    "Full byte/mode-independent content verification after first/warm status. In-place write must leave source unchanged. Synthetic deterministic pseudo-random bytes; no compression/dedupe assumptions.",
+    "Every operation is retained on disk. Report exclusive physical storage as unmeasured. Logical fixture bytes are not APFS allocation.",
+    "All create/first-status/warm-status workers finish before any full-content verification or private-write check begins. Batch throughput excludes generator verification work, includes status calls.",
+    "Tail percentiles with few samples are descriptive only; errors or incorrect content block conclusions. No generator saturation claim at high concurrency."
+  ],
+  "points": [
+    {
+      "backend": "git",
+      "concurrency": 1,
+      "sample": 0,
+      "wallMs": 195.769916,
+      "operationsPerSecond": 5.108037130689682,
+      "bytesPerSecond": 85698642.27760102,
+      "operations": [
+        {
+          "createMs": 71.307833,
+          "firstStatusMs": 63.08116699999999,
+          "warmStatusMs": 61.226625,
+          "modifiedStatusMs": 64.587458,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 1,
+      "sample": 0,
+      "wallMs": 461.1245,
+      "operationsPerSecond": 2.1686117306714348,
+      "bytesPerSecond": 36383267.425608486,
+      "operations": [
+        {
+          "createMs": 378.467209,
+          "firstStatusMs": 62.57520900000001,
+          "warmStatusMs": 19.949833,
+          "modifiedStatusMs": 18.635583,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 1,
+      "sample": 1,
+      "wallMs": 467.195959,
+      "operationsPerSecond": 2.140429472336254,
+      "bytesPerSecond": 35910447.590151355,
+      "operations": [
+        {
+          "createMs": 384.177209,
+          "firstStatusMs": 65.071833,
+          "warmStatusMs": 17.824125,
+          "modifiedStatusMs": 18.287292,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 1,
+      "sample": 1,
+      "wallMs": 194.8875,
+      "operationsPerSecond": 5.131165415945097,
+      "bytesPerSecond": 86086670.51504074,
+      "operations": [
+        {
+          "createMs": 70.72445900000001,
+          "firstStatusMs": 63.56545800000001,
+          "warmStatusMs": 60.505125,
+          "modifiedStatusMs": 67.804166,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 1,
+      "sample": 2,
+      "wallMs": 192.617708,
+      "operationsPerSecond": 5.191630667726563,
+      "bytesPerSecond": 87101109.10467277,
+      "operations": [
+        {
+          "createMs": 67.381209,
+          "firstStatusMs": 61.851583000000005,
+          "warmStatusMs": 63.242167,
+          "modifiedStatusMs": 64.283167,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 1,
+      "sample": 2,
+      "wallMs": 453.017958,
+      "operationsPerSecond": 2.2074180114511046,
+      "bytesPerSecond": 37034328.780405656,
+      "operations": [
+        {
+          "createMs": 371.80204100000003,
+          "firstStatusMs": 62.737416,
+          "warmStatusMs": 18.279958,
+          "modifiedStatusMs": 18.416917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 1,
+      "sample": 3,
+      "wallMs": 484.63,
+      "operationsPerSecond": 2.0634298330685263,
+      "bytesPerSecond": 34618608.01023461,
+      "operations": [
+        {
+          "createMs": 396.266375,
+          "firstStatusMs": 68.684625,
+          "warmStatusMs": 19.477625,
+          "modifiedStatusMs": 18.120667,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 1,
+      "sample": 3,
+      "wallMs": 200.35133299999998,
+      "operationsPerSecond": 4.991232077302925,
+      "bytesPerSecond": 83738978.66703987,
+      "operations": [
+        {
+          "createMs": 69.435125,
+          "firstStatusMs": 65.16737499999999,
+          "warmStatusMs": 65.63404200000001,
+          "modifiedStatusMs": 67.455458,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 1,
+      "sample": 4,
+      "wallMs": 201.968625,
+      "operationsPerSecond": 4.951264088667237,
+      "bytesPerSecond": 83068427.08861339,
+      "operations": [
+        {
+          "createMs": 69.915542,
+          "firstStatusMs": 63.635166000000005,
+          "warmStatusMs": 68.323166,
+          "modifiedStatusMs": 67.700125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 1,
+      "sample": 4,
+      "wallMs": 499.34425,
+      "operationsPerSecond": 2.0026264445820696,
+      "bytesPerSecond": 33598496.42806541,
+      "operations": [
+        {
+          "createMs": 418.28349999999995,
+          "firstStatusMs": 62.485333,
+          "warmStatusMs": 18.378625,
+          "modifiedStatusMs": 23.592042,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 2,
+      "sample": 0,
+      "wallMs": 230.216959,
+      "operationsPerSecond": 8.687457295446249,
+      "bytesPerSecond": 145751347.53647754,
+      "operations": [
+        {
+          "createMs": 101.254416,
+          "firstStatusMs": 63.702167,
+          "warmStatusMs": 65.166292,
+          "modifiedStatusMs": 65.173584,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 100.727417,
+          "firstStatusMs": 64.230334,
+          "warmStatusMs": 64.100458,
+          "modifiedStatusMs": 66.921667,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 2,
+      "sample": 0,
+      "wallMs": 519.0056669999999,
+      "operationsPerSecond": 3.853522470304742,
+      "bytesPerSecond": 64651378.845156245,
+      "operations": [
+        {
+          "createMs": 429.359416,
+          "firstStatusMs": 66.927292,
+          "warmStatusMs": 22.566875,
+          "modifiedStatusMs": 19.948791,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 429.42162499999995,
+          "firstStatusMs": 68.399792,
+          "warmStatusMs": 20.877125,
+          "modifiedStatusMs": 20.229792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 2,
+      "sample": 1,
+      "wallMs": 519.151084,
+      "operationsPerSecond": 3.852443078015417,
+      "bytesPerSecond": 64633269.6475695,
+      "operations": [
+        {
+          "createMs": 433.78375,
+          "firstStatusMs": 66.38725,
+          "warmStatusMs": 18.338666,
+          "modifiedStatusMs": 19.590375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 433.797334,
+          "firstStatusMs": 67.35712500000001,
+          "warmStatusMs": 17.866959,
+          "modifiedStatusMs": 19.488042,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 2,
+      "sample": 1,
+      "wallMs": 251.724833,
+      "operationsPerSecond": 7.94518354095005,
+      "bytesPerSecond": 133298060.42616384,
+      "operations": [
+        {
+          "createMs": 114.401958,
+          "firstStatusMs": 68.836292,
+          "warmStatusMs": 68.35025,
+          "modifiedStatusMs": 65.076875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 113.19820899999999,
+          "firstStatusMs": 71.45450000000001,
+          "warmStatusMs": 66.2965,
+          "modifiedStatusMs": 66.586542,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 2,
+      "sample": 2,
+      "wallMs": 234.34275,
+      "operationsPerSecond": 8.53450768159032,
+      "bytesPerSecond": 143185278.82770002,
+      "operations": [
+        {
+          "createMs": 98.95116700000001,
+          "firstStatusMs": 67.29525,
+          "warmStatusMs": 67.957791,
+          "modifiedStatusMs": 65.56233399999999,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 99.423416,
+          "firstStatusMs": 67.016959,
+          "warmStatusMs": 67.250792,
+          "modifiedStatusMs": 65.550125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 2,
+      "sample": 2,
+      "wallMs": 515.5944999999999,
+      "operationsPerSecond": 3.8790173285401615,
+      "bytesPerSecond": 65079111.58866125,
+      "operations": [
+        {
+          "createMs": 424.555917,
+          "firstStatusMs": 69.64583400000001,
+          "warmStatusMs": 21.148291999999998,
+          "modifiedStatusMs": 19.701709,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 424.614875,
+          "firstStatusMs": 68.56975,
+          "warmStatusMs": 22.232709,
+          "modifiedStatusMs": 20.159334,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 2,
+      "sample": 3,
+      "wallMs": 556.193375,
+      "operationsPerSecond": 3.5958716696328867,
+      "bytesPerSecond": 60328715.70971158,
+      "operations": [
+        {
+          "createMs": 455.973666,
+          "firstStatusMs": 67.637167,
+          "warmStatusMs": 32.030292,
+          "modifiedStatusMs": 20.005459,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 455.914666,
+          "firstStatusMs": 67.812125,
+          "warmStatusMs": 32.344583,
+          "modifiedStatusMs": 19.185582999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 2,
+      "sample": 3,
+      "wallMs": 252.11983300000003,
+      "operationsPerSecond": 7.93273570032866,
+      "bytesPerSecond": 133089220.3153252,
+      "operations": [
+        {
+          "createMs": 112.767083,
+          "firstStatusMs": 68.673542,
+          "warmStatusMs": 69.04320899999999,
+          "modifiedStatusMs": 63.849833999999994,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 112.86904100000001,
+          "firstStatusMs": 67.967084,
+          "warmStatusMs": 71.158958,
+          "modifiedStatusMs": 68.035208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 2,
+      "sample": 4,
+      "wallMs": 235.633458,
+      "operationsPerSecond": 8.487758983700864,
+      "bytesPerSecond": 142400965.82548988,
+      "operations": [
+        {
+          "createMs": 102.798708,
+          "firstStatusMs": 66.355834,
+          "warmStatusMs": 66.096125,
+          "modifiedStatusMs": 68.40808399999999,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 101.60425,
+          "firstStatusMs": 67.71804200000001,
+          "warmStatusMs": 66.18329200000001,
+          "modifiedStatusMs": 63.09774999999999,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 2,
+      "sample": 4,
+      "wallMs": 530.929375,
+      "operationsPerSecond": 3.766979365193346,
+      "bytesPerSecond": 63199426.477391645,
+      "operations": [
+        {
+          "createMs": 423.45525,
+          "firstStatusMs": 69.65083299999999,
+          "warmStatusMs": 37.164750000000005,
+          "modifiedStatusMs": 18.629707999999997,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 423.533208,
+          "firstStatusMs": 67.2145,
+          "warmStatusMs": 40.056667,
+          "modifiedStatusMs": 17.575833,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 4,
+      "sample": 0,
+      "wallMs": 303.465125,
+      "operationsPerSecond": 13.181086294512426,
+      "bytesPerSecond": 221141931.87767458,
+      "operations": [
+        {
+          "createMs": 217.726375,
+          "firstStatusMs": 64.427417,
+          "warmStatusMs": 21.118624999999998,
+          "modifiedStatusMs": 17.740792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 190.1805,
+          "firstStatusMs": 68.600167,
+          "warmStatusMs": 23.043125,
+          "modifiedStatusMs": 36.873208999999996,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 193.2345,
+          "firstStatusMs": 65.54175,
+          "warmStatusMs": 23.752959,
+          "modifiedStatusMs": 19.210874999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 190.73387499999998,
+          "firstStatusMs": 70.176875,
+          "warmStatusMs": 22.131332999999998,
+          "modifiedStatusMs": 19.260125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 4,
+      "sample": 0,
+      "wallMs": 542.164,
+      "operationsPerSecond": 7.377841391165773,
+      "bytesPerSecond": 123779638.63332866,
+      "operations": [
+        {
+          "createMs": 447.225208,
+          "firstStatusMs": 72.278708,
+          "warmStatusMs": 22.412542000000002,
+          "modifiedStatusMs": 18.743458,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 447.204625,
+          "firstStatusMs": 70.4805,
+          "warmStatusMs": 24.191582999999998,
+          "modifiedStatusMs": 19.298209,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 447.614458,
+          "firstStatusMs": 70.054875,
+          "warmStatusMs": 23.939084,
+          "modifiedStatusMs": 17.048625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 446.861834,
+          "firstStatusMs": 70.816666,
+          "warmStatusMs": 24.363583000000002,
+          "modifiedStatusMs": 19.329416,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 4,
+      "sample": 1,
+      "wallMs": 546.414583,
+      "operationsPerSecond": 7.3204488394849445,
+      "bytesPerSecond": 122816751.39698824,
+      "operations": [
+        {
+          "createMs": 461.587666,
+          "firstStatusMs": 64.21279200000001,
+          "warmStatusMs": 20.045125,
+          "modifiedStatusMs": 19.62775,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 454.532625,
+          "firstStatusMs": 61.471042,
+          "warmStatusMs": 17.951833999999998,
+          "modifiedStatusMs": 20.460917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 461.57658299999997,
+          "firstStatusMs": 63.780041999999995,
+          "warmStatusMs": 20.932917,
+          "modifiedStatusMs": 20.338124999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 401.425125,
+          "firstStatusMs": 64.733833,
+          "warmStatusMs": 15.095583,
+          "modifiedStatusMs": 19.729209,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 4,
+      "sample": 1,
+      "wallMs": 258.227375,
+      "operationsPerSecond": 15.490224458193095,
+      "bytesPerSecond": 259882841.62358853,
+      "operations": [
+        {
+          "createMs": 168.556875,
+          "firstStatusMs": 43.419292,
+          "warmStatusMs": 46.092875,
+          "modifiedStatusMs": 43.160292000000005,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 171.8875,
+          "firstStatusMs": 39.888292,
+          "warmStatusMs": 42.147083,
+          "modifiedStatusMs": 40.974125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 167.871792,
+          "firstStatusMs": 44.479541999999995,
+          "warmStatusMs": 45.73125,
+          "modifiedStatusMs": 39.984958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 164.58025,
+          "firstStatusMs": 38.49625,
+          "warmStatusMs": 37.804125,
+          "modifiedStatusMs": 40.973,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 4,
+      "sample": 2,
+      "wallMs": 359.229958,
+      "operationsPerSecond": 11.13492878564432,
+      "bytesPerSecond": 186813105.38137245,
+      "operations": [
+        {
+          "createMs": 224.395417,
+          "firstStatusMs": 66.513458,
+          "warmStatusMs": 68.142583,
+          "modifiedStatusMs": 66.445916,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 221.498042,
+          "firstStatusMs": 64.27333300000001,
+          "warmStatusMs": 64.316416,
+          "modifiedStatusMs": 65.38237500000001,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 225.469375,
+          "firstStatusMs": 64.781375,
+          "warmStatusMs": 68.820917,
+          "modifiedStatusMs": 63.679792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 222.93812499999999,
+          "firstStatusMs": 66.493,
+          "warmStatusMs": 69.61525,
+          "modifiedStatusMs": 60.204292,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 4,
+      "sample": 2,
+      "wallMs": 561.6865,
+      "operationsPerSecond": 7.121410252872376,
+      "bytesPerSecond": 119477438.03705448,
+      "operations": [
+        {
+          "createMs": 460.477584,
+          "firstStatusMs": 64.483458,
+          "warmStatusMs": 18.278875,
+          "modifiedStatusMs": 18.044958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 469.42499999999995,
+          "firstStatusMs": 69.277584,
+          "warmStatusMs": 22.860041000000002,
+          "modifiedStatusMs": 18.223833,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 469.426583,
+          "firstStatusMs": 68.74416699999999,
+          "warmStatusMs": 23.185875000000003,
+          "modifiedStatusMs": 19.076083,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 469.44825000000003,
+          "firstStatusMs": 68.70662499999999,
+          "warmStatusMs": 23.171834,
+          "modifiedStatusMs": 18.774875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 4,
+      "sample": 3,
+      "wallMs": 535.456083,
+      "operationsPerSecond": 7.470267174086805,
+      "bytesPerSecond": 125330285.95736393,
+      "operations": [
+        {
+          "createMs": 419.892625,
+          "firstStatusMs": 65.689625,
+          "warmStatusMs": 18.43525,
+          "modifiedStatusMs": 17.518375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 440.058208,
+          "firstStatusMs": 72.468042,
+          "warmStatusMs": 22.672207999999998,
+          "modifiedStatusMs": 19.368917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 440.500833,
+          "firstStatusMs": 69.51325,
+          "warmStatusMs": 25.275416,
+          "modifiedStatusMs": 18.379834000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 440.78362500000003,
+          "firstStatusMs": 70.273834,
+          "warmStatusMs": 24.228666999999998,
+          "modifiedStatusMs": 17.495541,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 4,
+      "sample": 3,
+      "wallMs": 264.611375,
+      "operationsPerSecond": 15.11650812441453,
+      "bytesPerSecond": 253612921.96905744,
+      "operations": [
+        {
+          "createMs": 175.68483300000003,
+          "firstStatusMs": 66.291834,
+          "warmStatusMs": 21.958624999999998,
+          "modifiedStatusMs": 17.540582999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 173.38175,
+          "firstStatusMs": 67.58550000000001,
+          "warmStatusMs": 23.492334,
+          "modifiedStatusMs": 17.771874999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 171.60775,
+          "firstStatusMs": 67.90991700000001,
+          "warmStatusMs": 20.588625,
+          "modifiedStatusMs": 19.678209,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 172.330333,
+          "firstStatusMs": 68.10125000000001,
+          "warmStatusMs": 23.8685,
+          "modifiedStatusMs": 18.037999999999997,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 4,
+      "sample": 4,
+      "wallMs": 309.581709,
+      "operationsPerSecond": 12.92065998640766,
+      "bytesPerSecond": 216772703.45451838,
+      "operations": [
+        {
+          "createMs": 177.02875,
+          "firstStatusMs": 64.807042,
+          "warmStatusMs": 67.592792,
+          "modifiedStatusMs": 65.932625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 179.173875,
+          "firstStatusMs": 63.93254099999999,
+          "warmStatusMs": 65.42141699999999,
+          "modifiedStatusMs": 62.281792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 183.683042,
+          "firstStatusMs": 63.39500000000001,
+          "warmStatusMs": 61.719417,
+          "modifiedStatusMs": 63.372375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 179.473792,
+          "firstStatusMs": 63.075041999999996,
+          "warmStatusMs": 66.13220799999999,
+          "modifiedStatusMs": 65.69500000000001,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 4,
+      "sample": 4,
+      "wallMs": 576.623209,
+      "operationsPerSecond": 6.936938953492592,
+      "bytesPerSecond": 116382523.20155917,
+      "operations": [
+        {
+          "createMs": 488.76608300000004,
+          "firstStatusMs": 66.498,
+          "warmStatusMs": 21.092416,
+          "modifiedStatusMs": 18.309124999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 433.6605,
+          "firstStatusMs": 67.738375,
+          "warmStatusMs": 17.167166,
+          "modifiedStatusMs": 18.753208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 488.115209,
+          "firstStatusMs": 68.071916,
+          "warmStatusMs": 20.025291,
+          "modifiedStatusMs": 19.11,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 484.408583,
+          "firstStatusMs": 62.60925,
+          "warmStatusMs": 18.116375,
+          "modifiedStatusMs": 17.796499999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 8,
+      "sample": 0,
+      "wallMs": 637.925541,
+      "operationsPerSecond": 12.540648533149108,
+      "bytesPerSecond": 210397169.22072574,
+      "operations": [
+        {
+          "createMs": 473.08691699999997,
+          "firstStatusMs": 79.978833,
+          "warmStatusMs": 82.464417,
+          "modifiedStatusMs": 66.22425,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 476.44629100000003,
+          "firstStatusMs": 75.24937499999999,
+          "warmStatusMs": 86.089,
+          "modifiedStatusMs": 64.657459,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 468.474792,
+          "firstStatusMs": 71.300667,
+          "warmStatusMs": 81.738959,
+          "modifiedStatusMs": 63.967417,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 479.9425,
+          "firstStatusMs": 69.15599999999999,
+          "warmStatusMs": 85.657208,
+          "modifiedStatusMs": 65.512917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 420.538584,
+          "firstStatusMs": 72.36525,
+          "warmStatusMs": 69.03029199999999,
+          "modifiedStatusMs": 57.788541,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 415.937584,
+          "firstStatusMs": 76.39966700000001,
+          "warmStatusMs": 63.565791,
+          "modifiedStatusMs": 62.103249999999996,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 472.717667,
+          "firstStatusMs": 72.07487499999999,
+          "warmStatusMs": 84.262541,
+          "modifiedStatusMs": 65.29779199999999,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 472.68516700000004,
+          "firstStatusMs": 74.36545799999999,
+          "warmStatusMs": 82.03349999999999,
+          "modifiedStatusMs": 80.713625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 8,
+      "sample": 0,
+      "wallMs": 728.090959,
+      "operationsPerSecond": 10.987638153051149,
+      "bytesPerSecond": 184341978.6235802,
+      "operations": [
+        {
+          "createMs": 628.28975,
+          "firstStatusMs": 75.83595799999999,
+          "warmStatusMs": 19.83175,
+          "modifiedStatusMs": 18.918958999999997,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 630.051833,
+          "firstStatusMs": 70.22675000000001,
+          "warmStatusMs": 19.160041999999997,
+          "modifiedStatusMs": 16.982457999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 533.412333,
+          "firstStatusMs": 80.623584,
+          "warmStatusMs": 23.234291,
+          "modifiedStatusMs": 19.261332999999997,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 629.985459,
+          "firstStatusMs": 77.31908299999999,
+          "warmStatusMs": 20.420833,
+          "modifiedStatusMs": 18.044,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 542.1245,
+          "firstStatusMs": 74.491083,
+          "warmStatusMs": 20.650166000000002,
+          "modifiedStatusMs": 18.157916,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 624.331583,
+          "firstStatusMs": 69.537166,
+          "warmStatusMs": 19.559416,
+          "modifiedStatusMs": 18.381833,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 633.704709,
+          "firstStatusMs": 70.12183399999999,
+          "warmStatusMs": 23.891459,
+          "modifiedStatusMs": 18.364042,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 629.381416,
+          "firstStatusMs": 73.817792,
+          "warmStatusMs": 24.664084,
+          "modifiedStatusMs": 18.955708,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 8,
+      "sample": 1,
+      "wallMs": 817.413625,
+      "operationsPerSecond": 9.786966788081125,
+      "bytesPerSecond": 164198055.78846326,
+      "operations": [
+        {
+          "createMs": 711.4795,
+          "firstStatusMs": 76.604166,
+          "warmStatusMs": 22.595667,
+          "modifiedStatusMs": 17.505333,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 708.002083,
+          "firstStatusMs": 82.9745,
+          "warmStatusMs": 24.209457999999998,
+          "modifiedStatusMs": 18.564375000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 708.8092499999999,
+          "firstStatusMs": 86.254458,
+          "warmStatusMs": 22.182375,
+          "modifiedStatusMs": 25.25375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 693.755208,
+          "firstStatusMs": 75.883625,
+          "warmStatusMs": 22.603417,
+          "modifiedStatusMs": 20.304833000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 708.812875,
+          "firstStatusMs": 76.31975,
+          "warmStatusMs": 22.64225,
+          "modifiedStatusMs": 18.1465,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 711.896083,
+          "firstStatusMs": 78.782791,
+          "warmStatusMs": 24.705458,
+          "modifiedStatusMs": 17.529834,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 707.7507079999999,
+          "firstStatusMs": 76.324875,
+          "warmStatusMs": 21.567125,
+          "modifiedStatusMs": 16.347916,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 708.610334,
+          "firstStatusMs": 81.713042,
+          "warmStatusMs": 25.329625,
+          "modifiedStatusMs": 18.493792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 8,
+      "sample": 1,
+      "wallMs": 616.421833,
+      "operationsPerSecond": 12.97812564663004,
+      "bytesPerSecond": 217736817.24865186,
+      "operations": [
+        {
+          "createMs": 465.93120799999997,
+          "firstStatusMs": 79.497708,
+          "warmStatusMs": 70.79625,
+          "modifiedStatusMs": 66.356167,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 450.728209,
+          "firstStatusMs": 77.960292,
+          "warmStatusMs": 71.608708,
+          "modifiedStatusMs": 64.577,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 457.80670899999996,
+          "firstStatusMs": 83.34166599999999,
+          "warmStatusMs": 74.006416,
+          "modifiedStatusMs": 67.429417,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 453.217166,
+          "firstStatusMs": 72.693167,
+          "warmStatusMs": 75.50075000000001,
+          "modifiedStatusMs": 68.69862499999999,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 471.537,
+          "firstStatusMs": 68.405333,
+          "warmStatusMs": 73.728833,
+          "modifiedStatusMs": 73.380875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 461.474208,
+          "firstStatusMs": 76.4595,
+          "warmStatusMs": 70.394834,
+          "modifiedStatusMs": 62.888125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 456.562792,
+          "firstStatusMs": 76.033041,
+          "warmStatusMs": 72.97308299999999,
+          "modifiedStatusMs": 61.377125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 456.46033400000005,
+          "firstStatusMs": 79.10354099999999,
+          "warmStatusMs": 71.125625,
+          "modifiedStatusMs": 67.19033300000001,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 8,
+      "sample": 2,
+      "wallMs": 634.6865,
+      "operationsPerSecond": 12.604648121552923,
+      "bytesPerSecond": 211470904.13928765,
+      "operations": [
+        {
+          "createMs": 473.07175,
+          "firstStatusMs": 77.952875,
+          "warmStatusMs": 81.20183300000001,
+          "modifiedStatusMs": 67.693708,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 480.114875,
+          "firstStatusMs": 72.46575,
+          "warmStatusMs": 76.161209,
+          "modifiedStatusMs": 62.915709,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 479.80375,
+          "firstStatusMs": 76.66945899999999,
+          "warmStatusMs": 76.241833,
+          "modifiedStatusMs": 64.076708,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 473.934333,
+          "firstStatusMs": 77.60966699999999,
+          "warmStatusMs": 77.493708,
+          "modifiedStatusMs": 63.147707999999994,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 470.513375,
+          "firstStatusMs": 78.313959,
+          "warmStatusMs": 74.2515,
+          "modifiedStatusMs": 61.326375000000006,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 470.621417,
+          "firstStatusMs": 78.054666,
+          "warmStatusMs": 79.025292,
+          "modifiedStatusMs": 62.924083,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 477.79783399999997,
+          "firstStatusMs": 75.24829199999999,
+          "warmStatusMs": 81.429583,
+          "modifiedStatusMs": 63.065708,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 375.2195,
+          "firstStatusMs": 87.556917,
+          "warmStatusMs": 76.500417,
+          "modifiedStatusMs": 61.132375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 8,
+      "sample": 2,
+      "wallMs": 831.84525,
+      "operationsPerSecond": 9.617173386516303,
+      "bytesPerSecond": 161349395.2150355,
+      "operations": [
+        {
+          "createMs": 721.7495,
+          "firstStatusMs": 69.847959,
+          "warmStatusMs": 22.294292,
+          "modifiedStatusMs": 18.316417,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 743.002667,
+          "firstStatusMs": 71.602625,
+          "warmStatusMs": 17.046625,
+          "modifiedStatusMs": 17.77,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 722.45875,
+          "firstStatusMs": 68.811792,
+          "warmStatusMs": 23.42975,
+          "modifiedStatusMs": 19.418333999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 743.3686670000001,
+          "firstStatusMs": 69.71362500000001,
+          "warmStatusMs": 18.212208,
+          "modifiedStatusMs": 18.649124999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 736.259083,
+          "firstStatusMs": 68.760125,
+          "warmStatusMs": 18.812791999999998,
+          "modifiedStatusMs": 17.564,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 736.207833,
+          "firstStatusMs": 71.106125,
+          "warmStatusMs": 17.201749999999997,
+          "modifiedStatusMs": 19.145334,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 732.478667,
+          "firstStatusMs": 75.856375,
+          "warmStatusMs": 16.600542,
+          "modifiedStatusMs": 18.612834000000003,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 713.748291,
+          "firstStatusMs": 65.48474999999999,
+          "warmStatusMs": 21.615958000000003,
+          "modifiedStatusMs": 18.594,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 8,
+      "sample": 3,
+      "wallMs": 908.53025,
+      "operationsPerSecond": 8.805430529143086,
+      "bytesPerSecond": 147730609.96042785,
+      "operations": [
+        {
+          "createMs": 768.266583,
+          "firstStatusMs": 118.538583,
+          "warmStatusMs": 21.5495,
+          "modifiedStatusMs": 19.733957999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 741.551292,
+          "firstStatusMs": 116.28770800000001,
+          "warmStatusMs": 35.63325,
+          "modifiedStatusMs": 19.477667,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 729.026333,
+          "firstStatusMs": 128.420959,
+          "warmStatusMs": 35.574875,
+          "modifiedStatusMs": 25.084334,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 767.713542,
+          "firstStatusMs": 119.058209,
+          "warmStatusMs": 21.007375,
+          "modifiedStatusMs": 17.571666999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 740.887333,
+          "firstStatusMs": 116.6895,
+          "warmStatusMs": 35.723417,
+          "modifiedStatusMs": 17.757624999999997,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 728.463167,
+          "firstStatusMs": 129.36237500000001,
+          "warmStatusMs": 34.124165999999995,
+          "modifiedStatusMs": 18.79625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 741.686375,
+          "firstStatusMs": 115.68825000000001,
+          "warmStatusMs": 35.961292,
+          "modifiedStatusMs": 23.326459,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 743.262167,
+          "firstStatusMs": 114.170292,
+          "warmStatusMs": 35.417375,
+          "modifiedStatusMs": 18.731042,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 8,
+      "sample": 3,
+      "wallMs": 735.383542,
+      "operationsPerSecond": 10.878676966637906,
+      "bytesPerSecond": 182513913.26350895,
+      "operations": [
+        {
+          "createMs": 646.486916,
+          "firstStatusMs": 40.451625,
+          "warmStatusMs": 42.577166,
+          "modifiedStatusMs": 34.332959,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 644.366959,
+          "firstStatusMs": 42.701459,
+          "warmStatusMs": 42.803625,
+          "modifiedStatusMs": 34.334208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 639.7569159999999,
+          "firstStatusMs": 47.233334,
+          "warmStatusMs": 43.014417,
+          "modifiedStatusMs": 35.650583,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 649.841792,
+          "firstStatusMs": 37.642042000000004,
+          "warmStatusMs": 47.27775,
+          "modifiedStatusMs": 34.699708,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 629.778875,
+          "firstStatusMs": 35.214375,
+          "warmStatusMs": 33.258583,
+          "modifiedStatusMs": 33.640375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 644.624666,
+          "firstStatusMs": 42.328584,
+          "warmStatusMs": 46.619833,
+          "modifiedStatusMs": 36.834042,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 633.3478329999999,
+          "firstStatusMs": 53.422333,
+          "warmStatusMs": 42.651917,
+          "modifiedStatusMs": 32.31825,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 648.24375,
+          "firstStatusMs": 40.096,
+          "warmStatusMs": 46.720125,
+          "modifiedStatusMs": 34.441584,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 8,
+      "sample": 4,
+      "wallMs": 785.0647080000001,
+      "operationsPerSecond": 10.19024281499099,
+      "bytesPerSecond": 170963904.79955187,
+      "operations": [
+        {
+          "createMs": 624.7329579999999,
+          "firstStatusMs": 82.857833,
+          "warmStatusMs": 69.873209,
+          "modifiedStatusMs": 63.113249999999994,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 618.074625,
+          "firstStatusMs": 82.46237500000001,
+          "warmStatusMs": 67.665958,
+          "modifiedStatusMs": 63.626957999999995,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 623.565792,
+          "firstStatusMs": 87.021708,
+          "warmStatusMs": 71.229625,
+          "modifiedStatusMs": 63.176292,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 587.607375,
+          "firstStatusMs": 72.297791,
+          "warmStatusMs": 88.115208,
+          "modifiedStatusMs": 62.339667,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 570.185583,
+          "firstStatusMs": 76.699459,
+          "warmStatusMs": 86.18545900000001,
+          "modifiedStatusMs": 62.162042,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 628.845875,
+          "firstStatusMs": 90.418833,
+          "warmStatusMs": 65.629125,
+          "modifiedStatusMs": 63.004875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 623.880334,
+          "firstStatusMs": 89.055583,
+          "warmStatusMs": 69.565041,
+          "modifiedStatusMs": 62.815208999999996,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 626.759083,
+          "firstStatusMs": 86.913958,
+          "warmStatusMs": 68.831125,
+          "modifiedStatusMs": 62.908375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 8,
+      "sample": 4,
+      "wallMs": 831.659042,
+      "operationsPerSecond": 9.619326666323914,
+      "bytesPerSecond": 161385521.25547624,
+      "operations": [
+        {
+          "createMs": 727.1247920000001,
+          "firstStatusMs": 73.192375,
+          "warmStatusMs": 19.352792,
+          "modifiedStatusMs": 19.012083,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 738.6815839999999,
+          "firstStatusMs": 71.639583,
+          "warmStatusMs": 20.838209,
+          "modifiedStatusMs": 16.704542,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 710.472709,
+          "firstStatusMs": 68.832584,
+          "warmStatusMs": 20.437459,
+          "modifiedStatusMs": 17.315,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 576.57475,
+          "firstStatusMs": 88.314417,
+          "warmStatusMs": 24.101458,
+          "modifiedStatusMs": 19.371665999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 704.674208,
+          "firstStatusMs": 72.149167,
+          "warmStatusMs": 20.029083,
+          "modifiedStatusMs": 19.501541,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 725.7832920000001,
+          "firstStatusMs": 68.374584,
+          "warmStatusMs": 18.619708,
+          "modifiedStatusMs": 18.50275,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 712.208916,
+          "firstStatusMs": 71.014417,
+          "warmStatusMs": 18.486708,
+          "modifiedStatusMs": 19.837792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 738.495541,
+          "firstStatusMs": 71.1135,
+          "warmStatusMs": 21.776542,
+          "modifiedStatusMs": 18.872957999999997,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 16,
+      "sample": 0,
+      "wallMs": 1906.517,
+      "operationsPerSecond": 8.392267155236485,
+      "bytesPerSecond": 140798878.79310805,
+      "operations": [
+        {
+          "createMs": 1788.5059999999999,
+          "firstStatusMs": 50.25575,
+          "warmStatusMs": 56.338792,
+          "modifiedStatusMs": 44.560165999999995,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1180.262667,
+          "firstStatusMs": 111.90275,
+          "warmStatusMs": 100.801708,
+          "modifiedStatusMs": 18.180166,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1790.185375,
+          "firstStatusMs": 62.59070799999999,
+          "warmStatusMs": 51.12425,
+          "modifiedStatusMs": 42.453208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1788.126833,
+          "firstStatusMs": 64.68308400000001,
+          "warmStatusMs": 50.952125,
+          "modifiedStatusMs": 41.859458000000004,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1792.531917,
+          "firstStatusMs": 53.640459,
+          "warmStatusMs": 50.7515,
+          "modifiedStatusMs": 44.571540999999996,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1777.5292089999998,
+          "firstStatusMs": 46.207125000000005,
+          "warmStatusMs": 50.778458,
+          "modifiedStatusMs": 37.95025,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 780.580292,
+          "firstStatusMs": 101.733208,
+          "warmStatusMs": 104.627167,
+          "modifiedStatusMs": 60.279958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1795.992625,
+          "firstStatusMs": 52.702542,
+          "warmStatusMs": 51.468541,
+          "modifiedStatusMs": 41.26825,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1780.086792,
+          "firstStatusMs": 52.000125000000004,
+          "warmStatusMs": 62.82829199999999,
+          "modifiedStatusMs": 40.627792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1794.695167,
+          "firstStatusMs": 59.921333,
+          "warmStatusMs": 51.631333,
+          "modifiedStatusMs": 47.194792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1625.324375,
+          "firstStatusMs": 60.265209,
+          "warmStatusMs": 54.610834,
+          "modifiedStatusMs": 31.768458,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1769.183,
+          "firstStatusMs": 52.426167,
+          "warmStatusMs": 50.861416999999996,
+          "modifiedStatusMs": 40.52825,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1784.530292,
+          "firstStatusMs": 53.210375,
+          "warmStatusMs": 57.098584,
+          "modifiedStatusMs": 52.926916,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1792.0347080000001,
+          "firstStatusMs": 57.855542,
+          "warmStatusMs": 51.145042000000004,
+          "modifiedStatusMs": 42.744499999999995,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1733.1086249999998,
+          "firstStatusMs": 54.907458,
+          "warmStatusMs": 48.513459000000005,
+          "modifiedStatusMs": 36.681708,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1807.5695,
+          "firstStatusMs": 47.461209,
+          "warmStatusMs": 49.997834,
+          "modifiedStatusMs": 40.529583,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 16,
+      "sample": 0,
+      "wallMs": 1533.9105,
+      "operationsPerSecond": 10.430856298330314,
+      "bytesPerSecond": 175000729.1820481,
+      "operations": [
+        {
+          "createMs": 1400.348583,
+          "firstStatusMs": 94.048417,
+          "warmStatusMs": 26.482583,
+          "modifiedStatusMs": 19.726416,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1401.094667,
+          "firstStatusMs": 87.28575,
+          "warmStatusMs": 26.647375,
+          "modifiedStatusMs": 19.077707999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1400.4609169999999,
+          "firstStatusMs": 97.82062499999999,
+          "warmStatusMs": 26.282875,
+          "modifiedStatusMs": 18.016958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 628.94975,
+          "firstStatusMs": 0.0,
+          "warmStatusMs": 0.0,
+          "modifiedStatusMs": 0.0,
+          "verifiedFiles": 0,
+          "sourceUnchanged": false,
+          "correct": false,
+          "nativeCow": false,
+          "error": "command failed: git-twig: staging retained at /Users/leostera/Developer/github.com/leostera/git-twig/main/target/bench-fixtures/1794740702388-26588/.git-twig-stage-32448-0\ngit-twig: APFS CoW: verified tracked files\nPreparing worktree (detached HEAD 01e6a3a)\nfatal: failed to read .git/worktrees/twig-c16-s0-w6/commondir: Undefined error: 0\n"
+        },
+        {
+          "createMs": 1124.4925830000002,
+          "firstStatusMs": 136.467625,
+          "warmStatusMs": 53.231,
+          "modifiedStatusMs": 20.580167,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1427.014042,
+          "firstStatusMs": 86.467292,
+          "warmStatusMs": 20.225666,
+          "modifiedStatusMs": 20.349916999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 796.310167,
+          "firstStatusMs": 159.785709,
+          "warmStatusMs": 61.1445,
+          "modifiedStatusMs": 17.158708,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1412.5423750000002,
+          "firstStatusMs": 80.71012499999999,
+          "warmStatusMs": 23.404375,
+          "modifiedStatusMs": 17.138666999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1427.8712090000001,
+          "firstStatusMs": 84.231791,
+          "warmStatusMs": 20.987792000000002,
+          "modifiedStatusMs": 19.688000000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1422.6907500000002,
+          "firstStatusMs": 74.88562499999999,
+          "warmStatusMs": 27.629875000000002,
+          "modifiedStatusMs": 17.565292,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1422.6269579999998,
+          "firstStatusMs": 84.772541,
+          "warmStatusMs": 23.954834,
+          "modifiedStatusMs": 19.551624999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1427.785083,
+          "firstStatusMs": 81.242708,
+          "warmStatusMs": 22.187708999999998,
+          "modifiedStatusMs": 17.624292,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1394.3975420000002,
+          "firstStatusMs": 91.877167,
+          "warmStatusMs": 27.412959,
+          "modifiedStatusMs": 19.596042,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1393.657417,
+          "firstStatusMs": 86.221459,
+          "warmStatusMs": 23.203917,
+          "modifiedStatusMs": 17.778542,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1303.8390419999998,
+          "firstStatusMs": 88.86116600000001,
+          "warmStatusMs": 27.230082999999997,
+          "modifiedStatusMs": 18.977166,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1401.263958,
+          "firstStatusMs": 87.5435,
+          "warmStatusMs": 27.489666999999997,
+          "modifiedStatusMs": 17.372124999999997,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    }
+  ]
+}
