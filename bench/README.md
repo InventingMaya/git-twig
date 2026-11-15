@@ -1,5 +1,8 @@
 # Local CLI benchmarks
 
+For real repositories, 100-way cohorts, and isolated APFS allocation measurements,
+see [real-repository benchmarks](real-repositories.md).
+
 Question: does verified APFS cloning reduce real worktree creation **plus first
 status** latency versus the installed stock Git? Numeric correctness target:
 zero wrong checkouts and zero source mutations. Speed is an open measurement,

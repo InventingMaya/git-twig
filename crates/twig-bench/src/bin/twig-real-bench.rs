@@ -30,9 +30,10 @@ impl Filesystem {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 struct Repository {
     label: String,
+    #[serde(skip)]
     path: PathBuf,
     commit: String,
 }
@@ -51,6 +52,7 @@ struct Suite {
     cpu: String,
     concurrency: usize,
     repeats: usize,
+    repositories: Vec<Repository>,
     notes: Vec<String>,
     cohorts: Vec<Cohort>,
     failures: Vec<String>,
@@ -215,7 +217,7 @@ fn main() -> Result<()> {
         candidate_sha256: digest.split_whitespace().next().context("missing candidate hash")?.into(),
         git_version: capture(&cwd, "git", &["--version".into()])?,
         platform: format!("{} {} {}", env::consts::OS, env::consts::ARCH, capture(&cwd, "uname", &["-r".into()])?),
-        cpu: capture(&cwd, "sysctl", &["-n".into(), "machdep.cpu.brand_string".into()])?, concurrency, repeats,
+        cpu: capture(&cwd, "sysctl", &["-n".into(), "machdep.cpu.brand_string".into()])?, concurrency, repeats, repositories: repositories.clone(),
         notes: vec![
             "Each backend/repeat gets a fresh, isolated 8-GiB sparse APFS image. Seed uses git clone --shared --no-checkout plus explicit pinned-commit checkout. Original repositories and object stores are read-only inputs; seed history uses alternates outside image.".into(),
             "One warmup per backend removed before baseline space snapshot. Global/system Git config and hooks disabled for fixture setup; no ignored/untracked dependencies or build output copied. Backend order alternates by repeat.".into(),
