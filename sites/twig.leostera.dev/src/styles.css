@@ -137,13 +137,6 @@ h1 {
   width: 104px;
   height: 26px;
 }
-.copy-fallback {
-  display: block;
-  margin: 22px 0 0;
-  font-size: 15px;
-  overflow-wrap: anywhere;
-  user-select: all;
-}
 .benchmarks {
   max-width: 540px;
   margin: 0 auto;

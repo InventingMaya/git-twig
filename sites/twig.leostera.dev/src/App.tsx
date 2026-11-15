@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@ui-sdk/react/button";
 import benchmarks from "virtual:twig-benchmarks";
 import type { DiskComparison } from "../scripts/benchmarks";
+import { copyText } from "./clipboard";
 
 export const onboardPrompt =
   "Fetch and execute the appropriate instructions to set me up for Twig from https://twig.leostera.dev/llms.txt";
@@ -103,18 +104,18 @@ function DiskChart({ data }: { data: DiskComparison[] }) {
 }
 
 export default function App() {
-  const [copy, setCopy] = useState<"ready" | "copied" | "manual">("ready");
+  const [copy, setCopy] = useState<"ready" | "copied" | "failed">("ready");
   useEffect(() => {
-    if (copy !== "copied") return;
+    if (copy === "ready") return;
     const timeout = setTimeout(() => setCopy("ready"), 3000);
     return () => clearTimeout(timeout);
   }, [copy]);
   async function onboard() {
     try {
-      await navigator.clipboard.writeText(onboardPrompt);
+      await copyText(onboardPrompt);
       setCopy("copied");
     } catch {
-      setCopy("manual");
+      setCopy("failed");
     }
   }
   return (
@@ -136,17 +137,14 @@ export default function App() {
               <span>Onboard your agent to Twig</span>
               <AgentMarks />
             </Button>
-            <p className={copy === "copied" ? "copy-toast" : "sr-only"} role="status">
+            <p className={copy === "ready" ? "sr-only" : "copy-toast"} role="status">
               {copy === "copied"
                 ? "Setup prompt copied"
-                : copy === "manual"
-                  ? "Copy the prompt below and paste it into your agent."
+                : copy === "failed"
+                  ? "Couldn’t copy. Please try again."
                   : ""}
             </p>
           </div>
-          {copy === "manual" && (
-            <code className="copy-fallback">{onboardPrompt}</code>
-          )}
         </section>
         <section className="benchmarks" aria-label="Disk usage comparison">
           <DiskChart data={benchmarks} />

@@ -4,16 +4,9 @@ const setupPrompt =
 test("onboards an agent and shows source-backed space savings", async ({
   page,
   request,
+  context,
 }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, "clipboard", {
-      value: {
-        writeText: async (text: string) => {
-          (window as typeof window & { copied?: string }).copied = text;
-        },
-      },
-    });
-  });
+  await context.grantPermissions(["clipboard-read"]);
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("twig");
   await expect(page.getByText("lightweight git-worktrees for agents", { exact: true })).toBeVisible();
@@ -59,11 +52,8 @@ test("onboards an agent and shows source-backed space savings", async ({
     path: `test-results/onboard-${test.info().project.name}.png`,
     fullPage: true,
   });
-  expect(
-    await page.evaluate(
-      () => (window as typeof window & { copied?: string }).copied,
-    ),
-  ).toBe(setupPrompt);
+  expect(await page.evaluate(async (prompt) =>
+    await navigator.clipboard.readText() === prompt, setupPrompt)).toBe(true);
   await expect(
     page.getByRole("heading", { name: "Linux kernel", exact: true }),
   ).toBeVisible();
@@ -79,22 +69,30 @@ test("onboards an agent and shows source-backed space savings", async ({
   expect(await instructions.text()).toContain("brew install --HEAD");
   await expect(page.getByRole("status")).toHaveText("", { timeout: 5000 });
 });
-test("clipboard failure leaves a selectable prompt, not a false copied message", async ({
-  page,
-}) => {
+test("copies the real prompt even when the async Clipboard API is denied", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read"]);
   await page.addInitScript(() => {
-    Object.defineProperty(navigator, "clipboard", {
-      value: {
-        writeText: async () => {
-          throw new Error("denied");
-        },
-      },
+    Object.defineProperty(navigator.clipboard, "writeText", {
+      value: async () => { throw new Error("denied"); },
     });
   });
   await page.goto("/");
   await page.getByRole("button", { name: "Onboard your agent to Twig" }).click();
-  await expect(page.getByRole("status")).toContainText("Copy the prompt below");
-  await expect(
-    page.getByText(setupPrompt, { exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole("status")).toHaveText("Setup prompt copied");
+  expect(await page.evaluate(async (prompt) =>
+    await navigator.clipboard.readText() === prompt, setupPrompt)).toBe(true);
+  await expect(page.getByText(setupPrompt, { exact: true })).toHaveCount(0);
+});
+
+test("does not dump the prompt or claim success when both copy methods fail", async ({ page }) => {
+  await page.addInitScript(() => {
+    document.execCommand = () => false;
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: async () => { throw new Error("denied"); } },
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Onboard your agent to Twig" }).click();
+  await expect(page.getByRole("status")).toHaveText("Couldn’t copy. Please try again.");
+  await expect(page.getByText(setupPrompt, { exact: true })).toHaveCount(0);
 });
