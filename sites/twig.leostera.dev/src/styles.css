@@ -37,57 +37,59 @@ code {
   font-family: "SFMono-Regular", Consolas, monospace;
 }
 .page {
-  max-width: 760px;
+  max-width: 640px;
   margin: auto;
   padding: 0 28px;
 }
 .hero {
   text-align: center;
-  padding: 48px 0 50px;
+  padding: 24px 0 28px;
 }
 .twig-mark {
   display: grid;
   place-items: center;
-  width: 112px;
-  height: 112px;
-  margin: 0 auto 12px;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 8px;
   background: #eeefdf;
   border-radius: 41% 59% 54% 46% / 48% 46% 54% 52%;
   transform: rotate(-5deg);
 }
 .twig-mark img {
+  width: 62px;
+  height: 62px;
   transform: rotate(5deg);
 }
 h1 {
   font-family: "Leckerli One", cursive;
-  font-size: 108px;
+  font-size: 80px;
   font-weight: 400;
   letter-spacing: -1.5px;
   font-kerning: normal;
-  line-height: 1.25;
-  margin: 0 0 6px;
+  line-height: 1.15;
+  margin: 0 0 4px;
 }
 .tagline {
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 19px;
+  font-size: 16px;
   color: #626c5b;
-  margin: 0 0 32px;
+  margin: 0 0 20px;
   letter-spacing: -0.4px;
 }
 .onboard {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 19px;
+  gap: 14px;
   background: #fff;
   color: #191b19;
   border: 1.5px solid #dedfdc;
   border-radius: 999px;
-  min-height: 66px;
-  padding: 12px 23px;
+  min-height: 48px;
+  padding: 9px 17px;
   font: inherit;
   font-weight: 500;
-  font-size: 20px;
+  font-size: 16px;
   box-shadow: 0 1px 2px #2530230c;
   cursor: pointer;
   transition:
@@ -99,11 +101,13 @@ h1 {
   border-color: #acb59e;
 }
 .onboard > span {
-  min-width: 190px;
+  min-width: 152px;
   text-align: left;
 }
 .agent-marks {
   flex: none;
+  width: 104px;
+  height: 26px;
 }
 .copy-fallback {
   display: block;
@@ -113,34 +117,34 @@ h1 {
   user-select: all;
 }
 .benchmarks {
-  max-width: 620px;
+  max-width: 540px;
   margin: 0 auto;
 }
 .disk-chart {
   margin: 0;
   background: #fffef9;
   border: 1px solid #e1e5d8;
-  border-radius: 18px;
-  padding: 27px 31px 32px;
+  border-radius: 14px;
+  padding: 20px 24px;
 }
 .disk-chart figcaption {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 .disk-chart figcaption > span {
-  font-size: 16px;
+  font-size: 14px;
   color: #6a755f;
 }
 h2 {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 560;
   margin: 0;
 }
 .repo-group + .repo-group {
-  margin-top: 28px;
-  padding-top: 25px;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid #e8ebdf;
 }
 .repo-heading {
@@ -148,10 +152,10 @@ h2 {
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 560;
   margin: 0;
 }
@@ -162,7 +166,7 @@ h3 a:hover {
   text-decoration: underline;
 }
 .repo-heading > span {
-  font-size: 18px;
+  font-size: 15px;
 }
 .less {
   color: #648247;
@@ -172,25 +176,25 @@ h3 a:hover {
 }
 .bar-row {
   display: grid;
-  grid-template-columns: 110px 1fr 80px;
+  grid-template-columns: 100px 1fr 72px;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
 }
 .bar-row + .bar-row {
-  margin-top: 12px;
+  margin-top: 8px;
 }
 .bar-row code {
-  font-size: 14px;
+  font-size: 13px;
   color: #606a57;
 }
 .bar-row > span {
   text-align: right;
-  font-size: 16px;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
   color: #505c49;
 }
 .bar-track {
-  height: 14px;
+  height: 11px;
   border-radius: 3px;
   background: #f0f1e8;
   overflow: hidden;
@@ -206,9 +210,9 @@ h3 a:hover {
   background: #85a65f;
 }
 footer {
-  padding: 31px 0 32px;
+  padding: 20px 0 24px;
   text-align: center;
-  font-size: 15px;
+  font-size: 13px;
   color: #6a755f;
 }
 footer a {
@@ -233,35 +237,35 @@ footer a:hover {
     padding: 0 20px;
   }
   .hero {
-    padding: 32px 0 38px;
+    padding: 20px 0 24px;
   }
   h1 {
-    font-size: 96px;
+    font-size: 72px;
     letter-spacing: -1.3px;
   }
   .twig-mark {
-    width: 100px;
-    height: 100px;
+    width: 64px;
+    height: 64px;
   }
   .tagline {
     font-size: 16px;
   }
   .onboard {
     gap: 12px;
-    padding: 11px 17px;
-    font-size: 17px;
-    min-height: 59px;
+    padding: 9px 15px;
+    font-size: 15px;
+    min-height: 46px;
     max-width: 100%;
   }
   .onboard > span {
-    min-width: 159px;
+    min-width: 144px;
   }
   .agent-marks {
-    width: 112px;
-    height: 28px;
+    width: 96px;
+    height: 24px;
   }
   .disk-chart {
-    padding: 23px 19px;
+    padding: 18px 16px;
   }
   .bar-row {
     grid-template-columns: 94px 1fr 65px;
@@ -274,13 +278,13 @@ footer a:hover {
     font-size: 14px;
   }
   .repo-heading > span {
-    font-size: 16px;
+    font-size: 14px;
   }
   h3 {
-    font-size: 17px;
+    font-size: 15px;
   }
   footer {
-    font-size: 14px;
+    font-size: 13px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

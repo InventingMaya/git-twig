@@ -15,6 +15,11 @@ test("onboards an agent and shows source-backed space savings", async ({
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("twig");
   await expect(page.getByText("git-worktrees for agents")).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+  if (test.info().project.name === "desktop") {
+    const height = await page.evaluate(() => document.documentElement.scrollHeight);
+    expect(height).toBeLessThanOrEqual(850);
+  }
   await page.screenshot({
     path: `test-results/landing-${test.info().project.name}.png`,
     fullPage: true,
