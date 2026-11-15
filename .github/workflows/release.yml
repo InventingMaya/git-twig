@@ -1,0 +1,60 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - run: |
+          python3 scripts/check-release-version.py "${GITHUB_REF_NAME#v}"
+          cargo test --workspace --locked
+          cargo build --release --locked -p git-twig --target ${{ matrix.target }}
+          mkdir -p package dist
+          cp target/${{ matrix.target }}/release/git-twig LICENSE README.md package/
+          tar -czf dist/git-twig-${GITHUB_REF_NAME}-${{ matrix.target }}.tar.gz -C package .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: dist/*
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - run: |
+          sha256sum dist/*.tar.gz > dist/SHA256SUMS
+          python3 scripts/release-formula.py "${GITHUB_REF_NAME#v}" dist > Formula/git-twig.rb
+          cp Formula/git-twig.rb dist/git-twig.rb
+          gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/git-twig.rb
+          git commit -m "chore: update Homebrew formula for $GITHUB_REF_NAME"
+          git push origin HEAD:main
+        env:
+          GH_TOKEN: ${{ github.token }}
