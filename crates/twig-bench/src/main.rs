@@ -32,6 +32,8 @@ struct Run {
     platform: String,
     cpu: String,
     twig_version: String,
+    candidate_sha256: String,
+    fixture_tree: String,
     config: Config,
     notes: Vec<String>,
     points: Vec<Point>,
@@ -132,7 +134,7 @@ fn main() -> Result<()> {
         config: config.clone(),
     });
     let mut run = Run {
-        schema_version: 1, generated_at_unix_ms: timestamp,
+        schema_version: 2, generated_at_unix_ms: timestamp,
         commit: capture(&repository, "git", &["rev-parse", "HEAD"]).unwrap_or_else(|_| "uncommitted".into()),
         dirty: !capture(&repository, "git", &["status", "--porcelain"])?.is_empty(),
         git_version: capture(&repository, "git", &["--version"])?,
@@ -140,20 +142,26 @@ fn main() -> Result<()> {
         platform: format!("{} {} {}", env::consts::OS, env::consts::ARCH, capture(&repository, "uname", &["-r"]) ?),
         cpu: capture(&repository, "sysctl", &["-n", "machdep.cpu.brand_string"]).unwrap_or_else(|_| "unknown".into()),
         twig_version: capture(&repository, fixture.twig.to_str().context("binary path is not UTF-8")?, &["--version"] )?,
+        candidate_sha256: capture(&repository, "shasum", &["-a", "256", fixture.twig.to_str().context("binary path")?])?.split_whitespace().next().context("missing binary digest")?.into(),
+        fixture_tree: String::new(),
         config: config.clone(), points: vec![], notes: vec![
             "Local real CLI benchmark, warm caches; no cold-cache claim. Baseline: installed git worktree add --detach; candidate: release git-twig add --detach.".into(),
             "One unmeasured warmup per backend. Backend order alternates per sample. Monotonic Instant measures CLI completion and first/warm/modified git status separately.".into(),
             "Full byte/mode-independent content verification after first/warm status. In-place write must leave source unchanged. Synthetic deterministic pseudo-random bytes; no compression/dedupe assumptions.".into(),
             "Every operation is retained on disk. Report exclusive physical storage as unmeasured. Logical fixture bytes are not APFS allocation.".into(),
-            "Each concurrency point joins real CLI subprocesses; fixture setup/verification are outside create timer but inside batch wall time. Batch throughput includes correctness/status overhead.".into(),
+            "All create/first-status/warm-status workers finish before any full-content verification or private-write check begins. Batch throughput excludes generator verification work, includes status calls.".into(),
             "Tail percentiles with few samples are descriptive only; errors or incorrect content block conclusions. No generator saturation claim at high concurrency.".into(),
         ],
     };
     save(&output, &run)?;
     seed(&fixture)?;
+    run.fixture_tree = capture(&fixture.source, "git", &["rev-parse", "HEAD^{tree}"])?;
+    save(&output, &run)?;
     eprintln!("fixtures retained: {}", fixture.root.display());
     for backend in ["git", "twig"] {
-        let result = operation(&fixture, backend, &format!("warmup-{backend}"));
+        let name = format!("warmup-{backend}");
+        let mut result = operation(&fixture, backend, &name);
+        verify_operation(&fixture, &name, &mut result);
         ensure!(result.correct, "warmup failed: {:?}", result.error);
     }
     for &concurrency in &config.concurrency {
@@ -182,11 +190,18 @@ fn main() -> Result<()> {
                         })
                     })
                     .collect();
-                let operations = handles
+                let mut operations = handles
                     .into_iter()
                     .map(|h| h.join().expect("benchmark worker panicked"))
                     .collect::<Vec<_>>();
                 let wall_ms = ms(start);
+                for (worker, result) in operations.iter_mut().enumerate() {
+                    verify_operation(
+                        &fixture,
+                        &format!("{backend}-c{concurrency}-s{sample}-w{worker}"),
+                        result,
+                    );
+                }
                 let failed = operations.iter().any(|op| !op.correct);
                 let point = Point {
                     backend: backend.into(),
@@ -318,6 +333,20 @@ fn measure(fixture: &Fixture, backend: &str, name: &str, result: &mut Operation)
         }
         ensure!(status.stdout.is_empty(), "new checkout is dirty");
     }
+    Ok(())
+}
+
+fn verify_operation(fixture: &Fixture, name: &str, result: &mut Operation) {
+    if result.error.is_some() {
+        return;
+    }
+    if let Err(error) = verify_files(fixture, name, result) {
+        result.error = Some(format!("{error:#}"));
+    }
+}
+
+fn verify_files(fixture: &Fixture, name: &str, result: &mut Operation) -> Result<()> {
+    let destination = fixture.root.join(name);
     for index in 0..fixture.config.files {
         let actual = fs::read(destination.join(filename(index)))?;
         ensure!(

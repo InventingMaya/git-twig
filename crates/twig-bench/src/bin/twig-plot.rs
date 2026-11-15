@@ -20,7 +20,10 @@ fn main() -> Result<()> {
             .context("usage: twig-plot bench/results/run.json")?,
     );
     let run: Value = serde_json::from_slice(&fs::read(&path)?)?;
-    ensure!(run["schemaVersion"] == 1, "unsupported result schema");
+    ensure!(
+        run["schemaVersion"] == 1 || run["schemaVersion"] == 2,
+        "unsupported result schema"
+    );
     let mut groups: BTreeMap<(u64, String), Samples> = BTreeMap::new();
     for point in run["points"].as_array().context("missing points")? {
         let key = (

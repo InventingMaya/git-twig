@@ -299,6 +299,40 @@ fn filters_and_sparse_checkouts_delegate() -> Result<()> {
 }
 
 #[test]
+fn line_ending_conversions_delegate() -> Result<()> {
+    let f = Fixture::new()?;
+    git(&f.source, &["config", "core.autocrlf", "true"])?;
+    let output = checked(f.add()?)?;
+    assert!(!String::from_utf8_lossy(&output.stderr).contains("APFS CoW:"));
+    assert_eq!(fs::read(f.destination().join("hello.txt"))?, b"hello\r\n");
+    clean(&f.destination())
+}
+
+#[test]
+fn branch_already_in_use_is_rejected_without_source_changes() -> Result<()> {
+    let f = Fixture::new()?;
+    assert!(
+        !f.twig(&["add", "-b", "main", "../feature"])?
+            .status
+            .success()
+    );
+    assert!(!f.destination().exists());
+    clean(&f.source)
+}
+
+#[test]
+fn relative_destination_from_subdirectory_is_resolved_correctly() -> Result<()> {
+    let f = Fixture::new()?;
+    fs::create_dir(f.source.join("nested"))?;
+    let output = checked(twig(
+        &f.source.join("nested"),
+        &["add", "--detach", "../../feature"],
+    )?)?;
+    native(&output);
+    clean(&f.destination())
+}
+
+#[test]
 fn concurrent_creators_do_not_overwrite_each_other() -> Result<()> {
     let f = Fixture::new()?;
     let a = f.source.clone();

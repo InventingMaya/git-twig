@@ -26,8 +26,11 @@ tail claims. Plot files and summary tables are generated from raw JSON only.
 First and warm status are timed before full byte verification. Each created file
 is verified, then an in-place write must leave the source unchanged and Git must
 detect the edit. On macOS the candidate must actually select CoW or the run fails.
-Batch throughput includes status and correctness overhead; do not confuse it with
-creation-only throughput. Warmup/fixture generation are not measured.
+In schema v2, all create/status workers join before full-content verification
+starts. Batch throughput includes status calls but excludes verification/generator
+work; do not confuse it with creation-only throughput. Schema v1 exploratory runs
+included verification in batch time and allowed verification CPU to contend with
+other creates. Keep them as exploratory data, not headline performance evidence. Warmup/fixture generation are not measured.
 Hardware is shared with other local apps; no cold-cache, production or exclusive
 physical-storage claim.
 
