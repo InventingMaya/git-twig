@@ -1,0 +1,7427 @@
+{
+  "schemaVersion": 2,
+  "filesystem": "host",
+  "suite": "real-apfs-cohort",
+  "generatedAtUnixMs": 1794742823766,
+  "commit": "acbbdaae7d1f241d60d98490c78415be7b564fe5",
+  "dirty": false,
+  "candidateSha256": "65efbfe49fac73fcf9f75a85366bc020f8a5dd62bf0baa7f1c5d1b3e26a92d50",
+  "gitVersion": "git version 2.56.0",
+  "platform": "macos aarch64 25.5.0",
+  "cpu": "Apple M1 Ultra",
+  "concurrency": 100,
+  "repeats": 3,
+  "notes": [
+    "Each backend/repeat gets a fresh, isolated 8-GiB sparse APFS image. Seed uses git clone --shared --no-checkout plus explicit pinned-commit checkout. Original repositories and object stores are read-only inputs; seed history uses alternates outside image.",
+    "One warmup per backend removed before baseline space snapshot. Global/system Git config and hooks disabled for fixture setup; no ignored/untracked dependencies or build output copied. Backend order alternates by repeat.",
+    "A barrier releases all CLI workers simultaneously. Create wall time includes thread startup/barrier/join, per-operation latency starts at barrier release. No verification/generation competes with creates. No retries: failures are data.",
+    "First git status is measured sequentially after all creates and the initial space snapshot. Full byte/symlink/executable verification follows each first status; its CPU is outside creation timing. A first-status sum is not a concurrent-status wall time.",
+    "Allocated space is total minus free blocks from statvfs on the isolated APFS filesystem, sampled after sync until stable (or marked unstable). This includes working files, indexes, retained staging and filesystem metadata, not logical size/du/st_blocks. Host sparse-image allocation is not the metric.",
+    "After initial verification/space measurement, one byte in one regular file per successful checkout is changed in place. Additional filesystem allocation is sampled; seed file must remain unchanged. Images are detached and deleted after saving each cohort; no benchmark input paths or source file contents are serialized.",
+    "Local warm-cache results. An 8-GiB virtual disk is a controlled filesystem, not a claim about native host-volume maximum throughput. Report failures alongside latency and allocation; do not compare unequal successful counts as identical capacity.",
+    "Filesystem=host overrides image setup/cleanup notes: fresh cohort directories and warmup worktrees are retained, no allocation snapshots/deltas are reported, no sync is forced. Use isolated-image runs for space comparisons. Input revisions can be pinned to match earlier image runs."
+  ],
+  "cohorts": [
+    {
+      "repository": "twig",
+      "sourceCommit": "96c43950e4c0d8524de4ad53157c136eb222d39c",
+      "sourceTree": "efa8b786a16488976f20b96e63a2417d1ce7bf07",
+      "backend": "git",
+      "repeat": 0,
+      "trackedFiles": 45,
+      "logicalBytesPerWorktree": 388029,
+      "createWallMs": 4899.82975,
+      "createsPerSecond": 20.00069492210418,
+      "statusAndVerificationWallMs": 1807.068292,
+      "succeeded": 98,
+      "failed": 2,
+      "verifiedFiles": 4410,
+      "sourceUnchanged": true,
+      "before": null,
+      "afterCreate": null,
+      "afterStatus": null,
+      "afterPrivateWrites": null,
+      "growthAfterCreateBytes": null,
+      "growthAfterStatusBytes": null,
+      "privateWriteGrowthBytes": null,
+      "operations": [
+        {
+          "worker": 0,
+          "createMs": 4774.213583,
+          "firstStatusMs": 16.627083000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 1,
+          "createMs": 4850.82175,
+          "firstStatusMs": 16.809375000000003,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 2,
+          "createMs": 4809.7994579999995,
+          "firstStatusMs": 15.564416,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 3,
+          "createMs": 4820.000291,
+          "firstStatusMs": 15.913165999999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 4,
+          "createMs": 1655.7511670000001,
+          "firstStatusMs": 16.405124999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 5,
+          "createMs": 4778.243916,
+          "firstStatusMs": 15.457500000000001,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 6,
+          "createMs": 4739.80725,
+          "firstStatusMs": 16.452959,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 7,
+          "createMs": 4787.562875,
+          "firstStatusMs": 14.980625,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 8,
+          "createMs": 4770.465208,
+          "firstStatusMs": 16.574167,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 9,
+          "createMs": 243.072416,
+          "firstStatusMs": 18.293416999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 10,
+          "createMs": 4878.11975,
+          "firstStatusMs": 15.632083000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 11,
+          "createMs": 4814.788334,
+          "firstStatusMs": 16.266666999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 12,
+          "createMs": 788.4270829999999,
+          "firstStatusMs": 18.084459,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 13,
+          "createMs": 1575.646375,
+          "firstStatusMs": 20.952667,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 14,
+          "createMs": 1565.716042,
+          "firstStatusMs": 16.497083,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 15,
+          "createMs": 4767.249541,
+          "firstStatusMs": 15.568416,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 16,
+          "createMs": 4793.3977079999995,
+          "firstStatusMs": 15.237499999999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 17,
+          "createMs": 527.234125,
+          "firstStatusMs": 17.034791000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 18,
+          "createMs": 1632.823042,
+          "firstStatusMs": 17.043458,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 19,
+          "createMs": 1268.207917,
+          "firstStatusMs": 14.869916,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 20,
+          "createMs": 516.553666,
+          "firstStatusMs": 16.542416,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 21,
+          "createMs": 650.6985,
+          "firstStatusMs": 16.85675,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 22,
+          "createMs": 4768.844709,
+          "firstStatusMs": 17.113500000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 23,
+          "createMs": 1110.969166,
+          "firstStatusMs": 16.593833,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 24,
+          "createMs": 803.3574169999999,
+          "firstStatusMs": 17.618000000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 25,
+          "createMs": 624.0142079999999,
+          "firstStatusMs": 19.632875000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 26,
+          "createMs": 4793.163500000001,
+          "firstStatusMs": 19.858084,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 27,
+          "createMs": 4770.518499999999,
+          "firstStatusMs": 17.289208000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 28,
+          "createMs": 645.7023330000001,
+          "firstStatusMs": 20.876458,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 29,
+          "createMs": 4852.046209,
+          "firstStatusMs": 17.475125000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 30,
+          "createMs": 558.097,
+          "firstStatusMs": 18.188875,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 31,
+          "createMs": 1772.260417,
+          "firstStatusMs": 17.601125,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 32,
+          "createMs": 4794.581416999999,
+          "firstStatusMs": 16.843583,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 33,
+          "createMs": 4774.570833000001,
+          "firstStatusMs": 16.624,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 34,
+          "createMs": 76.984041,
+          "firstStatusMs": null,
+          "exitCode": 128,
+          "nativeCow": false,
+          "verified": false,
+          "error": "Preparing worktree (detached HEAD 96c4395)\nfatal: failed to read .git/worktrees/w-9/commondir: Undefined error: 0\n"
+        },
+        {
+          "worker": 35,
+          "createMs": 4777.397333,
+          "firstStatusMs": 15.874374999999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 36,
+          "createMs": 4793.2480829999995,
+          "firstStatusMs": 18.015334,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 37,
+          "createMs": 4804.72725,
+          "firstStatusMs": 16.870417,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 38,
+          "createMs": 4897.196375,
+          "firstStatusMs": 17.690542,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 39,
+          "createMs": 4727.461458,
+          "firstStatusMs": 16.57025,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 40,
+          "createMs": 4600.448917,
+          "firstStatusMs": 17.597208,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 41,
+          "createMs": 4830.653917000001,
+          "firstStatusMs": 18.077167000000003,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 42,
+          "createMs": 4897.052458,
+          "firstStatusMs": 17.984750000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 43,
+          "createMs": 1380.821208,
+          "firstStatusMs": 16.5505,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 44,
+          "createMs": 4791.410084,
+          "firstStatusMs": 18.032458000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 45,
+          "createMs": 4818.573375,
+          "firstStatusMs": 24.831625,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 46,
+          "createMs": 3031.161208,
+          "firstStatusMs": 16.718666,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 47,
+          "createMs": 4838.112875,
+          "firstStatusMs": 17.246375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 48,
+          "createMs": 4775.863709,
+          "firstStatusMs": 16.652292,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 49,
+          "createMs": 2072.9370409999997,
+          "firstStatusMs": 19.540166000000003,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 50,
+          "createMs": 4792.999375,
+          "firstStatusMs": 16.863916,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 51,
+          "createMs": 4817.85875,
+          "firstStatusMs": 15.610375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 52,
+          "createMs": 4591.1873749999995,
+          "firstStatusMs": 15.892415999999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 53,
+          "createMs": 3888.7965,
+          "firstStatusMs": 15.377542,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 54,
+          "createMs": 1667.888584,
+          "firstStatusMs": 17.965166,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 55,
+          "createMs": 4769.091875,
+          "firstStatusMs": 19.008416,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 56,
+          "createMs": 4007.511958,
+          "firstStatusMs": 23.292958,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 57,
+          "createMs": 4815.360125,
+          "firstStatusMs": 15.643082999999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 58,
+          "createMs": 4438.447625,
+          "firstStatusMs": 16.496375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 59,
+          "createMs": 4216.602167,
+          "firstStatusMs": 15.909458,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 60,
+          "createMs": 1613.575084,
+          "firstStatusMs": 20.063542,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 61,
+          "createMs": 4785.3604159999995,
+          "firstStatusMs": 17.650375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 62,
+          "createMs": 1893.371584,
+          "firstStatusMs": 17.639708,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 63,
+          "createMs": 4732.973,
+          "firstStatusMs": 17.230375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 64,
+          "createMs": 4801.3134580000005,
+          "firstStatusMs": 18.274292000000003,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 65,
+          "createMs": 4802.258042,
+          "firstStatusMs": 16.67325,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 66,
+          "createMs": 4776.370667,
+          "firstStatusMs": 18.154958999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 67,
+          "createMs": 4803.3514589999995,
+          "firstStatusMs": 19.054624999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 68,
+          "createMs": 3280.6632919999997,
+          "firstStatusMs": 15.92675,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 69,
+          "createMs": 4827.775042,
+          "firstStatusMs": 16.814208,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 70,
+          "createMs": 1789.641083,
+          "firstStatusMs": 18.892708000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 71,
+          "createMs": 4768.9935,
+          "firstStatusMs": 16.659125,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 72,
+          "createMs": 4779.936667,
+          "firstStatusMs": 17.346125,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 73,
+          "createMs": 4783.867292,
+          "firstStatusMs": 16.016125,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 74,
+          "createMs": 598.513625,
+          "firstStatusMs": 17.744458,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 75,
+          "createMs": 3122.285833,
+          "firstStatusMs": 16.32675,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 76,
+          "createMs": 2016.6953749999998,
+          "firstStatusMs": 16.67275,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 77,
+          "createMs": 1905.828417,
+          "firstStatusMs": 17.200166,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 78,
+          "createMs": 2001.763917,
+          "firstStatusMs": 16.570208,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 79,
+          "createMs": 4783.510167,
+          "firstStatusMs": 15.346208,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 80,
+          "createMs": 1720.768292,
+          "firstStatusMs": 17.288792,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 81,
+          "createMs": 4437.804917,
+          "firstStatusMs": 14.563708,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 82,
+          "createMs": 4765.725125,
+          "firstStatusMs": 16.666957999999997,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 83,
+          "createMs": 4775.504166,
+          "firstStatusMs": 14.988833,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 84,
+          "createMs": 4812.623375,
+          "firstStatusMs": 15.675374999999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 85,
+          "createMs": 4095.3930410000003,
+          "firstStatusMs": 14.916708,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 86,
+          "createMs": 3713.6473340000002,
+          "firstStatusMs": 17.567459,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 87,
+          "createMs": 208.222292,
+          "firstStatusMs": null,
+          "exitCode": 128,
+          "nativeCow": false,
+          "verified": false,
+          "error": "Preparing worktree (detached HEAD 96c4395)\nfatal: failed to read .git/worktrees/w-19/commondir: Undefined error: 0\n"
+        },
+        {
+          "worker": 88,
+          "createMs": 1321.648375,
+          "firstStatusMs": 16.794542,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 89,
+          "createMs": 4072.9795,
+          "firstStatusMs": 17.296959,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 90,
+          "createMs": 4599.541042,
+          "firstStatusMs": 18.149833,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 91,
+          "createMs": 4778.71925,
+          "firstStatusMs": 15.563708,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 92,
+          "createMs": 4815.464999999999,
+          "firstStatusMs": 16.876917000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 93,
+          "createMs": 4734.576,
+          "firstStatusMs": 14.979209,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 94,
+          "createMs": 4838.865708,
+          "firstStatusMs": 16.046041,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 95,
+          "createMs": 1981.7783749999999,
+          "firstStatusMs": 16.063958,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 96,
+          "createMs": 1713.062125,
+          "firstStatusMs": 25.950542,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 97,
+          "createMs": 4766.177417,
+          "firstStatusMs": 17.014292,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 98,
+          "createMs": 4804.422708,
+          "firstStatusMs": 15.644667000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 99,
+          "createMs": 4799.811167,
+          "firstStatusMs": 16.197583,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "repository": "twig",
+      "sourceCommit": "96c43950e4c0d8524de4ad53157c136eb222d39c",
+      "sourceTree": "efa8b786a16488976f20b96e63a2417d1ce7bf07",
+      "backend": "twig",
+      "repeat": 0,
+      "trackedFiles": 45,
+      "logicalBytesPerWorktree": 388029,
+      "createWallMs": 10107.679624999999,
+      "createsPerSecond": 9.893467512826913,
+      "statusAndVerificationWallMs": 1907.3737500000002,
+      "succeeded": 100,
+      "failed": 0,
+      "verifiedFiles": 4500,
+      "sourceUnchanged": true,
+      "before": null,
+      "afterCreate": null,
+      "afterStatus": null,
+      "afterPrivateWrites": null,
+      "growthAfterCreateBytes": null,
+      "growthAfterStatusBytes": null,
+      "privateWriteGrowthBytes": null,
+      "operations": [
+        {
+          "worker": 0,
+          "createMs": 9817.349375,
+          "firstStatusMs": 17.652791,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 1,
+          "createMs": 8684.784209,
+          "firstStatusMs": 18.648999999999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 2,
+          "createMs": 6635.158958,
+          "firstStatusMs": 17.093416,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 3,
+          "createMs": 8459.630374999999,
+          "firstStatusMs": 20.835208,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 4,
+          "createMs": 8179.708916999999,
+          "firstStatusMs": 17.418875,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 5,
+          "createMs": 9346.630458,
+          "firstStatusMs": 17.247834,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 6,
+          "createMs": 6826.818875,
+          "firstStatusMs": 20.592709,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 7,
+          "createMs": 3780.5378750000004,
+          "firstStatusMs": 18.730667,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 8,
+          "createMs": 4523.228375000001,
+          "firstStatusMs": 17.813209,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 9,
+          "createMs": 4468.516792,
+          "firstStatusMs": 18.257792,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 10,
+          "createMs": 8390.138459,
+          "firstStatusMs": 16.738,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 11,
+          "createMs": 3885.960834,
+          "firstStatusMs": 16.971375000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 12,
+          "createMs": 8617.051042,
+          "firstStatusMs": 16.854291,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 13,
+          "createMs": 5066.429375000001,
+          "firstStatusMs": 20.243875000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 14,
+          "createMs": 5575.31,
+          "firstStatusMs": 16.543665999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 15,
+          "createMs": 9346.718375,
+          "firstStatusMs": 19.749208,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 16,
+          "createMs": 3673.378542,
+          "firstStatusMs": 17.353542,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 17,
+          "createMs": 3941.785417,
+          "firstStatusMs": 17.893334,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 18,
+          "createMs": 3619.065791,
+          "firstStatusMs": 18.018417,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 19,
+          "createMs": 5940.525167,
+          "firstStatusMs": 17.032875,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 20,
+          "createMs": 3565.4705,
+          "firstStatusMs": 16.799291,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 21,
+          "createMs": 9273.8815,
+          "firstStatusMs": 16.191875000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 22,
+          "createMs": 7905.5667920000005,
+          "firstStatusMs": 16.42425,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 23,
+          "createMs": 5632.199124999999,
+          "firstStatusMs": 16.729750000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 24,
+          "createMs": 5129.097834,
+          "firstStatusMs": 15.917582999999999,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 25,
+          "createMs": 4647.660667,
+          "firstStatusMs": 16.363292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 26,
+          "createMs": 4778.969916999999,
+          "firstStatusMs": 16.041957999999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 27,
+          "createMs": 5448.566916,
+          "firstStatusMs": 15.985916,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 28,
+          "createMs": 7388.24425,
+          "firstStatusMs": 19.892291999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 29,
+          "createMs": 4712.243833,
+          "firstStatusMs": 16.501125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 30,
+          "createMs": 4891.39975,
+          "firstStatusMs": 15.919875,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 31,
+          "createMs": 4056.3287499999997,
+          "firstStatusMs": 15.29675,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 32,
+          "createMs": 7468.971125,
+          "firstStatusMs": 16.990709,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 33,
+          "createMs": 7236.926917,
+          "firstStatusMs": 18.529542,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 34,
+          "createMs": 7100.736834,
+          "firstStatusMs": 25.041292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 35,
+          "createMs": 9611.938291999999,
+          "firstStatusMs": 15.672541000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 36,
+          "createMs": 7683.058667,
+          "firstStatusMs": 15.20375,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 37,
+          "createMs": 3830.0712089999997,
+          "firstStatusMs": 16.77675,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 38,
+          "createMs": 6697.876459,
+          "firstStatusMs": 16.042,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 39,
+          "createMs": 9022.936833,
+          "firstStatusMs": 17.242082999999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 40,
+          "createMs": 7311.463833000001,
+          "firstStatusMs": 16.342167,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 41,
+          "createMs": 6892.704375,
+          "firstStatusMs": 16.0985,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 42,
+          "createMs": 6367.539833000001,
+          "firstStatusMs": 16.026542000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 43,
+          "createMs": 7537.469416999999,
+          "firstStatusMs": 17.141292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 44,
+          "createMs": 8110.718583000001,
+          "firstStatusMs": 17.210916,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 45,
+          "createMs": 5327.111290999999,
+          "firstStatusMs": 16.650416,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 46,
+          "createMs": 9409.560084,
+          "firstStatusMs": 16.923875000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 47,
+          "createMs": 5695.183209,
+          "firstStatusMs": 18.571709,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 48,
+          "createMs": 5187.891417000001,
+          "firstStatusMs": 16.491916999999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 49,
+          "createMs": 6433.857,
+          "firstStatusMs": 16.56575,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 50,
+          "createMs": 7168.933459,
+          "firstStatusMs": 16.457,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 51,
+          "createMs": 7975.027416,
+          "firstStatusMs": 16.642625000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 52,
+          "createMs": 6230.479667,
+          "firstStatusMs": 15.90175,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 53,
+          "createMs": 8881.187375,
+          "firstStatusMs": 16.7215,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 54,
+          "createMs": 4351.097083,
+          "firstStatusMs": 15.976583,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 55,
+          "createMs": 7826.159292,
+          "firstStatusMs": 16.712958,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 56,
+          "createMs": 4169.268083000001,
+          "firstStatusMs": 18.784959,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 57,
+          "createMs": 8816.275042000001,
+          "firstStatusMs": 19.186667,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 58,
+          "createMs": 8042.064333000001,
+          "firstStatusMs": 15.460834,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 59,
+          "createMs": 6764.18725,
+          "firstStatusMs": 15.816042,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 60,
+          "createMs": 8747.615542,
+          "firstStatusMs": 18.014042,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 61,
+          "createMs": 9678.352125,
+          "firstStatusMs": 17.866125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 62,
+          "createMs": 4113.539291,
+          "firstStatusMs": 16.710875,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 63,
+          "createMs": 6295.770375,
+          "firstStatusMs": 16.479917,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 64,
+          "createMs": 5757.222750000001,
+          "firstStatusMs": 17.281708,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 65,
+          "createMs": 7035.032458,
+          "firstStatusMs": 16.973334,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 66,
+          "createMs": 4947.506125,
+          "firstStatusMs": 16.506667,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 67,
+          "createMs": 5518.274458000001,
+          "firstStatusMs": 16.222083,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 68,
+          "createMs": 6966.654917,
+          "firstStatusMs": 16.659708,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 69,
+          "createMs": 3996.571333,
+          "firstStatusMs": 18.328625000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 70,
+          "createMs": 9543.229792,
+          "firstStatusMs": 21.346166,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 71,
+          "createMs": 10036.653624999999,
+          "firstStatusMs": 19.14125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 72,
+          "createMs": 5819.664667,
+          "firstStatusMs": 21.78975,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 73,
+          "createMs": 5386.967584,
+          "firstStatusMs": 20.052792,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 74,
+          "createMs": 9117.750125,
+          "firstStatusMs": 20.627625000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 75,
+          "createMs": 9476.463667,
+          "firstStatusMs": 18.944166,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 76,
+          "createMs": 7611.596334,
+          "firstStatusMs": 18.853792000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 77,
+          "createMs": 4583.972333000001,
+          "firstStatusMs": 20.708625,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 78,
+          "createMs": 5878.601542,
+          "firstStatusMs": 20.864292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 79,
+          "createMs": 9187.963082999999,
+          "firstStatusMs": 17.487667,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 80,
+          "createMs": 8946.958125,
+          "firstStatusMs": 16.689875,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 81,
+          "createMs": 7755.854,
+          "firstStatusMs": 18.688375,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 82,
+          "createMs": 8318.367583000001,
+          "firstStatusMs": 18.482625,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 83,
+          "createMs": 6154.5005,
+          "firstStatusMs": 18.315375,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 84,
+          "createMs": 4292.407416999999,
+          "firstStatusMs": 17.91975,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 85,
+          "createMs": 4835.406625,
+          "firstStatusMs": 23.517875,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 86,
+          "createMs": 6075.368792,
+          "firstStatusMs": 17.683833,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 87,
+          "createMs": 9890.005542,
+          "firstStatusMs": 18.319958,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 88,
+          "createMs": 8248.743042,
+          "firstStatusMs": 17.1825,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 89,
+          "createMs": 8523.01375,
+          "firstStatusMs": 17.764417,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 90,
+          "createMs": 9750.116584000001,
+          "firstStatusMs": 18.538542000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 91,
+          "createMs": 9963.660666,
+          "firstStatusMs": 17.058417,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 92,
+          "createMs": 10104.31,
+          "firstStatusMs": 16.9435,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 93,
+          "createMs": 6568.966292,
+          "firstStatusMs": 20.452708,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 94,
+          "createMs": 5003.89875,
+          "firstStatusMs": 19.375083,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 95,
+          "createMs": 4406.930834,
+          "firstStatusMs": 20.009916999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 96,
+          "createMs": 3725.5015,
+          "firstStatusMs": 20.967458,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 97,
+          "createMs": 6501.409625,
+          "firstStatusMs": 20.866208,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 98,
+          "createMs": 4228.887708,
+          "firstStatusMs": 22.718042,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 99,
+          "createMs": 6005.620208,
+          "firstStatusMs": 21.247041000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "repository": "twig",
+      "sourceCommit": "96c43950e4c0d8524de4ad53157c136eb222d39c",
+      "sourceTree": "efa8b786a16488976f20b96e63a2417d1ce7bf07",
+      "backend": "twig",
+      "repeat": 1,
+      "trackedFiles": 45,
+      "logicalBytesPerWorktree": 388029,
+      "createWallMs": 10129.770375,
+      "createsPerSecond": 9.871892086201411,
+      "statusAndVerificationWallMs": 1975.478375,
+      "succeeded": 100,
+      "failed": 0,
+      "verifiedFiles": 4500,
+      "sourceUnchanged": true,
+      "before": null,
+      "afterCreate": null,
+      "afterStatus": null,
+      "afterPrivateWrites": null,
+      "growthAfterCreateBytes": null,
+      "growthAfterStatusBytes": null,
+      "privateWriteGrowthBytes": null,
+      "operations": [
+        {
+          "worker": 0,
+          "createMs": 5301.105208,
+          "firstStatusMs": 17.309292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 1,
+          "createMs": 4470.484042,
+          "firstStatusMs": 33.868458,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 2,
+          "createMs": 6103.811458,
+          "firstStatusMs": 18.842125000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 3,
+          "createMs": 3994.545375,
+          "firstStatusMs": 18.822708000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 4,
+          "createMs": 7820.5572090000005,
+          "firstStatusMs": 21.141208000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 5,
+          "createMs": 4769.460167,
+          "firstStatusMs": 18.4115,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 6,
+          "createMs": 6103.757,
+          "firstStatusMs": 18.327541999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 7,
+          "createMs": 7883.474749999999,
+          "firstStatusMs": 17.278041,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 8,
+          "createMs": 6556.047375,
+          "firstStatusMs": 17.481292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 9,
+          "createMs": 9464.663708,
+          "firstStatusMs": 21.032584,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 10,
+          "createMs": 4289.111875,
+          "firstStatusMs": 21.438792000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 11,
+          "createMs": 6165.722291,
+          "firstStatusMs": 19.318208,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 12,
+          "createMs": 8698.375167,
+          "firstStatusMs": 19.410375000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 13,
+          "createMs": 5357.397916,
+          "firstStatusMs": 19.957666,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 14,
+          "createMs": 3868.850625,
+          "firstStatusMs": 18.710625,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 15,
+          "createMs": 7553.884334,
+          "firstStatusMs": 18.021124999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 16,
+          "createMs": 7619.845167,
+          "firstStatusMs": 19.045292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 17,
+          "createMs": 8287.246041999999,
+          "firstStatusMs": 18.410542,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 18,
+          "createMs": 5796.188958,
+          "firstStatusMs": 18.629791,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 19,
+          "createMs": 6420.085334,
+          "firstStatusMs": 18.621458,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 20,
+          "createMs": 5854.333667,
+          "firstStatusMs": 20.271708,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 21,
+          "createMs": 5477.489459,
+          "firstStatusMs": 17.813333,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 22,
+          "createMs": 7227.981792,
+          "firstStatusMs": 16.977125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 23,
+          "createMs": 9388.360166,
+          "firstStatusMs": 21.136792,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 24,
+          "createMs": 7688.006916,
+          "firstStatusMs": 18.645166,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 25,
+          "createMs": 9904.652792,
+          "firstStatusMs": 18.258541,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 26,
+          "createMs": 6974.139708,
+          "firstStatusMs": 18.182875000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 27,
+          "createMs": 9684.7355,
+          "firstStatusMs": 17.716833,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 28,
+          "createMs": 5126.6725,
+          "firstStatusMs": 18.209,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 29,
+          "createMs": 7421.1900829999995,
+          "firstStatusMs": 29.66225,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 30,
+          "createMs": 7357.679791,
+          "firstStatusMs": 22.810582999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 31,
+          "createMs": 9986.16825,
+          "firstStatusMs": 20.209875,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 32,
+          "createMs": 3694.178333,
+          "firstStatusMs": 18.917042,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 33,
+          "createMs": 8559.310375000001,
+          "firstStatusMs": 18.234292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 34,
+          "createMs": 6225.503,
+          "firstStatusMs": 18.967292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 35,
+          "createMs": 4409.041375,
+          "firstStatusMs": 21.034708,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 36,
+          "createMs": 5005.267500000001,
+          "firstStatusMs": 18.202875,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 37,
+          "createMs": 4528.434042,
+          "firstStatusMs": 18.138375000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 38,
+          "createMs": 7948.2145,
+          "firstStatusMs": 18.732916,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 39,
+          "createMs": 8153.429334,
+          "firstStatusMs": 17.629708,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 40,
+          "createMs": 4825.010791000001,
+          "firstStatusMs": 17.258333,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 41,
+          "createMs": 6225.5205829999995,
+          "firstStatusMs": 17.936332999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 42,
+          "createMs": 8559.234542,
+          "firstStatusMs": 18.545416,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 43,
+          "createMs": 6043.688209,
+          "firstStatusMs": 20.196542,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 44,
+          "createMs": 7037.426,
+          "firstStatusMs": 18.405125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 45,
+          "createMs": 6816.685332999999,
+          "firstStatusMs": 17.957459,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 46,
+          "createMs": 3922.461208,
+          "firstStatusMs": 17.488166,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 47,
+          "createMs": 9232.1905,
+          "firstStatusMs": 17.789666,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 48,
+          "createMs": 4586.3463329999995,
+          "firstStatusMs": 16.554040999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 49,
+          "createMs": 5658.302250000001,
+          "firstStatusMs": 17.755167,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 50,
+          "createMs": 10056.432375,
+          "firstStatusMs": 16.941000000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 51,
+          "createMs": 9002.417917,
+          "firstStatusMs": 18.749667000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 52,
+          "createMs": 4706.213416,
+          "firstStatusMs": 17.607042,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 53,
+          "createMs": 4112.623917,
+          "firstStatusMs": 17.613958,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 54,
+          "createMs": 7486.2077500000005,
+          "firstStatusMs": 17.693832999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 55,
+          "createMs": 8153.054292,
+          "firstStatusMs": 17.163833,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 56,
+          "createMs": 5537.532458000001,
+          "firstStatusMs": 16.046375,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 57,
+          "createMs": 8086.553833,
+          "firstStatusMs": 18.297958,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 58,
+          "createMs": 5416.564083,
+          "firstStatusMs": 17.830166000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 59,
+          "createMs": 9830.809958,
+          "firstStatusMs": 18.279208,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 60,
+          "createMs": 6622.035166,
+          "firstStatusMs": 17.393875,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 61,
+          "createMs": 9305.113959,
+          "firstStatusMs": 17.885542,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 62,
+          "createMs": 10056.264833000001,
+          "firstStatusMs": 17.763958,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 63,
+          "createMs": 6351.783208,
+          "firstStatusMs": 17.157833,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 64,
+          "createMs": 5597.2726250000005,
+          "firstStatusMs": 16.896,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 65,
+          "createMs": 10126.990041,
+          "firstStatusMs": 17.515334,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 66,
+          "createMs": 8769.977417,
+          "firstStatusMs": 17.264167,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 67,
+          "createMs": 4348.6010830000005,
+          "firstStatusMs": 17.5995,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 68,
+          "createMs": 7756.023499999999,
+          "firstStatusMs": 19.474124999999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 69,
+          "createMs": 5242.215625,
+          "firstStatusMs": 18.088459,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 70,
+          "createMs": 6688.035542,
+          "firstStatusMs": 17.723291,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 71,
+          "createMs": 3808.526167,
+          "firstStatusMs": 17.140458000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 72,
+          "createMs": 9076.936,
+          "firstStatusMs": 19.293542,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 73,
+          "createMs": 8015.018459,
+          "firstStatusMs": 16.74925,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 74,
+          "createMs": 4231.708917,
+          "firstStatusMs": 17.249125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 75,
+          "createMs": 3754.954,
+          "firstStatusMs": 18.030375000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 76,
+          "createMs": 9760.004084,
+          "firstStatusMs": 16.647083,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 77,
+          "createMs": 9540.397041,
+          "firstStatusMs": 19.643125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 78,
+          "createMs": 7165.384999999999,
+          "firstStatusMs": 17.568459,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 79,
+          "createMs": 8837.79575,
+          "firstStatusMs": 17.923417,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 80,
+          "createMs": 6284.094167,
+          "firstStatusMs": 24.250708,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 81,
+          "createMs": 7101.244084,
+          "firstStatusMs": 18.614917000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 82,
+          "createMs": 4173.587334,
+          "firstStatusMs": 16.628417,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 83,
+          "createMs": 4057.6782920000005,
+          "firstStatusMs": 19.469041999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 84,
+          "createMs": 9156.662958,
+          "firstStatusMs": 17.720334,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 85,
+          "createMs": 8221.664834000001,
+          "firstStatusMs": 17.973291999999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 86,
+          "createMs": 9611.151375000001,
+          "firstStatusMs": 19.517791,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 87,
+          "createMs": 5723.165959,
+          "firstStatusMs": 19.063332999999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 88,
+          "createMs": 4945.815542,
+          "firstStatusMs": 18.634625,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 89,
+          "createMs": 7291.921709,
+          "firstStatusMs": 18.982540999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 90,
+          "createMs": 6752.256625,
+          "firstStatusMs": 17.348958,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 91,
+          "createMs": 4884.930625,
+          "firstStatusMs": 18.081500000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 92,
+          "createMs": 8625.767917,
+          "firstStatusMs": 16.805332999999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 93,
+          "createMs": 8911.039625000001,
+          "firstStatusMs": 17.633791,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 94,
+          "createMs": 8421.173917,
+          "firstStatusMs": 18.104459,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 95,
+          "createMs": 9830.430166999999,
+          "firstStatusMs": 17.210917,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 96,
+          "createMs": 8489.935833000001,
+          "firstStatusMs": 16.574584,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 97,
+          "createMs": 6486.860250000001,
+          "firstStatusMs": 17.084042,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 98,
+          "createMs": 9001.870084,
+          "firstStatusMs": 17.338583,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 99,
+          "createMs": 3637.08025,
+          "firstStatusMs": 18.821667,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "repository": "twig",
+      "sourceCommit": "96c43950e4c0d8524de4ad53157c136eb222d39c",
+      "sourceTree": "efa8b786a16488976f20b96e63a2417d1ce7bf07",
+      "backend": "git",
+      "repeat": 1,
+      "trackedFiles": 45,
+      "logicalBytesPerWorktree": 388029,
+      "createWallMs": 4579.49225,
+      "createsPerSecond": 21.836481981162866,
+      "statusAndVerificationWallMs": 1917.854291,
+      "succeeded": 100,
+      "failed": 0,
+      "verifiedFiles": 4500,
+      "sourceUnchanged": true,
+      "before": null,
+      "afterCreate": null,
+      "afterStatus": null,
+      "afterPrivateWrites": null,
+      "growthAfterCreateBytes": null,
+      "growthAfterStatusBytes": null,
+      "privateWriteGrowthBytes": null,
+      "operations": [
+        {
+          "worker": 0,
+          "createMs": 493.83125,
+          "firstStatusMs": 17.547625,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 1,
+          "createMs": 4401.4854589999995,
+          "firstStatusMs": 19.606375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 2,
+          "createMs": 319.694459,
+          "firstStatusMs": 18.027084,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 3,
+          "createMs": 203.295625,
+          "firstStatusMs": 15.725042000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 4,
+          "createMs": 390.743334,
+          "firstStatusMs": 18.059416,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 5,
+          "createMs": 4154.792792,
+          "firstStatusMs": 15.73875,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 6,
+          "createMs": 4354.428708,
+          "firstStatusMs": 17.462791,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 7,
+          "createMs": 4020.32625,
+          "firstStatusMs": 14.9255,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 8,
+          "createMs": 4409.20975,
+          "firstStatusMs": 16.060458,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 9,
+          "createMs": 4403.1590830000005,
+          "firstStatusMs": 15.716750000000001,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 10,
+          "createMs": 220.761583,
+          "firstStatusMs": 19.002208,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 11,
+          "createMs": 4425.717417,
+          "firstStatusMs": 16.870625,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 12,
+          "createMs": 1488.3790829999998,
+          "firstStatusMs": 18.003417000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 13,
+          "createMs": 1733.3635,
+          "firstStatusMs": 17.216874999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 14,
+          "createMs": 321.992416,
+          "firstStatusMs": 18.508208000000003,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 15,
+          "createMs": 410.27266699999996,
+          "firstStatusMs": 17.394333000000003,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 16,
+          "createMs": 4381.9065,
+          "firstStatusMs": 16.7135,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 17,
+          "createMs": 4433.208416,
+          "firstStatusMs": 15.254,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 18,
+          "createMs": 4403.760459,
+          "firstStatusMs": 15.044666,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 19,
+          "createMs": 4412.2006249999995,
+          "firstStatusMs": 16.476208999999997,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 20,
+          "createMs": 4414.007375,
+          "firstStatusMs": 16.981291,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 21,
+          "createMs": 4411.3168749999995,
+          "firstStatusMs": 16.167708,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 22,
+          "createMs": 4405.38375,
+          "firstStatusMs": 14.832791,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 23,
+          "createMs": 4417.05125,
+          "firstStatusMs": 15.366167,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 24,
+          "createMs": 4472.834208,
+          "firstStatusMs": 16.293125,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 25,
+          "createMs": 4406.307583,
+          "firstStatusMs": 15.043666,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 26,
+          "createMs": 4484.775458,
+          "firstStatusMs": 15.654582999999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 27,
+          "createMs": 4418.329457999999,
+          "firstStatusMs": 17.062625,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 28,
+          "createMs": 4408.0331670000005,
+          "firstStatusMs": 17.455083,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 29,
+          "createMs": 1568.1003329999999,
+          "firstStatusMs": 18.084334000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 30,
+          "createMs": 1595.773416,
+          "firstStatusMs": 18.034666,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 31,
+          "createMs": 397.0005,
+          "firstStatusMs": 18.496833000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 32,
+          "createMs": 490.819875,
+          "firstStatusMs": 17.722709,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 33,
+          "createMs": 4432.040083000001,
+          "firstStatusMs": 15.8275,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 34,
+          "createMs": 492.095,
+          "firstStatusMs": 17.707625,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 35,
+          "createMs": 1732.414959,
+          "firstStatusMs": 24.860958999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 36,
+          "createMs": 3917.411334,
+          "firstStatusMs": 19.159166,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 37,
+          "createMs": 4402.785667,
+          "firstStatusMs": 16.28325,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 38,
+          "createMs": 4398.332292,
+          "firstStatusMs": 17.731375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 39,
+          "createMs": 478.59212499999995,
+          "firstStatusMs": 18.233791,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 40,
+          "createMs": 4424.94325,
+          "firstStatusMs": 15.634792000000001,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 41,
+          "createMs": 4407.786042,
+          "firstStatusMs": 15.854582999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 42,
+          "createMs": 4426.330916000001,
+          "firstStatusMs": 22.601375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 43,
+          "createMs": 4403.006959,
+          "firstStatusMs": 17.9875,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 44,
+          "createMs": 4406.896333,
+          "firstStatusMs": 18.1315,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 45,
+          "createMs": 2840.808625,
+          "firstStatusMs": 17.022458,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 46,
+          "createMs": 4422.296375,
+          "firstStatusMs": 15.736166999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 47,
+          "createMs": 4436.370834,
+          "firstStatusMs": 15.731499999999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 48,
+          "createMs": 4394.326959,
+          "firstStatusMs": 20.46475,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 49,
+          "createMs": 4428.751292,
+          "firstStatusMs": 20.242542,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 50,
+          "createMs": 3497.08525,
+          "firstStatusMs": 18.139209,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 51,
+          "createMs": 4400.353834,
+          "firstStatusMs": 17.397291,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 52,
+          "createMs": 1541.604208,
+          "firstStatusMs": 17.238,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 53,
+          "createMs": 4276.326291,
+          "firstStatusMs": 17.999458999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 54,
+          "createMs": 4315.789958,
+          "firstStatusMs": 18.429125000000003,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 55,
+          "createMs": 1829.262459,
+          "firstStatusMs": 20.829667,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 56,
+          "createMs": 4417.513792000001,
+          "firstStatusMs": 17.012958,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 57,
+          "createMs": 1781.871875,
+          "firstStatusMs": 17.268375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 58,
+          "createMs": 4400.423625,
+          "firstStatusMs": 17.892292,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 59,
+          "createMs": 1659.867542,
+          "firstStatusMs": 15.814292,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 60,
+          "createMs": 4420.474332999999,
+          "firstStatusMs": 20.225791,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 61,
+          "createMs": 1463.510667,
+          "firstStatusMs": 16.563834,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 62,
+          "createMs": 1066.445292,
+          "firstStatusMs": 17.956834,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 63,
+          "createMs": 4415.630125,
+          "firstStatusMs": 15.336542,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 64,
+          "createMs": 4476.0233339999995,
+          "firstStatusMs": 17.925916,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 65,
+          "createMs": 3404.1679999999997,
+          "firstStatusMs": 15.435458,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 66,
+          "createMs": 1642.457708,
+          "firstStatusMs": 20.034667,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 67,
+          "createMs": 1477.075791,
+          "firstStatusMs": 17.505665999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 68,
+          "createMs": 4406.476,
+          "firstStatusMs": 18.493667,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 69,
+          "createMs": 1557.90875,
+          "firstStatusMs": 16.721333,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 70,
+          "createMs": 4502.446208,
+          "firstStatusMs": 15.7115,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 71,
+          "createMs": 4376.3544999999995,
+          "firstStatusMs": 16.838584,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 72,
+          "createMs": 4423.129542,
+          "firstStatusMs": 36.477375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 73,
+          "createMs": 3243.397,
+          "firstStatusMs": 17.656875,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 74,
+          "createMs": 1942.127959,
+          "firstStatusMs": 19.247417,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 75,
+          "createMs": 970.5187920000001,
+          "firstStatusMs": 18.177542000000003,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 76,
+          "createMs": 4324.6217910000005,
+          "firstStatusMs": 17.241833000000003,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 77,
+          "createMs": 3993.836667,
+          "firstStatusMs": 17.070667,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 78,
+          "createMs": 4397.494333,
+          "firstStatusMs": 18.547959,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 79,
+          "createMs": 646.0320830000001,
+          "firstStatusMs": 20.394834,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 80,
+          "createMs": 4421.958208,
+          "firstStatusMs": 17.1295,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 81,
+          "createMs": 4404.249458,
+          "firstStatusMs": 17.630875,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 82,
+          "createMs": 534.3172910000001,
+          "firstStatusMs": 21.099084,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 83,
+          "createMs": 3549.36975,
+          "firstStatusMs": 19.327416,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 84,
+          "createMs": 4408.622917,
+          "firstStatusMs": 16.354541,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 85,
+          "createMs": 1256.1965,
+          "firstStatusMs": 18.550833,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 86,
+          "createMs": 4413.2805419999995,
+          "firstStatusMs": 18.02825,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 87,
+          "createMs": 1603.58325,
+          "firstStatusMs": 17.1655,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 88,
+          "createMs": 4411.6185000000005,
+          "firstStatusMs": 16.36475,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 89,
+          "createMs": 1660.643167,
+          "firstStatusMs": 17.797792,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 90,
+          "createMs": 3242.898958,
+          "firstStatusMs": 19.237834,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 91,
+          "createMs": 1617.3360420000001,
+          "firstStatusMs": 19.388666999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 92,
+          "createMs": 4401.80575,
+          "firstStatusMs": 16.366249999999997,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 93,
+          "createMs": 4576.120083,
+          "firstStatusMs": 17.764542000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 94,
+          "createMs": 324.79945799999996,
+          "firstStatusMs": 16.505291,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 95,
+          "createMs": 4326.4159580000005,
+          "firstStatusMs": 15.768458999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 96,
+          "createMs": 4479.952542,
+          "firstStatusMs": 15.851332999999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 97,
+          "createMs": 4410.013875,
+          "firstStatusMs": 16.5655,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 98,
+          "createMs": 599.5956249999999,
+          "firstStatusMs": 19.683415999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 99,
+          "createMs": 356.242167,
+          "firstStatusMs": 22.142125,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "repository": "twig",
+      "sourceCommit": "96c43950e4c0d8524de4ad53157c136eb222d39c",
+      "sourceTree": "efa8b786a16488976f20b96e63a2417d1ce7bf07",
+      "backend": "git",
+      "repeat": 2,
+      "trackedFiles": 45,
+      "logicalBytesPerWorktree": 388029,
+      "createWallMs": 4972.32725,
+      "createsPerSecond": 20.111307034346943,
+      "statusAndVerificationWallMs": 1975.261875,
+      "succeeded": 100,
+      "failed": 0,
+      "verifiedFiles": 4500,
+      "sourceUnchanged": true,
+      "before": null,
+      "afterCreate": null,
+      "afterStatus": null,
+      "afterPrivateWrites": null,
+      "growthAfterCreateBytes": null,
+      "growthAfterStatusBytes": null,
+      "privateWriteGrowthBytes": null,
+      "operations": [
+        {
+          "worker": 0,
+          "createMs": 4839.0371669999995,
+          "firstStatusMs": 17.100792,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 1,
+          "createMs": 4770.081791,
+          "firstStatusMs": 37.077583,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 2,
+          "createMs": 4836.421458,
+          "firstStatusMs": 17.946041,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 3,
+          "createMs": 826.347583,
+          "firstStatusMs": 17.29475,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 4,
+          "createMs": 4815.682875,
+          "firstStatusMs": 19.503290999999997,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 5,
+          "createMs": 1419.227875,
+          "firstStatusMs": 23.839292,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 6,
+          "createMs": 1928.882417,
+          "firstStatusMs": 18.860292,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 7,
+          "createMs": 4786.9288750000005,
+          "firstStatusMs": 20.751333,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 8,
+          "createMs": 818.554417,
+          "firstStatusMs": 15.55775,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 9,
+          "createMs": 862.819458,
+          "firstStatusMs": 25.344792,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 10,
+          "createMs": 4776.035166,
+          "firstStatusMs": 16.561625,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 11,
+          "createMs": 1815.4572500000002,
+          "firstStatusMs": 17.328,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 12,
+          "createMs": 1459.712291,
+          "firstStatusMs": 18.703500000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 13,
+          "createMs": 4025.811042,
+          "firstStatusMs": 17.418833000000003,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 14,
+          "createMs": 1036.8230409999999,
+          "firstStatusMs": 19.047208,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 15,
+          "createMs": 1030.846041,
+          "firstStatusMs": 18.155708999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 16,
+          "createMs": 4779.494292,
+          "firstStatusMs": 16.601084,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 17,
+          "createMs": 1314.359709,
+          "firstStatusMs": 18.12475,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 18,
+          "createMs": 4663.053292,
+          "firstStatusMs": 18.052584,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 19,
+          "createMs": 4851.905833,
+          "firstStatusMs": 15.508667,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 20,
+          "createMs": 841.130291,
+          "firstStatusMs": 18.563083000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 21,
+          "createMs": 4923.0442920000005,
+          "firstStatusMs": 19.607875,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 22,
+          "createMs": 1384.834,
+          "firstStatusMs": 18.908624999999997,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 23,
+          "createMs": 4874.394791000001,
+          "firstStatusMs": 35.244792,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 24,
+          "createMs": 1555.653792,
+          "firstStatusMs": 37.826209,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 25,
+          "createMs": 4969.926958,
+          "firstStatusMs": 17.805042,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 26,
+          "createMs": 4794.997958,
+          "firstStatusMs": 15.305375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 27,
+          "createMs": 4622.3757909999995,
+          "firstStatusMs": 17.234833000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 28,
+          "createMs": 1723.4503750000001,
+          "firstStatusMs": 19.446749999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 29,
+          "createMs": 4808.869917,
+          "firstStatusMs": 16.195207999999997,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 30,
+          "createMs": 1788.980875,
+          "firstStatusMs": 17.893709,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 31,
+          "createMs": 4718.547333,
+          "firstStatusMs": 15.099082999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 32,
+          "createMs": 4794.653249999999,
+          "firstStatusMs": 14.804499999999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 33,
+          "createMs": 4275.716375,
+          "firstStatusMs": 17.10675,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 34,
+          "createMs": 4819.588041,
+          "firstStatusMs": 15.692083999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 35,
+          "createMs": 4771.444667,
+          "firstStatusMs": 14.931333,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 36,
+          "createMs": 4846.504542,
+          "firstStatusMs": 27.320833999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 37,
+          "createMs": 4765.720042,
+          "firstStatusMs": 15.505375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 38,
+          "createMs": 2091.643458,
+          "firstStatusMs": 15.077,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 39,
+          "createMs": 1654.643375,
+          "firstStatusMs": 16.729917,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 40,
+          "createMs": 4854.603167,
+          "firstStatusMs": 17.698334,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 41,
+          "createMs": 4801.625917,
+          "firstStatusMs": 15.607042,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 42,
+          "createMs": 4785.819708,
+          "firstStatusMs": 17.980916,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 43,
+          "createMs": 2235.8499159999997,
+          "firstStatusMs": 18.896709,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 44,
+          "createMs": 4775.557709,
+          "firstStatusMs": 18.730667,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 45,
+          "createMs": 4773.2008749999995,
+          "firstStatusMs": 17.4325,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 46,
+          "createMs": 4778.783917,
+          "firstStatusMs": 30.943708,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 47,
+          "createMs": 4814.59425,
+          "firstStatusMs": 16.509041,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 48,
+          "createMs": 4793.211209,
+          "firstStatusMs": 15.004415999999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 49,
+          "createMs": 4780.339333999999,
+          "firstStatusMs": 16.068917,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 50,
+          "createMs": 4764.3145,
+          "firstStatusMs": 15.605,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 51,
+          "createMs": 4775.756708,
+          "firstStatusMs": 16.395458,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 52,
+          "createMs": 2418.601458,
+          "firstStatusMs": 17.066958,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 53,
+          "createMs": 4813.4704169999995,
+          "firstStatusMs": 17.548417,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 54,
+          "createMs": 4785.717125,
+          "firstStatusMs": 15.731541000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 55,
+          "createMs": 4802.190792,
+          "firstStatusMs": 16.665458,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 56,
+          "createMs": 989.7375000000001,
+          "firstStatusMs": 17.074292,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 57,
+          "createMs": 1577.756583,
+          "firstStatusMs": 16.625167,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 58,
+          "createMs": 4773.945959,
+          "firstStatusMs": 15.441375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 59,
+          "createMs": 4780.560584,
+          "firstStatusMs": 16.752959,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 60,
+          "createMs": 4797.623209,
+          "firstStatusMs": 16.082167000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 61,
+          "createMs": 4825.855500000001,
+          "firstStatusMs": 16.841333,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 62,
+          "createMs": 4816.014667,
+          "firstStatusMs": 15.833666999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 63,
+          "createMs": 1345.52775,
+          "firstStatusMs": 18.564833999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 64,
+          "createMs": 4794.973875000001,
+          "firstStatusMs": 15.177291,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 65,
+          "createMs": 4244.979,
+          "firstStatusMs": 16.672875,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 66,
+          "createMs": 4322.134,
+          "firstStatusMs": 15.913291,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 67,
+          "createMs": 4750.549834,
+          "firstStatusMs": 16.786666,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 68,
+          "createMs": 1425.956792,
+          "firstStatusMs": 16.891875,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 69,
+          "createMs": 4798.469708,
+          "firstStatusMs": 15.304291,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 70,
+          "createMs": 4153.71425,
+          "firstStatusMs": 14.850417,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 71,
+          "createMs": 4164.615542,
+          "firstStatusMs": 16.955250000000003,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 72,
+          "createMs": 1760.402667,
+          "firstStatusMs": 14.956459,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 73,
+          "createMs": 4819.8045409999995,
+          "firstStatusMs": 15.223791,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 74,
+          "createMs": 2163.0753330000002,
+          "firstStatusMs": 17.100291,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 75,
+          "createMs": 4085.7534170000004,
+          "firstStatusMs": 15.46775,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 76,
+          "createMs": 4780.388792,
+          "firstStatusMs": 20.3715,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 77,
+          "createMs": 4789.292166,
+          "firstStatusMs": 19.047041,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 78,
+          "createMs": 4803.040041,
+          "firstStatusMs": 17.120125,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 79,
+          "createMs": 4752.568625,
+          "firstStatusMs": 15.957749999999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 80,
+          "createMs": 4782.608167,
+          "firstStatusMs": 17.973291999999997,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 81,
+          "createMs": 4797.346584,
+          "firstStatusMs": 19.384416,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 82,
+          "createMs": 1718.446959,
+          "firstStatusMs": 21.27325,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 83,
+          "createMs": 4826.851542,
+          "firstStatusMs": 15.930667,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 84,
+          "createMs": 1420.3881250000002,
+          "firstStatusMs": 20.503292,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 85,
+          "createMs": 1274.7862089999999,
+          "firstStatusMs": 19.158375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 86,
+          "createMs": 1118.155458,
+          "firstStatusMs": 19.457208,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 87,
+          "createMs": 4818.447459,
+          "firstStatusMs": 23.463375000000003,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 88,
+          "createMs": 4760.3192500000005,
+          "firstStatusMs": 17.555875,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 89,
+          "createMs": 4856.952833,
+          "firstStatusMs": 22.171833,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 90,
+          "createMs": 4773.486167,
+          "firstStatusMs": 16.28875,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 91,
+          "createMs": 1228.0137499999998,
+          "firstStatusMs": 18.014791,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 92,
+          "createMs": 4766.829875,
+          "firstStatusMs": 15.762875,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 93,
+          "createMs": 4884.993375,
+          "firstStatusMs": 19.551,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 94,
+          "createMs": 3609.9833329999997,
+          "firstStatusMs": 16.34075,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 95,
+          "createMs": 4872.139083,
+          "firstStatusMs": 20.226582999999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 96,
+          "createMs": 4784.994208,
+          "firstStatusMs": 18.053666999999997,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 97,
+          "createMs": 1679.001958,
+          "firstStatusMs": 17.949625,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 98,
+          "createMs": 1016.422417,
+          "firstStatusMs": 17.484375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 99,
+          "createMs": 1078.642291,
+          "firstStatusMs": 17.380291999999997,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "repository": "twig",
+      "sourceCommit": "96c43950e4c0d8524de4ad53157c136eb222d39c",
+      "sourceTree": "efa8b786a16488976f20b96e63a2417d1ce7bf07",
+      "backend": "twig",
+      "repeat": 2,
+      "trackedFiles": 45,
+      "logicalBytesPerWorktree": 388029,
+      "createWallMs": 11072.633,
+      "createsPerSecond": 9.031275578265802,
+      "statusAndVerificationWallMs": 1941.957791,
+      "succeeded": 100,
+      "failed": 0,
+      "verifiedFiles": 4500,
+      "sourceUnchanged": true,
+      "before": null,
+      "afterCreate": null,
+      "afterStatus": null,
+      "afterPrivateWrites": null,
+      "growthAfterCreateBytes": null,
+      "growthAfterStatusBytes": null,
+      "privateWriteGrowthBytes": null,
+      "operations": [
+        {
+          "worker": 0,
+          "createMs": 6080.164625,
+          "firstStatusMs": 18.061625000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 1,
+          "createMs": 8551.044291,
+          "firstStatusMs": 17.573667,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 2,
+          "createMs": 4281.869583,
+          "firstStatusMs": 16.827333,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 3,
+          "createMs": 4680.425167,
+          "firstStatusMs": 16.896083,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 4,
+          "createMs": 6682.0865,
+          "firstStatusMs": 17.260041,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 5,
+          "createMs": 8020.481,
+          "firstStatusMs": 17.503416,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 6,
+          "createMs": 5185.093375,
+          "firstStatusMs": 18.337041,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 7,
+          "createMs": 10188.081875,
+          "firstStatusMs": 18.476958000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 8,
+          "createMs": 4618.376708,
+          "firstStatusMs": 18.860417,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 9,
+          "createMs": 6907.528125,
+          "firstStatusMs": 19.063667,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 10,
+          "createMs": 9710.026417,
+          "firstStatusMs": 18.978915999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 11,
+          "createMs": 10260.249291999999,
+          "firstStatusMs": 17.99675,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 12,
+          "createMs": 4743.791583,
+          "firstStatusMs": 18.156583,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 13,
+          "createMs": 6146.6385,
+          "firstStatusMs": 18.960458,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 14,
+          "createMs": 6980.329333000001,
+          "firstStatusMs": 17.818791,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 15,
+          "createMs": 5688.51425,
+          "firstStatusMs": 18.460375000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 16,
+          "createMs": 9022.236041999999,
+          "firstStatusMs": 18.6305,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 17,
+          "createMs": 6212.827,
+          "firstStatusMs": 17.551333,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 18,
+          "createMs": 11002.148667,
+          "firstStatusMs": 18.382458,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 19,
+          "createMs": 5529.7676249999995,
+          "firstStatusMs": 18.415666,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 20,
+          "createMs": 8615.216417,
+          "firstStatusMs": 19.3185,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 21,
+          "createMs": 7184.046875,
+          "firstStatusMs": 18.241584000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 22,
+          "createMs": 10348.219374999999,
+          "firstStatusMs": 17.491083,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 23,
+          "createMs": 9088.376875,
+          "firstStatusMs": 16.988875,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 24,
+          "createMs": 7375.66625,
+          "firstStatusMs": 17.358833,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 25,
+          "createMs": 7954.3994170000005,
+          "firstStatusMs": 18.380792,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 26,
+          "createMs": 11070.305584,
+          "firstStatusMs": 17.411875000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 27,
+          "createMs": 8356.264584,
+          "firstStatusMs": 17.453542,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 28,
+          "createMs": 7509.016292,
+          "firstStatusMs": 19.263042000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 29,
+          "createMs": 9572.758249999999,
+          "firstStatusMs": 18.58925,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 30,
+          "createMs": 4148.7597909999995,
+          "firstStatusMs": 17.084417000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 31,
+          "createMs": 8219.00575,
+          "firstStatusMs": 18.041459,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 32,
+          "createMs": 9915.2485,
+          "firstStatusMs": 18.044792,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 33,
+          "createMs": 5258.195917,
+          "firstStatusMs": 19.108416,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 34,
+          "createMs": 6831.569375,
+          "firstStatusMs": 18.515041999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 35,
+          "createMs": 6277.038541999999,
+          "firstStatusMs": 17.692916999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 36,
+          "createMs": 5945.944375,
+          "firstStatusMs": 18.096292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 37,
+          "createMs": 10121.800542,
+          "firstStatusMs": 19.239209,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 38,
+          "createMs": 7888.777167,
+          "firstStatusMs": 17.635666,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 39,
+          "createMs": 7247.2234579999995,
+          "firstStatusMs": 17.645542,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 40,
+          "createMs": 5881.482209,
+          "firstStatusMs": 21.004375,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 41,
+          "createMs": 7445.128959,
+          "firstStatusMs": 17.959334000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 42,
+          "createMs": 4348.818665999999,
+          "firstStatusMs": 16.590084,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 43,
+          "createMs": 10640.81725,
+          "firstStatusMs": 16.917041,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 44,
+          "createMs": 9226.300042,
+          "firstStatusMs": 18.804000000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 45,
+          "createMs": 10568.683792,
+          "firstStatusMs": 18.570334000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 46,
+          "createMs": 6600.347625,
+          "firstStatusMs": 18.464792,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 47,
+          "createMs": 6015.216125,
+          "firstStatusMs": 18.983708,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 48,
+          "createMs": 5393.046,
+          "firstStatusMs": 18.115792,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 49,
+          "createMs": 9640.285209,
+          "firstStatusMs": 17.7635,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 50,
+          "createMs": 9984.106875,
+          "firstStatusMs": 18.734834,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 51,
+          "createMs": 9497.313083,
+          "firstStatusMs": 16.157500000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 52,
+          "createMs": 9431.165,
+          "firstStatusMs": 17.2715,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 53,
+          "createMs": 9155.457290999999,
+          "firstStatusMs": 18.219125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 54,
+          "createMs": 7634.40225,
+          "firstStatusMs": 18.970791000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 55,
+          "createMs": 5619.827125000001,
+          "firstStatusMs": 18.524874999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 56,
+          "createMs": 8285.717333999999,
+          "firstStatusMs": 17.454166999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 57,
+          "createMs": 9774.594541999999,
+          "firstStatusMs": 20.443917,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 58,
+          "createMs": 4214.703917,
+          "firstStatusMs": 17.481167,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 59,
+          "createMs": 7763.500666,
+          "firstStatusMs": 18.646,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 60,
+          "createMs": 8084.819082999999,
+          "firstStatusMs": 19.809292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 61,
+          "createMs": 5035.853875,
+          "firstStatusMs": 17.437749999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 62,
+          "createMs": 5816.411709000001,
+          "firstStatusMs": 18.444374999999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 63,
+          "createMs": 7696.548667,
+          "firstStatusMs": 18.946416,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 64,
+          "createMs": 5326.797,
+          "firstStatusMs": 17.741916,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 65,
+          "createMs": 8954.714791,
+          "firstStatusMs": 18.005667,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 66,
+          "createMs": 8686.239916,
+          "firstStatusMs": 18.287834,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 67,
+          "createMs": 4827.290833,
+          "firstStatusMs": 17.948542,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 68,
+          "createMs": 5749.658125,
+          "firstStatusMs": 17.894417,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 69,
+          "createMs": 7119.322083,
+          "firstStatusMs": 19.924666000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 70,
+          "createMs": 7309.74975,
+          "firstStatusMs": 18.429166,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 71,
+          "createMs": 9297.096834,
+          "firstStatusMs": 20.11975,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 72,
+          "createMs": 8484.91375,
+          "firstStatusMs": 17.922375000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 73,
+          "createMs": 7573.894,
+          "firstStatusMs": 18.537000000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 74,
+          "createMs": 10498.33725,
+          "firstStatusMs": 17.524708,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 75,
+          "createMs": 6408.19575,
+          "firstStatusMs": 18.823042,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 76,
+          "createMs": 10928.264708,
+          "firstStatusMs": 18.565708,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 77,
+          "createMs": 4964.683667,
+          "firstStatusMs": 17.615,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 78,
+          "createMs": 5460.377750000001,
+          "firstStatusMs": 17.335625,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 79,
+          "createMs": 6756.191125,
+          "firstStatusMs": 16.730667,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 80,
+          "createMs": 8151.5165,
+          "firstStatusMs": 19.745292000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 81,
+          "createMs": 4504.679167,
+          "firstStatusMs": 17.815082999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 82,
+          "createMs": 10052.66325,
+          "firstStatusMs": 17.556083,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 83,
+          "createMs": 9364.077916999999,
+          "firstStatusMs": 17.978792000000002,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 84,
+          "createMs": 6534.871167,
+          "firstStatusMs": 19.24725,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 85,
+          "createMs": 8821.734917,
+          "firstStatusMs": 17.756,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 86,
+          "createMs": 7822.789458,
+          "firstStatusMs": 18.000375,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 87,
+          "createMs": 6472.249334,
+          "firstStatusMs": 17.882542,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 88,
+          "createMs": 10780.517458,
+          "firstStatusMs": 19.228125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 89,
+          "createMs": 8888.82625,
+          "firstStatusMs": 18.647667,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 90,
+          "createMs": 10852.844208,
+          "firstStatusMs": 18.9665,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 91,
+          "createMs": 10710.860916,
+          "firstStatusMs": 19.078999999999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 92,
+          "createMs": 10425.135624999999,
+          "firstStatusMs": 18.277874999999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 93,
+          "createMs": 7051.129583,
+          "firstStatusMs": 18.381208,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 94,
+          "createMs": 4896.5713749999995,
+          "firstStatusMs": 17.7345,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 95,
+          "createMs": 6340.559709,
+          "firstStatusMs": 16.018125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 96,
+          "createMs": 9843.344084,
+          "firstStatusMs": 18.74225,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 97,
+          "createMs": 8418.467042,
+          "firstStatusMs": 17.42825,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 98,
+          "createMs": 10052.381875,
+          "firstStatusMs": 17.901417,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 99,
+          "createMs": 5111.766125,
+          "firstStatusMs": 19.840833,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "repository": "axo",
+      "sourceCommit": "67af816be26633039e8507d93d577b2073d6f5fd",
+      "sourceTree": "675920882d5a4c2b8d42db9e0673b3c3625a2b95",
+      "backend": "git",
+      "repeat": 0,
+      "trackedFiles": 2083,
+      "logicalBytesPerWorktree": 26185024,
+      "createWallMs": 279805.26325,
+      "createsPerSecond": 0.357391418726288,
+      "statusAndVerificationWallMs": 28484.934584000002,
+      "succeeded": 100,
+      "failed": 0,
+      "verifiedFiles": 208300,
+      "sourceUnchanged": true,
+      "before": null,
+      "afterCreate": null,
+      "afterStatus": null,
+      "afterPrivateWrites": null,
+      "growthAfterCreateBytes": null,
+      "growthAfterStatusBytes": null,
+      "privateWriteGrowthBytes": null,
+      "operations": [
+        {
+          "worker": 0,
+          "createMs": 278011.59991600004,
+          "firstStatusMs": 106.13225,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 1,
+          "createMs": 252986.24683299998,
+          "firstStatusMs": 104.423542,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 2,
+          "createMs": 279690.3395,
+          "firstStatusMs": 134.94454100000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 3,
+          "createMs": 279673.424917,
+          "firstStatusMs": 151.46837499999998,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 4,
+          "createMs": 279665.589708,
+          "firstStatusMs": 113.690375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 5,
+          "createMs": 278038.521917,
+          "firstStatusMs": 72.401125,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 6,
+          "createMs": 279803.69725,
+          "firstStatusMs": 84.995625,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 7,
+          "createMs": 279647.933,
+          "firstStatusMs": 88.642708,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 8,
+          "createMs": 279492.835458,
+          "firstStatusMs": 80.164208,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 9,
+          "createMs": 279140.932416,
+          "firstStatusMs": 57.243042,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 10,
+          "createMs": 274951.11170899996,
+          "firstStatusMs": 57.585833,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 11,
+          "createMs": 277426.05091600004,
+          "firstStatusMs": 57.213667,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 12,
+          "createMs": 279704.413709,
+          "firstStatusMs": 49.861083,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 13,
+          "createMs": 252986.322416,
+          "firstStatusMs": 40.382583,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 14,
+          "createMs": 279587.56770899997,
+          "firstStatusMs": 48.794416,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 15,
+          "createMs": 276120.771333,
+          "firstStatusMs": 37.904958,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 16,
+          "createMs": 277588.24616700003,
+          "firstStatusMs": 38.885875,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 17,
+          "createMs": 279752.344125,
+          "firstStatusMs": 39.032875000000004,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 18,
+          "createMs": 279748.05654099997,
+          "firstStatusMs": 38.268209,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 19,
+          "createMs": 247094.92575,
+          "firstStatusMs": 37.151042000000004,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 20,
+          "createMs": 277310.996167,
+          "firstStatusMs": 36.508666000000005,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 21,
+          "createMs": 279675.552625,
+          "firstStatusMs": 40.972958,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 22,
+          "createMs": 278582.81329200004,
+          "firstStatusMs": 29.054582999999997,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 23,
+          "createMs": 278676.926416,
+          "firstStatusMs": 48.652666999999994,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 24,
+          "createMs": 256452.92174999998,
+          "firstStatusMs": 36.75075,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 25,
+          "createMs": 253337.38558300002,
+          "firstStatusMs": 38.839666,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 26,
+          "createMs": 279676.178625,
+          "firstStatusMs": 41.660999999999994,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 27,
+          "createMs": 279728.832333,
+          "firstStatusMs": 36.221999999999994,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 28,
+          "createMs": 279296.698125,
+          "firstStatusMs": 31.868000000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 29,
+          "createMs": 267905.996375,
+          "firstStatusMs": 40.697375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 30,
+          "createMs": 248421.09275,
+          "firstStatusMs": 33.859042,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 31,
+          "createMs": 279802.959375,
+          "firstStatusMs": 35.515333000000005,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 32,
+          "createMs": 278729.326458,
+          "firstStatusMs": 37.074917,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 33,
+          "createMs": 267746.673583,
+          "firstStatusMs": 35.88225,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 34,
+          "createMs": 279330.370333,
+          "firstStatusMs": 36.700667,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 35,
+          "createMs": 279747.145833,
+          "firstStatusMs": 41.354917,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 36,
+          "createMs": 273016.640875,
+          "firstStatusMs": 32.653084,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 37,
+          "createMs": 242889.15595800002,
+          "firstStatusMs": 30.087916,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 38,
+          "createMs": 253716.544375,
+          "firstStatusMs": 33.461749999999995,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 39,
+          "createMs": 279751.22516699997,
+          "firstStatusMs": 31.059041,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 40,
+          "createMs": 279709.205458,
+          "firstStatusMs": 36.184291,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 41,
+          "createMs": 279709.02191699995,
+          "firstStatusMs": 28.962667,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 42,
+          "createMs": 254449.702333,
+          "firstStatusMs": 36.528083,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 43,
+          "createMs": 277621.98525,
+          "firstStatusMs": 39.053667,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 44,
+          "createMs": 279654.30500000005,
+          "firstStatusMs": 35.765,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 45,
+          "createMs": 279533.082125,
+          "firstStatusMs": 30.090292,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 46,
+          "createMs": 279671.293542,
+          "firstStatusMs": 30.687958000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 47,
+          "createMs": 279211.408833,
+          "firstStatusMs": 30.941041,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 48,
+          "createMs": 279696.079166,
+          "firstStatusMs": 31.475208999999996,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 49,
+          "createMs": 279727.642125,
+          "firstStatusMs": 40.166,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 50,
+          "createMs": 278841.768292,
+          "firstStatusMs": 43.665457999999994,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 51,
+          "createMs": 278474.324417,
+          "firstStatusMs": 25.313542,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 52,
+          "createMs": 279659.44241699995,
+          "firstStatusMs": 32.2975,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 53,
+          "createMs": 279750.119417,
+          "firstStatusMs": 35.803833,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 54,
+          "createMs": 278123.82633300003,
+          "firstStatusMs": 28.606084,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 55,
+          "createMs": 279676.26675,
+          "firstStatusMs": 29.563792,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 56,
+          "createMs": 279744.453375,
+          "firstStatusMs": 30.998250000000002,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 57,
+          "createMs": 279546.73775,
+          "firstStatusMs": 33.842459,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 58,
+          "createMs": 279698.794,
+          "firstStatusMs": 32.061042,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 59,
+          "createMs": 276857.887458,
+          "firstStatusMs": 26.988042,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 60,
+          "createMs": 279686.108084,
+          "firstStatusMs": 104.92262500000001,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 61,
+          "createMs": 279563.269667,
+          "firstStatusMs": 33.991792,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 62,
+          "createMs": 279531.273292,
+          "firstStatusMs": 34.562250000000006,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 63,
+          "createMs": 279643.99266700004,
+          "firstStatusMs": 41.008,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 64,
+          "createMs": 279607.471167,
+          "firstStatusMs": 31.843499999999995,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 65,
+          "createMs": 279678.11529199994,
+          "firstStatusMs": 35.748209,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 66,
+          "createMs": 277036.894167,
+          "firstStatusMs": 33.000916,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 67,
+          "createMs": 279671.593583,
+          "firstStatusMs": 33.652791,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 68,
+          "createMs": 279612.670708,
+          "firstStatusMs": 32.588208,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 69,
+          "createMs": 279077.021,
+          "firstStatusMs": 35.54625,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 70,
+          "createMs": 277149.656917,
+          "firstStatusMs": 31.8135,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 71,
+          "createMs": 279696.044959,
+          "firstStatusMs": 46.876333,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 72,
+          "createMs": 279749.98225,
+          "firstStatusMs": 109.182125,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 73,
+          "createMs": 279595.108875,
+          "firstStatusMs": 67.55791599999999,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 74,
+          "createMs": 279626.740584,
+          "firstStatusMs": 49.470708,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 75,
+          "createMs": 265169.422542,
+          "firstStatusMs": 52.538792,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 76,
+          "createMs": 278246.96479199996,
+          "firstStatusMs": 34.5845,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 77,
+          "createMs": 279749.185583,
+          "firstStatusMs": 39.971666000000006,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 78,
+          "createMs": 279534.99549999996,
+          "firstStatusMs": 38.70025,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 79,
+          "createMs": 276217.53270800004,
+          "firstStatusMs": 34.2145,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 80,
+          "createMs": 279645.058667,
+          "firstStatusMs": 36.198125,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 81,
+          "createMs": 274586.501292,
+          "firstStatusMs": 44.3625,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 82,
+          "createMs": 279474.49612499995,
+          "firstStatusMs": 43.399792,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 83,
+          "createMs": 277484.795334,
+          "firstStatusMs": 34.784792,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 84,
+          "createMs": 279707.70075,
+          "firstStatusMs": 34.081334,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 85,
+          "createMs": 276725.978083,
+          "firstStatusMs": 58.250958,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 86,
+          "createMs": 279631.11887500004,
+          "firstStatusMs": 40.532958,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 87,
+          "createMs": 279460.310416,
+          "firstStatusMs": 32.620125,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 88,
+          "createMs": 279014.819125,
+          "firstStatusMs": 34.519583,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 89,
+          "createMs": 279685.92220900004,
+          "firstStatusMs": 53.544542,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 90,
+          "createMs": 279671.951125,
+          "firstStatusMs": 40.668375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 91,
+          "createMs": 278910.507708,
+          "firstStatusMs": 37.93812500000001,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 92,
+          "createMs": 279696.413875,
+          "firstStatusMs": 35.130333,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 93,
+          "createMs": 279683.710292,
+          "firstStatusMs": 37.185458,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 94,
+          "createMs": 278591.19745800004,
+          "firstStatusMs": 32.874083,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 95,
+          "createMs": 279670.41395899997,
+          "firstStatusMs": 37.390375000000006,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 96,
+          "createMs": 277324.924042,
+          "firstStatusMs": 40.399375,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 97,
+          "createMs": 279613.2485,
+          "firstStatusMs": 59.272167,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 98,
+          "createMs": 279670.40554099996,
+          "firstStatusMs": 38.18825,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 99,
+          "createMs": 242813.241208,
+          "firstStatusMs": 43.066584,
+          "exitCode": 0,
+          "nativeCow": false,
+          "verified": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "repository": "axo",
+      "sourceCommit": "67af816be26633039e8507d93d577b2073d6f5fd",
+      "sourceTree": "675920882d5a4c2b8d42db9e0673b3c3625a2b95",
+      "backend": "twig",
+      "repeat": 0,
+      "trackedFiles": 2083,
+      "logicalBytesPerWorktree": 26185024,
+      "createWallMs": 138786.229958,
+      "createsPerSecond": 0.7205325775493892,
+      "statusAndVerificationWallMs": 37539.960708000006,
+      "succeeded": 100,
+      "failed": 0,
+      "verifiedFiles": 208300,
+      "sourceUnchanged": true,
+      "before": null,
+      "afterCreate": null,
+      "afterStatus": null,
+      "afterPrivateWrites": null,
+      "growthAfterCreateBytes": null,
+      "growthAfterStatusBytes": null,
+      "privateWriteGrowthBytes": null,
+      "operations": [
+        {
+          "worker": 0,
+          "createMs": 132694.001,
+          "firstStatusMs": 282.766167,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 1,
+          "createMs": 135586.405792,
+          "firstStatusMs": 274.55174999999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 2,
+          "createMs": 133251.177875,
+          "firstStatusMs": 266.72333399999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 3,
+          "createMs": 132039.703416,
+          "firstStatusMs": 321.151417,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 4,
+          "createMs": 137147.743292,
+          "firstStatusMs": 294.67325,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 5,
+          "createMs": 135988.385125,
+          "firstStatusMs": 325.20175,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 6,
+          "createMs": 128338.017958,
+          "firstStatusMs": 308.405,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 7,
+          "createMs": 133973.220083,
+          "firstStatusMs": 272.96416600000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 8,
+          "createMs": 131297.820083,
+          "firstStatusMs": 348.88075000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 9,
+          "createMs": 133507.71649999998,
+          "firstStatusMs": 254.654542,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 10,
+          "createMs": 133667.542709,
+          "firstStatusMs": 259.26720800000004,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 11,
+          "createMs": 133174.720375,
+          "firstStatusMs": 300.5155,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 12,
+          "createMs": 134125.70716700002,
+          "firstStatusMs": 261.26133400000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 13,
+          "createMs": 130737.196125,
+          "firstStatusMs": 348.014958,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 14,
+          "createMs": 137383.25449999998,
+          "firstStatusMs": 295.16225000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 15,
+          "createMs": 133821.60283299998,
+          "firstStatusMs": 297.40725000000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 16,
+          "createMs": 135734.69625,
+          "firstStatusMs": 250.130625,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 17,
+          "createMs": 138468.800042,
+          "firstStatusMs": 277.230708,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 18,
+          "createMs": 138309.871875,
+          "firstStatusMs": 273.06075000000004,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 19,
+          "createMs": 133597.984084,
+          "firstStatusMs": 289.831458,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 20,
+          "createMs": 133325.479,
+          "firstStatusMs": 333.447709,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 21,
+          "createMs": 132768.0245,
+          "firstStatusMs": 289.277667,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 22,
+          "createMs": 136575.595292,
+          "firstStatusMs": 270.504083,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 23,
+          "createMs": 138784.530708,
+          "firstStatusMs": 285.426042,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 24,
+          "createMs": 134599.989458,
+          "firstStatusMs": 274.226833,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 25,
+          "createMs": 134993.525709,
+          "firstStatusMs": 354.028208,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 26,
+          "createMs": 137954.452834,
+          "firstStatusMs": 284.82766599999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 27,
+          "createMs": 134993.520834,
+          "firstStatusMs": 295.567375,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 28,
+          "createMs": 129411.961166,
+          "firstStatusMs": 342.696958,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 29,
+          "createMs": 136984.183625,
+          "firstStatusMs": 295.993917,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 30,
+          "createMs": 134201.588125,
+          "firstStatusMs": 319.381625,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 31,
+          "createMs": 137224.9735,
+          "firstStatusMs": 295.73537500000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 32,
+          "createMs": 135410.48108300002,
+          "firstStatusMs": 342.352125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 33,
+          "createMs": 137610.51425,
+          "firstStatusMs": 286.143,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 34,
+          "createMs": 136649.563708,
+          "firstStatusMs": 296.691583,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 35,
+          "createMs": 132437.451833,
+          "firstStatusMs": 333.19845799999996,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 36,
+          "createMs": 137454.971084,
+          "firstStatusMs": 300.135458,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 37,
+          "createMs": 134350.220167,
+          "firstStatusMs": 353.62995800000004,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 38,
+          "createMs": 133102.307833,
+          "firstStatusMs": 312.896625,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 39,
+          "createMs": 133745.837542,
+          "firstStatusMs": 315.0075,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 40,
+          "createMs": 132371.848709,
+          "firstStatusMs": 332.55487500000004,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 41,
+          "createMs": 132187.556167,
+          "firstStatusMs": 316.857625,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 42,
+          "createMs": 131654.180292,
+          "firstStatusMs": 310.412833,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 43,
+          "createMs": 134529.034417,
+          "firstStatusMs": 330.08166700000004,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 44,
+          "createMs": 131784.046166,
+          "firstStatusMs": 312.06404100000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 45,
+          "createMs": 136078.058125,
+          "firstStatusMs": 330.041959,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 46,
+          "createMs": 137849.25633399998,
+          "firstStatusMs": 327.66125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 47,
+          "createMs": 131385.170583,
+          "firstStatusMs": 304.15712499999995,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 48,
+          "createMs": 131526.436541,
+          "firstStatusMs": 305.937833,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 49,
+          "createMs": 134455.16541699998,
+          "firstStatusMs": 314.19266600000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 50,
+          "createMs": 137766.923125,
+          "firstStatusMs": 354.710708,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 51,
+          "createMs": 134668.828125,
+          "firstStatusMs": 307.508583,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 52,
+          "createMs": 133433.563333,
+          "firstStatusMs": 307.993833,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 53,
+          "createMs": 131461.299,
+          "firstStatusMs": 301.204917,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 54,
+          "createMs": 136830.51583299998,
+          "firstStatusMs": 304.084834,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 55,
+          "createMs": 137530.894791,
+          "firstStatusMs": 321.116459,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 56,
+          "createMs": 132586.374,
+          "firstStatusMs": 319.440834,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 57,
+          "createMs": 135510.097333,
+          "firstStatusMs": 344.927334,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 58,
+          "createMs": 133018.023291,
+          "firstStatusMs": 341.85745899999995,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 59,
+          "createMs": 132838.243084,
+          "firstStatusMs": 337.266167,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 60,
+          "createMs": 132506.06812500002,
+          "firstStatusMs": 337.4355,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 61,
+          "createMs": 138225.122083,
+          "firstStatusMs": 344.961833,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 62,
+          "createMs": 132119.43854099998,
+          "firstStatusMs": 307.583208,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 63,
+          "createMs": 138146.854541,
+          "firstStatusMs": 307.70862500000004,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 64,
+          "createMs": 136166.351459,
+          "firstStatusMs": 317.778334,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 65,
+          "createMs": 138705.59987499999,
+          "firstStatusMs": 298.69741700000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 66,
+          "createMs": 134736.380416,
+          "firstStatusMs": 314.01937499999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 67,
+          "createMs": 132311.719,
+          "firstStatusMs": 312.603791,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 68,
+          "createMs": 135806.957541,
+          "firstStatusMs": 319.629458,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 69,
+          "createMs": 136904.06395900002,
+          "firstStatusMs": 373.215959,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 70,
+          "createMs": 138628.575584,
+          "firstStatusMs": 478.192917,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 71,
+          "createMs": 135151.504542,
+          "firstStatusMs": 326.873041,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 72,
+          "createMs": 135661.95525,
+          "firstStatusMs": 359.88599999999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 73,
+          "createMs": 131975.269708,
+          "firstStatusMs": 340.604375,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 74,
+          "createMs": 132943.79075000001,
+          "firstStatusMs": 323.8585,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 75,
+          "createMs": 132249.127042,
+          "firstStatusMs": 329.171375,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 76,
+          "createMs": 136239.402709,
+          "firstStatusMs": 313.904292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 77,
+          "createMs": 133892.29858300003,
+          "firstStatusMs": 332.424375,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 78,
+          "createMs": 138031.77895900002,
+          "firstStatusMs": 376.317875,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 79,
+          "createMs": 131588.071833,
+          "firstStatusMs": 379.48620900000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 80,
+          "createMs": 137688.48404100002,
+          "firstStatusMs": 370.965292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 81,
+          "createMs": 134914.42575,
+          "firstStatusMs": 332.780167,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 82,
+          "createMs": 135338.52675,
+          "firstStatusMs": 344.79729199999997,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 83,
+          "createMs": 136498.579041,
+          "firstStatusMs": 322.964042,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 84,
+          "createMs": 134817.6585,
+          "firstStatusMs": 309.907083,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 85,
+          "createMs": 136332.557125,
+          "firstStatusMs": 357.5755,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 86,
+          "createMs": 136415.659292,
+          "firstStatusMs": 340.702208,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 87,
+          "createMs": 131848.530209,
+          "firstStatusMs": 378.080167,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 88,
+          "createMs": 131717.573542,
+          "firstStatusMs": 324.295292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 89,
+          "createMs": 137064.58345799998,
+          "firstStatusMs": 328.070167,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 90,
+          "createMs": 135896.556208,
+          "firstStatusMs": 313.49041700000004,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 91,
+          "createMs": 135255.494916,
+          "firstStatusMs": 316.483541,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 92,
+          "createMs": 138386.006542,
+          "firstStatusMs": 347.465125,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 93,
+          "createMs": 131911.039459,
+          "firstStatusMs": 319.02675000000005,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 94,
+          "createMs": 137064.492417,
+          "firstStatusMs": 310.906709,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 95,
+          "createMs": 137302.731083,
+          "firstStatusMs": 318.533416,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 96,
+          "createMs": 138545.998708,
+          "firstStatusMs": 330.774792,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 97,
+          "createMs": 134272.842,
+          "firstStatusMs": 320.269792,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 98,
+          "createMs": 136727.292417,
+          "firstStatusMs": 322.480875,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 99,
+          "createMs": 134045.113875,
+          "firstStatusMs": 317.25483399999996,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "failures": []
+}

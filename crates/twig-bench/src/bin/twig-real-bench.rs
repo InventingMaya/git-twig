@@ -44,6 +44,8 @@ struct Suite {
     schema_version: u32,
     filesystem: Filesystem,
     image_size_gib: Option<u64>,
+    warmup: bool,
+    selected_backend: Option<String>,
     suite: String,
     generated_at_unix_ms: u128,
     commit: String,
@@ -110,6 +112,12 @@ struct Expected {
     symlink: bool,
     executable: bool,
 }
+#[derive(Clone, Copy)]
+struct CohortOptions {
+    filesystem: Filesystem,
+    warmup: bool,
+}
+
 struct Image {
     path: PathBuf,
     mount: PathBuf,
@@ -136,6 +144,8 @@ fn main() -> Result<()> {
     let mut output = None;
     let mut filesystem = Filesystem::IsolatedImage;
     let mut image_size_gib: u64 = 8;
+    let mut warmup = true;
+    let mut selected_backend = None;
     let mut args = env::args().skip(1);
     while let Some(arg) = args.next() {
         let value = args.next().context("option requires a value")?;
@@ -189,6 +199,14 @@ fn main() -> Result<()> {
                     ),
                 }
             }
+            "--warmup" => warmup = value.parse()?,
+            "--backend" => {
+                ensure!(
+                    value == "git" || value == "twig",
+                    "backend must be git or twig"
+                );
+                selected_backend = Some(value);
+            }
             "--image-gib" => image_size_gib = value.parse()?,
             "--concurrency" => concurrency = value.parse()?,
             "--repeats" => repeats = value.parse()?,
@@ -224,7 +242,7 @@ fn main() -> Result<()> {
         ],
     )?;
     let mut suite = Suite {
-        schema_version: 2, filesystem, image_size_gib: if filesystem == Filesystem::Host { None } else { Some(image_size_gib) }, suite: "real-apfs-cohort".into(), generated_at_unix_ms: timestamp,
+        schema_version: 2, filesystem, warmup, selected_backend: selected_backend.clone(), image_size_gib: if filesystem == Filesystem::Host { None } else { Some(image_size_gib) }, suite: "real-apfs-cohort".into(), generated_at_unix_ms: timestamp,
         commit: git_text(&cwd, &["rev-parse", "HEAD"])?, dirty: !git_text(&cwd, &["status", "--porcelain"])?.is_empty(),
         candidate_sha256: digest.split_whitespace().next().context("missing candidate hash")?.into(),
         git_version: capture(&cwd, "git", &["--version".into()])?,
@@ -252,6 +270,12 @@ fn main() -> Result<()> {
                 ["twig", "git"]
             };
             for backend in order {
+                if selected_backend
+                    .as_deref()
+                    .is_some_and(|chosen| chosen != backend)
+                {
+                    continue;
+                }
                 eprintln!(
                     "{}: {backend}, repeat {}/{repeats}, {concurrency} simultaneous creates",
                     repository.label,
@@ -271,7 +295,7 @@ fn main() -> Result<()> {
                         concurrency,
                         &candidate,
                         &image.mount,
-                        filesystem,
+                        CohortOptions { filesystem, warmup },
                     )
                 });
                 match result {
@@ -387,8 +411,9 @@ fn cohort(
     concurrency: usize,
     candidate: &Path,
     mount: &Path,
-    filesystem: Filesystem,
+    options: CohortOptions,
 ) -> Result<Cohort> {
+    let filesystem = options.filesystem;
     let seed = mount.join("seed");
     checked(
         command("git", mount)
@@ -418,28 +443,30 @@ fn cohort(
     let tree = git_text(&seed, &["rev-parse", "HEAD^{tree}"])?;
     let expected = expected_files(&seed)?;
     let logical_bytes = expected.iter().map(|entry| entry.data.len() as u64).sum();
-    let warmup = create(&seed, &mount.join("warmup"), candidate, backend, 0, None);
-    ensure!(
-        warmup.error.is_none() && (backend != "twig" || warmup.native_cow),
-        "warmup did not use expected backend: {:?}",
-        warmup.error
-    );
-    if filesystem != Filesystem::Host {
-        checked(
-            command("git", &seed)
-                .args(["worktree", "remove", "--force"])
-                .arg(mount.join("warmup"))
-                .output()?,
-        )?;
-        // Only benchmark-owned warmup staging paths on this disposable image are removed.
-        for entry in fs::read_dir(mount)? {
-            let entry = entry?;
-            if entry
-                .file_name()
-                .to_string_lossy()
-                .starts_with(".git-twig-stage-")
-            {
-                fs::remove_dir_all(entry.path())?;
+    if options.warmup {
+        let warmup = create(&seed, &mount.join("warmup"), candidate, backend, 0, None);
+        ensure!(
+            warmup.error.is_none() && (backend != "twig" || warmup.native_cow),
+            "warmup did not use expected backend: {:?}",
+            warmup.error
+        );
+        if filesystem != Filesystem::Host {
+            checked(
+                command("git", &seed)
+                    .args(["worktree", "remove", "--force"])
+                    .arg(mount.join("warmup"))
+                    .output()?,
+            )?;
+            // Only benchmark-owned warmup staging paths on this disposable image are removed.
+            for entry in fs::read_dir(mount)? {
+                let entry = entry?;
+                if entry
+                    .file_name()
+                    .to_string_lossy()
+                    .starts_with(".git-twig-stage-")
+                {
+                    fs::remove_dir_all(entry.path())?;
+                }
             }
         }
     }
@@ -465,6 +492,7 @@ fn cohort(
             })
         })
         .collect::<Vec<_>>();
+    eprintln!("cohort workers launched: {concurrency}");
     let mut operations = handles
         .into_iter()
         .map(|h| h.join().expect("CLI worker panicked"))

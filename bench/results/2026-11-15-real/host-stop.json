@@ -1,0 +1,8 @@
+{
+  "reason": "First-pass budget: three paired small-repository host rounds, one paired Axo host round. Large results are single-run observations, not stable tail estimates.",
+  "originalRequestedRepeats": 3,
+  "completedCohorts": 8,
+  "rawMeasurementsUnchanged": true,
+  "hostFixturesRetained": true,
+  "inputRepositoriesReadOnly": true
+}

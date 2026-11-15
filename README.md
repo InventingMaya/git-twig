@@ -9,7 +9,30 @@ git twig list
 
 Early local prototype. Native copy-on-write creation currently supports macOS.
 Other platforms and unsupported requests use ordinary `git worktree`.
-**No performance or exclusive disk-space savings promised yet.**
+Performance depends on the workload; tiny repositories can be slower.
+
+## Local benchmarks
+
+<!-- twig-bench:start -->
+
+<!-- Generated from bench/results/readme.json by twig-readme-table. Do not edit numbers. -->
+
+| repository | tracked files | parallel creates | timing filesystem | Git create | Twig create | Git allocation | Twig allocation | paired timing rounds | Git / Twig failed attempts |
+|---|---:|---:|---|---:|---:|---:|---:|---:|---:|
+| [git-twig](bench/results/2026-11-15-real/host.json) | 45 | 100 | host APFS | 4.90 s | 10.13 s | 53.0 MiB | 7.1 MiB | 3 | 2 / 0 |
+| [Axo](bench/results/2026-11-15-real/host.json) | 2083 | 100 | host APFS | 279.81 s | 138.79 s | 3100.2–3101.2 MiB | 164.9 MiB | 1 | 0 / 0 |
+
+Creation is wall time for the entire concurrent cohort, excluding first status. Values are medians of the recorded timing rounds; one round is an observation, not a stable estimate. Allocation is additional **filesystem-allocated MiB after first status**, including indexes, retained staging and APFS metadata, measured separately on isolated images. Ranges retain observed allocator variation; they are not confidence intervals. Never infer exclusive APFS allocation from logical size or `du`.
+
+- These are local, warm-cache results on a shared Mac, not universal speed guarantees. Input commits and hardware are recorded in each raw run.
+- Only tracked committed files are copied. Ignored dependencies and build artifacts are excluded.
+- Host-APFS creation timings and isolated-image allocation are separate measurements of the same pinned trees and candidate binary. Round counts are shown; budget-stopped suites retain their stop events.
+- Plain Git's nonzero failure count is an observed concurrent commondir-registration race. Failed attempts remain in the timing samples; a fast failed batch is not a complete successful cohort.
+- Kernel measurements are subject to a 30-minute experiment budget. Unfinished or unattempted cohort sizes will not be filled in with projections.
+
+[Methodology](bench/real-repositories.md) · [raw run index](bench/results/readme.json). First-status latency, p95/p99, errors, source revisions, candidate SHA-256, platform and full samples are in the linked raw runs.
+
+<!-- twig-bench:end -->
 
 ## Try locally
 
@@ -47,7 +70,7 @@ Local Cargo install:
 cargo install --path crates/git-twig --locked
 ```
 
-After this repository is published, the same-repository Homebrew tap can be used:
+Install from the same-repository Homebrew tap:
 
 ```sh
 brew tap leostera/git-twig https://github.com/leostera/git-twig
