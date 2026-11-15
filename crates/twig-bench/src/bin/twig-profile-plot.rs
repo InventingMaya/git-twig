@@ -1,0 +1,140 @@
+//! Derive per-operation elapsed attribution from versioned diagnostic captures.
+use anyhow::{Context, Result, ensure};
+use serde_json::{Value, json};
+use std::{env, fs, path::PathBuf};
+fn number(value: &Value, key: &str) -> Result<f64> {
+    value[key]
+        .as_f64()
+        .with_context(|| format!("missing {key}"))
+}
+fn main() -> Result<()> {
+    let input = PathBuf::from(
+        env::args_os()
+            .nth(1)
+            .context("usage: twig-profile-plot capture.json")?,
+    );
+    let profile: Value = serde_json::from_slice(&fs::read(&input)?)?;
+    ensure!(profile["schemaVersion"] == 1, "unsupported profile schema");
+    let processes = profile["processes"].as_array().context("processes")?;
+    let calls = profile["gitCalls"].as_array().context("gitCalls")?;
+    let mut points = Vec::new();
+    for cohort in profile["outcomes"]["cohorts"]
+        .as_array()
+        .context("cohorts")?
+    {
+        let backend = cohort["backend"].as_str().context("backend")?;
+        let repeat = cohort["repeat"].as_u64().context("repeat")?;
+        let operation = &cohort["operations"][0];
+        ensure!(
+            cohort["succeeded"] == 1
+                && cohort["failed"] == 0
+                && operation["verified"] == true
+                && cohort["sourceUnchanged"] == true,
+            "invalid profile outcome"
+        );
+        let create = number(operation, "createMs")?;
+        let status = number(operation, "firstStatusMs")?;
+        let mut refresh = 0.0;
+        let mut other = 0.0;
+        let mut residual = 0.0;
+        let mut checkout = 0.0;
+        let mut native_pid = None;
+        if backend == "twig" {
+            ensure!(operation["nativeCow"] == true, "not native");
+            let suffix = format!("linux-twig-{repeat}.mount/w-0");
+            let matched = processes
+                .iter()
+                .filter(|p| {
+                    p["command"].as_str().is_some_and(|cmd| {
+                        cmd.contains("/bin/git-twig add ") && cmd.contains(&suffix)
+                    })
+                })
+                .collect::<Vec<_>>();
+            ensure!(matched.len() == 1, "ambiguous native PID");
+            let pid = matched[0]["pid"].as_u64().context("pid")?;
+            native_pid = Some(pid);
+            let direct = calls
+                .iter()
+                .filter(|c| c["parentPid"].as_u64() == Some(pid))
+                .collect::<Vec<_>>();
+            ensure!(!direct.is_empty(), "missing Git calls");
+            for call in direct {
+                let time = number(call, "elapsedMs")?;
+                let args = call["argv"].as_array().context("argv")?;
+                if args.iter().any(|v| v == "update-index") && call["indexFile"].is_string() {
+                    refresh += time;
+                } else {
+                    other += time;
+                }
+            }
+            residual = create - refresh - other;
+            ensure!(
+                residual >= 0.0,
+                "overlapping or misattributed child intervals"
+            );
+        } else {
+            ensure!(backend == "git", "unknown backend");
+            checkout = create;
+        }
+        points.push(json!({"backend":backend,"repeat":repeat,"nativePid":native_pid,"createMs":create,"firstStatusMs":status,"gitCheckoutMs":checkout,"stagedRefreshMs":refresh,"otherGitMs":other,"outsideGitMs":residual}));
+    }
+    let analysis = json!({"schemaVersion":1,"source":input.file_name().context("filename")?.to_str().context("UTF-8 filename")?,"notes":["Instrumented elapsed times, not replacement benchmark results.","Residual includes Rust, process startup, wrapper bookkeeping and scheduling; not pure filesystem CPU.","No nested Git durations are summed. Stack samples include waits, not syscall counts or CPU percentages."],"points":points});
+    fs::write(
+        input.with_extension("analysis.json"),
+        serde_json::to_vec_pretty(&analysis)?,
+    )?;
+    let height = 160 + points.len() * 62;
+    let max_create = points
+        .iter()
+        .map(|p| p["createMs"].as_f64().unwrap())
+        .fold(1.0, f64::max)
+        * 1.1;
+    let max_status = points
+        .iter()
+        .map(|p| p["firstStatusMs"].as_f64().unwrap())
+        .fold(1.0, f64::max)
+        * 1.1;
+    let mut svg = format!(
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1150\" height=\"{height}\"><rect width=\"100%\" height=\"100%\" fill=\"#111827\"/><g fill=\"#e5e7eb\" font-family=\"system-ui,sans-serif\"><text x=\"20\" y=\"30\" font-size=\"19\">Linux kernel · release overhead profile (instrumented)</text><text x=\"180\" y=\"58\">creation wall time · seconds</text><text x=\"760\" y=\"58\">first status · seconds</text><text x=\"20\" y=\"84\" font-size=\"12\">gray: stock Git · orange: staged refresh · blue: other Git · green: outside Git (includes observer overhead)</text>"
+    );
+    let mut summary = String::from(
+        "<!-- Generated by twig-profile-plot; do not edit numbers. -->\n\nInstrumented diagnostics, not replacement benchmark results. Residual includes observer and scheduling overhead.\n\n| backend | round | create s | staged refresh s | other Git s | outside Git s | first status s |\n|---|---:|---:|---:|---:|---:|---:|\n",
+    );
+    for (index, p) in points.iter().enumerate() {
+        let y = 105 + index * 62;
+        svg.push_str(&format!(
+            "<text x=\"20\" y=\"{}\">{} · round {}</text>",
+            y + 20,
+            p["backend"].as_str().unwrap(),
+            p["repeat"].as_u64().unwrap() + 1
+        ));
+        let mut x = 180.0;
+        for (key, color) in [
+            ("gitCheckoutMs", "#94a3b8"),
+            ("stagedRefreshMs", "#fb923c"),
+            ("otherGitMs", "#60a5fa"),
+            ("outsideGitMs", "#34d399"),
+        ] {
+            let width = number(p, key)? / max_create * 410.0;
+            svg.push_str(&format!(
+                "<rect x=\"{x:.2}\" y=\"{y}\" width=\"{width:.2}\" height=\"28\" fill=\"{color}\"/>"
+            ));
+            x += width;
+        }
+        svg.push_str(&format!("<text x=\"610\" y=\"{}\">{:.3} s</text><rect x=\"760\" y=\"{y}\" width=\"{:.2}\" height=\"28\" fill=\"#c084fc\"/><text x=\"1030\" y=\"{}\">{:.3} s</text>",y+20,number(p,"createMs")?/1000.0,number(p,"firstStatusMs")?/max_status*240.0,y+20,number(p,"firstStatusMs")?/1000.0));
+        summary.push_str(&format!(
+            "| {} | {} | {:.3} | {:.3} | {:.3} | {:.3} | {:.3} |\n",
+            p["backend"].as_str().unwrap(),
+            p["repeat"].as_u64().unwrap() + 1,
+            number(p, "createMs")? / 1000.0,
+            number(p, "stagedRefreshMs")? / 1000.0,
+            number(p, "otherGitMs")? / 1000.0,
+            number(p, "outsideGitMs")? / 1000.0,
+            number(p, "firstStatusMs")? / 1000.0
+        ));
+    }
+    svg.push_str("</g></svg>\n");
+    fs::write(input.with_extension("svg"), svg)?;
+    fs::write(input.with_extension("summary.md"), summary)?;
+    Ok(())
+}

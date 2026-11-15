@@ -1,0 +1,5574 @@
+{
+  "schemaVersion": 1,
+  "manifest": {
+    "schemaVersion": 1,
+    "generatedAt": "2026-11-15T15:31:48.514611+00:00",
+    "commit": "e400b744725c7a2f56b66f8ff3c95255563f3eea",
+    "dirty": false,
+    "sourceCommit": "23c62304dde29abe92013d85910d03a77dada35d",
+    "trackedFiles": 97371,
+    "baseline": "git version 2.56.0",
+    "configuration": {
+      "repeats": 3,
+      "worktreesPerCohort": 1,
+      "concurrency": 1,
+      "imageCapacityGiB": 32,
+      "minimumHostFreeGiB": 128,
+      "scratchLimitGiB": 250,
+      "samplingIntervalMs": 5,
+      "minimumSampleProcessAgeMs": 500,
+      "pollIntervalMs": 250,
+      "warmup": true
+    },
+    "binaries": {
+      "git-twig": {
+        "sha256": "65efbfe49fac73fcf9f75a85366bc020f8a5dd62bf0baa7f1c5d1b3e26a92d50",
+        "sourceCommit": "f335c8e9246c1d60ac21f6f2b5ed4a44476250bf",
+        "buildProfile": "release"
+      },
+      "twig-real-bench": {
+        "sha256": "b60ab99c48f6724a246897c277575c9aa85e2eb139f119b42ad3b0e089afee03",
+        "sourceCommit": "f335c8e9246c1d60ac21f6f2b5ed4a44476250bf",
+        "buildProfile": "release"
+      },
+      "twig-profile": {
+        "sha256": "05e1b16ae4e8a2bea39fc7f8e584c3507e5eec5c922036fb0668be65a73a33e3",
+        "sourceCommit": "e400b744725c7a2f56b66f8ff3c95255563f3eea",
+        "buildProfile": "release"
+      }
+    },
+    "notes": [
+      "Instrumented diagnosis, not replacement benchmark numbers.",
+      "Git-call durations use monotonic clocks; epoch timestamps only correlate events.",
+      "Raw local samples/Trace2 may include paths; review and redact before publication."
+    ]
+  },
+  "outcomes": {
+    "schemaVersion": 2,
+    "filesystem": "case-sensitive-image",
+    "imageSizeGib": 32,
+    "warmup": true,
+    "selectedBackend": null,
+    "suite": "real-apfs-cohort",
+    "generatedAtUnixMs": 1794756708696,
+    "commit": "e400b744725c7a2f56b66f8ff3c95255563f3eea",
+    "dirty": false,
+    "candidateSha256": "65efbfe49fac73fcf9f75a85366bc020f8a5dd62bf0baa7f1c5d1b3e26a92d50",
+    "gitVersion": "git version 2.56.0",
+    "platform": "macos aarch64 25.5.0",
+    "cpu": "Apple M1 Ultra",
+    "concurrency": 1,
+    "worktreesPerCohort": 1,
+    "repeats": 3,
+    "repositories": [
+      {
+        "label": "linux",
+        "commit": "23c62304dde29abe92013d85910d03a77dada35d"
+      }
+    ],
+    "notes": [
+      "Each image-backed backend/repeat gets a fresh, isolated sparse APFS image (capacity/format recorded in imageSizeGiB/filesystem). Seed uses git clone --shared --no-checkout plus explicit pinned-commit checkout. Original repositories and object stores are read-only inputs; seed history uses alternates outside image.",
+      "One operation warmup per backend; removed before image space snapshots, retained on host. Global/system Git config and hooks disabled for fixture setup; no ignored/untracked dependencies or build output copied. Backend order alternates by repeat.",
+      "A barrier releases the bounded worker pool simultaneously; each worker starts its next queued create only after its previous CLI returns. worktreesPerCohort is the total count; concurrency is the maximum in flight. Create wall time includes thread startup/barrier/join, per-operation latency starts at barrier release. No verification/generation competes with creates. No retries: failures are data.",
+      "First git status is measured sequentially after all creates and the initial space snapshot. Full byte/symlink/executable verification follows each first status; its CPU is outside creation timing. A first-status sum is not a concurrent-status wall time.",
+      "Allocated space is total minus free blocks from statvfs on the isolated APFS filesystem, sampled after sync until stable (or marked unstable). This includes working files, indexes, retained staging and filesystem metadata, not logical size/du/st_blocks. Host sparse-image allocation is not the metric.",
+      "After initial verification/space measurement, one byte in one regular file per successful checkout is changed in place. Additional filesystem allocation is sampled; seed file must remain unchanged. Images are detached and deleted after saving each cohort; no benchmark input paths or source file contents are serialized.",
+      "Local warm-cache results. A sparse APFS image is a controlled filesystem, not a claim about native host-volume maximum throughput. Report failures alongside latency and allocation; do not compare unequal successful counts as identical capacity."
+    ],
+    "cohorts": [
+      {
+        "repository": "linux",
+        "sourceCommit": "23c62304dde29abe92013d85910d03a77dada35d",
+        "sourceTree": "78c11a69c8b8226b0cefc40082c0cdc8030b2f8b",
+        "backend": "git",
+        "repeat": 0,
+        "trackedFiles": 97371,
+        "logicalBytesPerWorktree": 1676008970,
+        "createWallMs": 42465.15475,
+        "createsPerSecond": 0.02354871908243782,
+        "statusAndVerificationWallMs": 13250.665207999999,
+        "succeeded": 1,
+        "failed": 0,
+        "verifiedFiles": 97371,
+        "sourceUnchanged": true,
+        "privateWriteTested": true,
+        "before": {
+          "allocatedBytes": 2353893376,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            2354008064,
+            2354212864,
+            2353733632,
+            2354159616,
+            2354528256,
+            2353668096,
+            2353565696,
+            2353893376,
+            2353893376,
+            2353893376
+          ]
+        },
+        "afterCreate": {
+          "allocatedBytes": 4321329152,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            4321329152,
+            4321329152,
+            4321329152
+          ]
+        },
+        "afterStatus": {
+          "allocatedBytes": 4321304576,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            4321304576,
+            4321304576,
+            4321304576
+          ]
+        },
+        "afterPrivateWrites": {
+          "allocatedBytes": 4321304576,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            4321304576,
+            4321304576,
+            4321304576
+          ]
+        },
+        "growthAfterCreateBytes": 1967435776,
+        "growthAfterStatusBytes": 1967411200,
+        "privateWriteGrowthBytes": 0,
+        "operations": [
+          {
+            "worker": 0,
+            "createMs": 42464.796167,
+            "createStartedAtMs": 0.056541,
+            "createFinishedAtMs": 42464.852791,
+            "firstStatusMs": 556.430833,
+            "exitCode": 0,
+            "nativeCow": false,
+            "verified": true,
+            "error": null
+          }
+        ]
+      },
+      {
+        "repository": "linux",
+        "sourceCommit": "23c62304dde29abe92013d85910d03a77dada35d",
+        "sourceTree": "78c11a69c8b8226b0cefc40082c0cdc8030b2f8b",
+        "backend": "twig",
+        "repeat": 0,
+        "trackedFiles": 97371,
+        "logicalBytesPerWorktree": 1676008970,
+        "createWallMs": 46910.95225,
+        "createsPerSecond": 0.021316983604825458,
+        "statusAndVerificationWallMs": 34091.913958,
+        "succeeded": 1,
+        "failed": 0,
+        "verifiedFiles": 97371,
+        "sourceUnchanged": true,
+        "privateWriteTested": true,
+        "before": {
+          "allocatedBytes": 2355556352,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            2355556352,
+            2355556352,
+            2355556352
+          ]
+        },
+        "afterCreate": {
+          "allocatedBytes": 2415947776,
+          "totalBytes": 34149982208,
+          "stable": false,
+          "observedAllocatedBytes": [
+            2416545792,
+            2416013312,
+            2416435200,
+            2416775168,
+            2416386048,
+            2416869376,
+            2416107520,
+            2416353280,
+            2416627712,
+            2415943680,
+            2416345088,
+            2415947776
+          ]
+        },
+        "afterStatus": {
+          "allocatedBytes": 2415808512,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            2415808512,
+            2415808512,
+            2415808512
+          ]
+        },
+        "afterPrivateWrites": {
+          "allocatedBytes": 2415820800,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            2415820800,
+            2415820800,
+            2415820800
+          ]
+        },
+        "growthAfterCreateBytes": 60391424,
+        "growthAfterStatusBytes": 60252160,
+        "privateWriteGrowthBytes": 12288,
+        "operations": [
+          {
+            "worker": 0,
+            "createMs": 46910.557666,
+            "createStartedAtMs": 0.055834,
+            "createFinishedAtMs": 46910.613584000006,
+            "firstStatusMs": 22179.514874999997,
+            "exitCode": 0,
+            "nativeCow": true,
+            "verified": true,
+            "error": null
+          }
+        ]
+      },
+      {
+        "repository": "linux",
+        "sourceCommit": "23c62304dde29abe92013d85910d03a77dada35d",
+        "sourceTree": "78c11a69c8b8226b0cefc40082c0cdc8030b2f8b",
+        "backend": "twig",
+        "repeat": 1,
+        "trackedFiles": 97371,
+        "logicalBytesPerWorktree": 1676008970,
+        "createWallMs": 57801.736750000004,
+        "createsPerSecond": 0.017300518223615485,
+        "statusAndVerificationWallMs": 58063.284208,
+        "succeeded": 1,
+        "failed": 0,
+        "verifiedFiles": 97371,
+        "sourceUnchanged": true,
+        "privateWriteTested": true,
+        "before": {
+          "allocatedBytes": 2355494912,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            2355494912,
+            2355494912,
+            2355494912
+          ]
+        },
+        "afterCreate": {
+          "allocatedBytes": 2415755264,
+          "totalBytes": 34149982208,
+          "stable": false,
+          "observedAllocatedBytes": [
+            2415816704,
+            2416058368,
+            2416340992,
+            2415722496,
+            2416226304,
+            2416418816,
+            2415689728,
+            2415943680,
+            2416185344,
+            2416271360,
+            2416508928,
+            2415755264
+          ]
+        },
+        "afterStatus": {
+          "allocatedBytes": 2415521792,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            2415521792,
+            2415521792,
+            2415521792
+          ]
+        },
+        "afterPrivateWrites": {
+          "allocatedBytes": 2415534080,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            2415534080,
+            2415534080,
+            2415534080
+          ]
+        },
+        "growthAfterCreateBytes": 60260352,
+        "growthAfterStatusBytes": 60026880,
+        "privateWriteGrowthBytes": 12288,
+        "operations": [
+          {
+            "worker": 0,
+            "createMs": 57801.422709,
+            "createStartedAtMs": 0.053708,
+            "createFinishedAtMs": 57801.476458000005,
+            "firstStatusMs": 17123.82675,
+            "exitCode": 0,
+            "nativeCow": true,
+            "verified": true,
+            "error": null
+          }
+        ]
+      },
+      {
+        "repository": "linux",
+        "sourceCommit": "23c62304dde29abe92013d85910d03a77dada35d",
+        "sourceTree": "78c11a69c8b8226b0cefc40082c0cdc8030b2f8b",
+        "backend": "git",
+        "repeat": 1,
+        "trackedFiles": 97371,
+        "logicalBytesPerWorktree": 1676008970,
+        "createWallMs": 27267.968084,
+        "createsPerSecond": 0.036673066248261055,
+        "statusAndVerificationWallMs": 12482.611,
+        "succeeded": 1,
+        "failed": 0,
+        "verifiedFiles": 97371,
+        "sourceUnchanged": true,
+        "privateWriteTested": true,
+        "before": {
+          "allocatedBytes": 2356002816,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            2356002816,
+            2356002816,
+            2356002816
+          ]
+        },
+        "afterCreate": {
+          "allocatedBytes": 4324143104,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            4324143104,
+            4324143104,
+            4324143104
+          ]
+        },
+        "afterStatus": {
+          "allocatedBytes": 4321890304,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            4321890304,
+            4321890304,
+            4321890304
+          ]
+        },
+        "afterPrivateWrites": {
+          "allocatedBytes": 4321890304,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            4321890304,
+            4321890304,
+            4321890304
+          ]
+        },
+        "growthAfterCreateBytes": 1968140288,
+        "growthAfterStatusBytes": 1965887488,
+        "privateWriteGrowthBytes": 0,
+        "operations": [
+          {
+            "worker": 0,
+            "createMs": 27267.649834,
+            "createStartedAtMs": 0.076375,
+            "createFinishedAtMs": 27267.72625,
+            "firstStatusMs": 580.4298329999999,
+            "exitCode": 0,
+            "nativeCow": false,
+            "verified": true,
+            "error": null
+          }
+        ]
+      },
+      {
+        "repository": "linux",
+        "sourceCommit": "23c62304dde29abe92013d85910d03a77dada35d",
+        "sourceTree": "78c11a69c8b8226b0cefc40082c0cdc8030b2f8b",
+        "backend": "git",
+        "repeat": 2,
+        "trackedFiles": 97371,
+        "logicalBytesPerWorktree": 1676008970,
+        "createWallMs": 27185.423084,
+        "createsPerSecond": 0.03678441924225747,
+        "statusAndVerificationWallMs": 11984.632583,
+        "succeeded": 1,
+        "failed": 0,
+        "verifiedFiles": 97371,
+        "sourceUnchanged": true,
+        "privateWriteTested": true,
+        "before": {
+          "allocatedBytes": 2354253824,
+          "totalBytes": 34149982208,
+          "stable": false,
+          "observedAllocatedBytes": [
+            2355449856,
+            2355449856,
+            2355531776,
+            2353586176,
+            2353590272,
+            2353602560,
+            2353610752,
+            2353643520,
+            2353840128,
+            2353954816,
+            2354253824,
+            2354253824
+          ]
+        },
+        "afterCreate": {
+          "allocatedBytes": 4321357824,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            4321357824,
+            4321357824,
+            4321357824
+          ]
+        },
+        "afterStatus": {
+          "allocatedBytes": 4321316864,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            4321316864,
+            4321316864,
+            4321316864
+          ]
+        },
+        "afterPrivateWrites": {
+          "allocatedBytes": 4321325056,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            4321325056,
+            4321325056,
+            4321325056
+          ]
+        },
+        "growthAfterCreateBytes": 1967104000,
+        "growthAfterStatusBytes": 1967063040,
+        "privateWriteGrowthBytes": 8192,
+        "operations": [
+          {
+            "worker": 0,
+            "createMs": 27184.928542,
+            "createStartedAtMs": 0.05375,
+            "createFinishedAtMs": 27184.982334,
+            "firstStatusMs": 542.406417,
+            "exitCode": 0,
+            "nativeCow": false,
+            "verified": true,
+            "error": null
+          }
+        ]
+      },
+      {
+        "repository": "linux",
+        "sourceCommit": "23c62304dde29abe92013d85910d03a77dada35d",
+        "sourceTree": "78c11a69c8b8226b0cefc40082c0cdc8030b2f8b",
+        "backend": "twig",
+        "repeat": 2,
+        "trackedFiles": 97371,
+        "logicalBytesPerWorktree": 1676008970,
+        "createWallMs": 38489.3425,
+        "createsPerSecond": 0.025981218047567325,
+        "statusAndVerificationWallMs": 27281.326875000002,
+        "succeeded": 1,
+        "failed": 0,
+        "verifiedFiles": 97371,
+        "sourceUnchanged": true,
+        "privateWriteTested": true,
+        "before": {
+          "allocatedBytes": 2355326976,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            2355326976,
+            2355326976,
+            2355326976
+          ]
+        },
+        "afterCreate": {
+          "allocatedBytes": 2416193536,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            2416005120,
+            2416119808,
+            2416144384,
+            2416152576,
+            2416193536,
+            2416193536,
+            2416193536
+          ]
+        },
+        "afterStatus": {
+          "allocatedBytes": 2415747072,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            2415747072,
+            2415747072,
+            2415747072
+          ]
+        },
+        "afterPrivateWrites": {
+          "allocatedBytes": 2415759360,
+          "totalBytes": 34149982208,
+          "stable": true,
+          "observedAllocatedBytes": [
+            2415759360,
+            2415759360,
+            2415759360
+          ]
+        },
+        "growthAfterCreateBytes": 60866560,
+        "growthAfterStatusBytes": 60420096,
+        "privateWriteGrowthBytes": 12288,
+        "operations": [
+          {
+            "worker": 0,
+            "createMs": 38488.787375,
+            "createStartedAtMs": 0.075417,
+            "createFinishedAtMs": 38488.862875,
+            "firstStatusMs": 16805.621875,
+            "exitCode": 0,
+            "nativeCow": true,
+            "verified": true,
+            "error": null
+          }
+        ]
+      }
+    ],
+    "failures": []
+  },
+  "processes": [
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794756708724,
+      "lastObservedAtUnixMs": 1794756708724,
+      "parentPid": 71187,
+      "pid": 71194,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil create -quiet -size 32g -type SPARSE -fs Case-sensitive APFS -volname TwigBench -nospotlight $REPO/target/real-images/1794756708696-71187/linux-git-0.sparseimage",
+      "firstObservedAtUnixMs": 1794756709040,
+      "lastObservedAtUnixMs": 1794756710623,
+      "parentPid": 71187,
+      "pid": 71229,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 7EF5B6CB-D8D7-40DE-95D7-31BDEC48F513",
+      "firstObservedAtUnixMs": 1794756709040,
+      "lastObservedAtUnixMs": 1794756709991,
+      "parentPid": 71229,
+      "pid": 71230,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 7EF5B6CB-D8D7-40DE-95D7-31BDEC48F513 -post-exec 4",
+      "firstObservedAtUnixMs": 1794756709040,
+      "lastObservedAtUnixMs": 1794756709991,
+      "parentPid": 71230,
+      "pid": 71231,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/Filesystems/apfs.fs/Contents/Resources/newfs_apfs -e -v TwigBench /dev/rdisk21s2",
+      "firstObservedAtUnixMs": 1794756709356,
+      "lastObservedAtUnixMs": 1794756709675,
+      "parentPid": 71231,
+      "pid": 71239,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil attach -quiet -nobrowse -owners on -mountpoint $REPO/target/real-images/1794756708696-71187/linux-git-0.mount $REPO/target/real-images/1794756708696-71187/linux-git-0.sparseimage",
+      "firstObservedAtUnixMs": 1794756710941,
+      "lastObservedAtUnixMs": 1794756711260,
+      "parentPid": 71187,
+      "pid": 71282,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 71E2A32F-4951-4146-9036-9BA9D32A359D",
+      "firstObservedAtUnixMs": 1794756710941,
+      "lastObservedAtUnixMs": 1794756711260,
+      "parentPid": 71282,
+      "pid": 71283,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 71E2A32F-4951-4146-9036-9BA9D32A359D -post-exec 4",
+      "firstObservedAtUnixMs": 1794756710941,
+      "lastObservedAtUnixMs": 1794756711260,
+      "parentPid": 71283,
+      "pid": 71284,
+      "sampleFile": null
+    },
+    {
+      "command": "git -c core.hooksPath=/dev/null clone --shared --no-checkout -- $REPO/target/kernel-input.git $REPO/target/real-images/1794756708696-71187/linux-git-0.mount/seed",
+      "firstObservedAtUnixMs": 1794756711579,
+      "lastObservedAtUnixMs": 1794756717588,
+      "parentPid": 71187,
+      "pid": 71306,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -c core.hooksPath=/dev/null clone --shared --no-checkout -- $REPO/target/kernel-input.git $REPO/target/real-images/1794756708696-71187/linux-git-0.mount/seed",
+      "firstObservedAtUnixMs": 1794756711579,
+      "lastObservedAtUnixMs": 1794756717588,
+      "parentPid": 71306,
+      "pid": 71307,
+      "sampleFile": null
+    },
+    {
+      "command": "git-upload-pack $REPO/target/kernel-input.git",
+      "firstObservedAtUnixMs": 1794756711579,
+      "lastObservedAtUnixMs": 1794756717588,
+      "parentPid": 71307,
+      "pid": 71309,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git --shallow-file pack-objects --revs --stdout --thin --shallow --delta-base-offset --quiet",
+      "firstObservedAtUnixMs": 1794756711896,
+      "lastObservedAtUnixMs": 1794756717271,
+      "parentPid": 71309,
+      "pid": 71316,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git --shallow-file $REPO/target/real-images/1794756708696-71187/linux-git-0.mount/seed/.git/shallow_2lv5tJ index-pack --stdin --fix-thin --keep=fetch-pack 71307 on Mac.localdomain --check-self-contained-and-connected",
+      "firstObservedAtUnixMs": 1794756711896,
+      "lastObservedAtUnixMs": 1794756717588,
+      "parentPid": 71307,
+      "pid": 71317,
+      "sampleFile": null
+    },
+    {
+      "command": "git -c core.hooksPath=/dev/null checkout --detach 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794756717903,
+      "lastObservedAtUnixMs": 1794756764394,
+      "parentPid": 71187,
+      "pid": 71443,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -c core.hooksPath=/dev/null checkout --detach 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794756717903,
+      "lastObservedAtUnixMs": 1794756764394,
+      "parentPid": 71443,
+      "pid": 71444,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794756764713,
+      "lastObservedAtUnixMs": 1794756764713,
+      "parentPid": 71187,
+      "pid": 72467,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794756764713,
+      "lastObservedAtUnixMs": 1794756764713,
+      "parentPid": 72467,
+      "pid": 72468,
+      "sampleFile": null
+    },
+    {
+      "command": "git worktree add --detach $REPO/target/real-images/1794756708696-71187/linux-git-0.mount/warmup HEAD",
+      "firstObservedAtUnixMs": 1794756777123,
+      "lastObservedAtUnixMs": 1794756797149,
+      "parentPid": 71187,
+      "pid": 72735,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git worktree add --detach $REPO/target/real-images/1794756708696-71187/linux-git-0.mount/warmup HEAD",
+      "firstObservedAtUnixMs": 1794756777123,
+      "lastObservedAtUnixMs": 1794756797149,
+      "parentPid": 72735,
+      "pid": 72736,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git reset --hard --no-recurse-submodules",
+      "firstObservedAtUnixMs": 1794756777123,
+      "lastObservedAtUnixMs": 1794756797149,
+      "parentPid": 72736,
+      "pid": 72737,
+      "sampleFile": null
+    },
+    {
+      "command": "git worktree remove --force $REPO/target/real-images/1794756708696-71187/linux-git-0.mount/warmup",
+      "firstObservedAtUnixMs": 1794756797467,
+      "lastObservedAtUnixMs": 1794756803510,
+      "parentPid": 71187,
+      "pid": 73162,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git worktree remove --force $REPO/target/real-images/1794756708696-71187/linux-git-0.mount/warmup",
+      "firstObservedAtUnixMs": 1794756797467,
+      "lastObservedAtUnixMs": 1794756803510,
+      "parentPid": 73162,
+      "pid": 73163,
+      "sampleFile": null
+    },
+    {
+      "command": "sync",
+      "firstObservedAtUnixMs": 1794756803825,
+      "lastObservedAtUnixMs": 1794756803825,
+      "parentPid": 71187,
+      "pid": 73303,
+      "sampleFile": null
+    },
+    {
+      "command": "git worktree add --detach $REPO/target/real-images/1794756708696-71187/linux-git-0.mount/w-0 HEAD",
+      "firstObservedAtUnixMs": 1794756806795,
+      "lastObservedAtUnixMs": 1794756848951,
+      "parentPid": 71187,
+      "pid": 73364,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git worktree add --detach $REPO/target/real-images/1794756708696-71187/linux-git-0.mount/w-0 HEAD",
+      "firstObservedAtUnixMs": 1794756806795,
+      "lastObservedAtUnixMs": 1794756848951,
+      "parentPid": 73364,
+      "pid": 73365,
+      "sampleFile": "samples/73365.txt"
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git reset --hard --no-recurse-submodules",
+      "firstObservedAtUnixMs": 1794756806795,
+      "lastObservedAtUnixMs": 1794756848951,
+      "parentPid": 73365,
+      "pid": 73366,
+      "sampleFile": null
+    },
+    {
+      "command": "git status --porcelain --untracked-files=no",
+      "firstObservedAtUnixMs": 1794756850027,
+      "lastObservedAtUnixMs": 1794756850350,
+      "parentPid": 71187,
+      "pid": 74299,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git status --porcelain --untracked-files=no",
+      "firstObservedAtUnixMs": 1794756850027,
+      "lastObservedAtUnixMs": 1794756850350,
+      "parentPid": 74299,
+      "pid": 74300,
+      "sampleFile": null
+    },
+    {
+      "command": "sync",
+      "firstObservedAtUnixMs": 1794756863358,
+      "lastObservedAtUnixMs": 1794756863358,
+      "parentPid": 71187,
+      "pid": 74579,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil detach $REPO/target/real-images/1794756708696-71187/linux-git-0.mount",
+      "firstObservedAtUnixMs": 1794756865358,
+      "lastObservedAtUnixMs": 1794756865998,
+      "parentPid": 71187,
+      "pid": 74630,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil create -quiet -size 32g -type SPARSE -fs Case-sensitive APFS -volname TwigBench -nospotlight $REPO/target/real-images/1794756708696-71187/linux-twig-0.sparseimage",
+      "firstObservedAtUnixMs": 1794756866312,
+      "lastObservedAtUnixMs": 1794756867296,
+      "parentPid": 71187,
+      "pid": 74656,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 78CDC6D3-AAB8-47AD-AB5F-2A6142EF47D2",
+      "firstObservedAtUnixMs": 1794756866629,
+      "lastObservedAtUnixMs": 1794756866950,
+      "parentPid": 74656,
+      "pid": 74663,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 78CDC6D3-AAB8-47AD-AB5F-2A6142EF47D2 -post-exec 4",
+      "firstObservedAtUnixMs": 1794756866629,
+      "lastObservedAtUnixMs": 1794756866950,
+      "parentPid": 74663,
+      "pid": 74664,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/Filesystems/apfs.fs/Contents/Resources/newfs_apfs -e -v TwigBench /dev/rdisk21s2",
+      "firstObservedAtUnixMs": 1794756866629,
+      "lastObservedAtUnixMs": 1794756866629,
+      "parentPid": 74664,
+      "pid": 74666,
+      "sampleFile": null
+    },
+    {
+      "command": "(xartutil)",
+      "firstObservedAtUnixMs": 1794756866629,
+      "lastObservedAtUnixMs": 1794756866629,
+      "parentPid": 74666,
+      "pid": 74673,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil attach -quiet -nobrowse -owners on -mountpoint $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount $REPO/target/real-images/1794756708696-71187/linux-twig-0.sparseimage",
+      "firstObservedAtUnixMs": 1794756867612,
+      "lastObservedAtUnixMs": 1794756867929,
+      "parentPid": 71187,
+      "pid": 74695,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 824323D0-C91F-494E-8AE5-9DB23FA475B0",
+      "firstObservedAtUnixMs": 1794756867612,
+      "lastObservedAtUnixMs": 1794756867929,
+      "parentPid": 74695,
+      "pid": 74696,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 824323D0-C91F-494E-8AE5-9DB23FA475B0 -post-exec 4",
+      "firstObservedAtUnixMs": 1794756867612,
+      "lastObservedAtUnixMs": 1794756867929,
+      "parentPid": 74696,
+      "pid": 74697,
+      "sampleFile": null
+    },
+    {
+      "command": "git -c core.hooksPath=/dev/null clone --shared --no-checkout -- $REPO/target/kernel-input.git $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "firstObservedAtUnixMs": 1794756868247,
+      "lastObservedAtUnixMs": 1794756873947,
+      "parentPid": 71187,
+      "pid": 74720,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -c core.hooksPath=/dev/null clone --shared --no-checkout -- $REPO/target/kernel-input.git $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "firstObservedAtUnixMs": 1794756868247,
+      "lastObservedAtUnixMs": 1794756873947,
+      "parentPid": 74720,
+      "pid": 74721,
+      "sampleFile": null
+    },
+    {
+      "command": "git-upload-pack $REPO/target/kernel-input.git",
+      "firstObservedAtUnixMs": 1794756868247,
+      "lastObservedAtUnixMs": 1794756873947,
+      "parentPid": 74721,
+      "pid": 74723,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git --shallow-file pack-objects --revs --stdout --thin --shallow --delta-base-offset --quiet",
+      "firstObservedAtUnixMs": 1794756868247,
+      "lastObservedAtUnixMs": 1794756873628,
+      "parentPid": 74723,
+      "pid": 74724,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git --shallow-file $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed/.git/shallow_mRMNdP index-pack --stdin --fix-thin --keep=fetch-pack 74721 on Mac.localdomain --check-self-contained-and-connected",
+      "firstObservedAtUnixMs": 1794756868247,
+      "lastObservedAtUnixMs": 1794756873947,
+      "parentPid": 74721,
+      "pid": 74725,
+      "sampleFile": null
+    },
+    {
+      "command": "git -c core.hooksPath=/dev/null checkout --detach 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794756874266,
+      "lastObservedAtUnixMs": 1794756892679,
+      "parentPid": 71187,
+      "pid": 74853,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -c core.hooksPath=/dev/null checkout --detach 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794756874266,
+      "lastObservedAtUnixMs": 1794756892679,
+      "parentPid": 74853,
+      "pid": 74854,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794756893000,
+      "lastObservedAtUnixMs": 1794756893000,
+      "parentPid": 71187,
+      "pid": 75254,
+      "sampleFile": null
+    },
+    {
+      "command": "$REPO/target/kernel-profile-release-2026-11-15/bin/git-twig add --detach $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/warmup HEAD",
+      "firstObservedAtUnixMs": 1794756896184,
+      "lastObservedAtUnixMs": 1794756946943,
+      "parentPid": 71187,
+      "pid": 75315,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed check-attr -z --stdin filter working-tree-encoding ident text eol",
+      "firstObservedAtUnixMs": 1794756896184,
+      "lastObservedAtUnixMs": 1794756896184,
+      "parentPid": 75315,
+      "pid": 75331,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed check-attr -z --stdin filter working-tree-encoding ident text eol",
+      "firstObservedAtUnixMs": 1794756896184,
+      "lastObservedAtUnixMs": 1794756896184,
+      "parentPid": 75331,
+      "pid": 75332,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true read-tree 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794756914713,
+      "lastObservedAtUnixMs": 1794756915028,
+      "parentPid": 75315,
+      "pid": 75724,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true read-tree 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794756914713,
+      "lastObservedAtUnixMs": 1794756915028,
+      "parentPid": 75724,
+      "pid": 75725,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true update-index --really-refresh",
+      "firstObservedAtUnixMs": 1794756915351,
+      "lastObservedAtUnixMs": 1794756946262,
+      "parentPid": 75315,
+      "pid": 75738,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true update-index --really-refresh",
+      "firstObservedAtUnixMs": 1794756915351,
+      "lastObservedAtUnixMs": 1794756946262,
+      "parentPid": 75738,
+      "pid": 75739,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true diff-files --quiet --no-ext-diff --ignore-submodules=none",
+      "firstObservedAtUnixMs": 1794756946604,
+      "lastObservedAtUnixMs": 1794756946604,
+      "parentPid": 75315,
+      "pid": 76462,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true diff-files --quiet --no-ext-diff --ignore-submodules=none",
+      "firstObservedAtUnixMs": 1794756946604,
+      "lastObservedAtUnixMs": 1794756946604,
+      "parentPid": 76462,
+      "pid": 76463,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794756946943,
+      "lastObservedAtUnixMs": 1794756946943,
+      "parentPid": 75315,
+      "pid": 76472,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794756946943,
+      "lastObservedAtUnixMs": 1794756946943,
+      "parentPid": 76472,
+      "pid": 76473,
+      "sampleFile": null
+    },
+    {
+      "command": "git worktree remove --force $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/warmup",
+      "firstObservedAtUnixMs": 1794756947261,
+      "lastObservedAtUnixMs": 1794756956215,
+      "parentPid": 71187,
+      "pid": 76486,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git worktree remove --force $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/warmup",
+      "firstObservedAtUnixMs": 1794756947261,
+      "lastObservedAtUnixMs": 1794756956215,
+      "parentPid": 76486,
+      "pid": 76487,
+      "sampleFile": null
+    },
+    {
+      "command": "$REPO/target/kernel-profile-release-2026-11-15/bin/git-twig add --detach $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/w-0 HEAD",
+      "firstObservedAtUnixMs": 1794756957488,
+      "lastObservedAtUnixMs": 1794757003957,
+      "parentPid": 71187,
+      "pid": 76712,
+      "sampleFile": "samples/76712.txt"
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed check-attr -z --stdin filter working-tree-encoding ident text eol",
+      "firstObservedAtUnixMs": 1794756957488,
+      "lastObservedAtUnixMs": 1794756957488,
+      "parentPid": 76712,
+      "pid": 76728,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed check-attr -z --stdin filter working-tree-encoding ident text eol",
+      "firstObservedAtUnixMs": 1794756957488,
+      "lastObservedAtUnixMs": 1794756957488,
+      "parentPid": 76728,
+      "pid": 76729,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true read-tree 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794756977706,
+      "lastObservedAtUnixMs": 1794756978026,
+      "parentPid": 76712,
+      "pid": 77158,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true read-tree 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794756977706,
+      "lastObservedAtUnixMs": 1794756978026,
+      "parentPid": 77158,
+      "pid": 77159,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true update-index --really-refresh",
+      "firstObservedAtUnixMs": 1794756978350,
+      "lastObservedAtUnixMs": 1794757003286,
+      "parentPid": 76712,
+      "pid": 77172,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true update-index --really-refresh",
+      "firstObservedAtUnixMs": 1794756978350,
+      "lastObservedAtUnixMs": 1794757003286,
+      "parentPid": 77172,
+      "pid": 77173,
+      "sampleFile": "samples/77173.txt"
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true diff-files --quiet --no-ext-diff --ignore-submodules=none",
+      "firstObservedAtUnixMs": 1794757003639,
+      "lastObservedAtUnixMs": 1794757003957,
+      "parentPid": 76712,
+      "pid": 77774,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true diff-files --quiet --no-ext-diff --ignore-submodules=none",
+      "firstObservedAtUnixMs": 1794757003639,
+      "lastObservedAtUnixMs": 1794757003957,
+      "parentPid": 77774,
+      "pid": 77775,
+      "sampleFile": null
+    },
+    {
+      "command": "(sync)",
+      "firstObservedAtUnixMs": 1794757004273,
+      "lastObservedAtUnixMs": 1794757004273,
+      "parentPid": 71187,
+      "pid": 77805,
+      "sampleFile": null
+    },
+    {
+      "command": "git status --porcelain --untracked-files=no",
+      "firstObservedAtUnixMs": 1794757007596,
+      "lastObservedAtUnixMs": 1794757029462,
+      "parentPid": 71187,
+      "pid": 77870,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git status --porcelain --untracked-files=no",
+      "firstObservedAtUnixMs": 1794757007596,
+      "lastObservedAtUnixMs": 1794757029462,
+      "parentPid": 77870,
+      "pid": 77871,
+      "sampleFile": null
+    },
+    {
+      "command": "sync",
+      "firstObservedAtUnixMs": 1794757041554,
+      "lastObservedAtUnixMs": 1794757041554,
+      "parentPid": 71187,
+      "pid": 78603,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil detach $REPO/target/real-images/1794756708696-71187/linux-twig-0.mount",
+      "firstObservedAtUnixMs": 1794757043589,
+      "lastObservedAtUnixMs": 1794757043911,
+      "parentPid": 71187,
+      "pid": 78654,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil create -quiet -size 32g -type SPARSE -fs Case-sensitive APFS -volname TwigBench -nospotlight $REPO/target/real-images/1794756708696-71187/linux-twig-1.sparseimage",
+      "firstObservedAtUnixMs": 1794757044228,
+      "lastObservedAtUnixMs": 1794757044864,
+      "parentPid": 71187,
+      "pid": 78674,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 2E20CE61-CFB8-4581-A348-1B48C32A7868",
+      "firstObservedAtUnixMs": 1794757044228,
+      "lastObservedAtUnixMs": 1794757044543,
+      "parentPid": 78674,
+      "pid": 78675,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 2E20CE61-CFB8-4581-A348-1B48C32A7868 -post-exec 4",
+      "firstObservedAtUnixMs": 1794757044228,
+      "lastObservedAtUnixMs": 1794757044543,
+      "parentPid": 78675,
+      "pid": 78676,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil attach -quiet -nobrowse -owners on -mountpoint $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount $REPO/target/real-images/1794756708696-71187/linux-twig-1.sparseimage",
+      "firstObservedAtUnixMs": 1794757045181,
+      "lastObservedAtUnixMs": 1794757045497,
+      "parentPid": 71187,
+      "pid": 78708,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid E5AA398C-6AC4-433C-A47B-EB0C2F8C42A9",
+      "firstObservedAtUnixMs": 1794757045181,
+      "lastObservedAtUnixMs": 1794757045497,
+      "parentPid": 78708,
+      "pid": 78709,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid E5AA398C-6AC4-433C-A47B-EB0C2F8C42A9 -post-exec 4",
+      "firstObservedAtUnixMs": 1794757045181,
+      "lastObservedAtUnixMs": 1794757045497,
+      "parentPid": 78709,
+      "pid": 78710,
+      "sampleFile": null
+    },
+    {
+      "command": "git -c core.hooksPath=/dev/null clone --shared --no-checkout -- $REPO/target/kernel-input.git $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "firstObservedAtUnixMs": 1794757045813,
+      "lastObservedAtUnixMs": 1794757051488,
+      "parentPid": 71187,
+      "pid": 78735,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -c core.hooksPath=/dev/null clone --shared --no-checkout -- $REPO/target/kernel-input.git $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "firstObservedAtUnixMs": 1794757045813,
+      "lastObservedAtUnixMs": 1794757051488,
+      "parentPid": 78735,
+      "pid": 78736,
+      "sampleFile": null
+    },
+    {
+      "command": "git-upload-pack $REPO/target/kernel-input.git",
+      "firstObservedAtUnixMs": 1794757045813,
+      "lastObservedAtUnixMs": 1794757051488,
+      "parentPid": 78736,
+      "pid": 78737,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git --shallow-file pack-objects --revs --stdout --thin --shallow --delta-base-offset --quiet",
+      "firstObservedAtUnixMs": 1794757045813,
+      "lastObservedAtUnixMs": 1794757051488,
+      "parentPid": 78737,
+      "pid": 78738,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git --shallow-file $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed/.git/shallow_CMtOrf index-pack --stdin --fix-thin --keep=fetch-pack 78736 on Mac.localdomain --check-self-contained-and-connected",
+      "firstObservedAtUnixMs": 1794757045813,
+      "lastObservedAtUnixMs": 1794757051488,
+      "parentPid": 78736,
+      "pid": 78739,
+      "sampleFile": null
+    },
+    {
+      "command": "git -c core.hooksPath=/dev/null checkout --detach 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757051803,
+      "lastObservedAtUnixMs": 1794757069913,
+      "parentPid": 71187,
+      "pid": 78864,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -c core.hooksPath=/dev/null checkout --detach 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757051803,
+      "lastObservedAtUnixMs": 1794757069913,
+      "parentPid": 78864,
+      "pid": 78865,
+      "sampleFile": null
+    },
+    {
+      "command": "$REPO/target/kernel-profile-release-2026-11-15/bin/git-twig add --detach $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/warmup HEAD",
+      "firstObservedAtUnixMs": 1794757073095,
+      "lastObservedAtUnixMs": 1794757141037,
+      "parentPid": 71187,
+      "pid": 79330,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757073095,
+      "lastObservedAtUnixMs": 1794757073095,
+      "parentPid": 79330,
+      "pid": 79333,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757073095,
+      "lastObservedAtUnixMs": 1794757073095,
+      "parentPid": 79333,
+      "pid": 79334,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed check-attr -z --stdin filter working-tree-encoding ident text eol",
+      "firstObservedAtUnixMs": 1794757073411,
+      "lastObservedAtUnixMs": 1794757073411,
+      "parentPid": 79330,
+      "pid": 79351,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed check-attr -z --stdin filter working-tree-encoding ident text eol",
+      "firstObservedAtUnixMs": 1794757073411,
+      "lastObservedAtUnixMs": 1794757073411,
+      "parentPid": 79351,
+      "pid": 79352,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true read-tree 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757098392,
+      "lastObservedAtUnixMs": 1794757100745,
+      "parentPid": 79330,
+      "pid": 79901,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true read-tree 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757098392,
+      "lastObservedAtUnixMs": 1794757100745,
+      "parentPid": 79901,
+      "pid": 79902,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true update-index --really-refresh",
+      "firstObservedAtUnixMs": 1794757101139,
+      "lastObservedAtUnixMs": 1794757140050,
+      "parentPid": 79330,
+      "pid": 79957,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true update-index --really-refresh",
+      "firstObservedAtUnixMs": 1794757101139,
+      "lastObservedAtUnixMs": 1794757140050,
+      "parentPid": 79957,
+      "pid": 79958,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true diff-files --quiet --no-ext-diff --ignore-submodules=none",
+      "firstObservedAtUnixMs": 1794757140390,
+      "lastObservedAtUnixMs": 1794757140717,
+      "parentPid": 79330,
+      "pid": 80793,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true diff-files --quiet --no-ext-diff --ignore-submodules=none",
+      "firstObservedAtUnixMs": 1794757140390,
+      "lastObservedAtUnixMs": 1794757140717,
+      "parentPid": 80793,
+      "pid": 80794,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757141037,
+      "lastObservedAtUnixMs": 1794757141037,
+      "parentPid": 79330,
+      "pid": 80814,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757141037,
+      "lastObservedAtUnixMs": 1794757141037,
+      "parentPid": 80814,
+      "pid": 80815,
+      "sampleFile": null
+    },
+    {
+      "command": "git worktree remove --force $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/warmup",
+      "firstObservedAtUnixMs": 1794757141356,
+      "lastObservedAtUnixMs": 1794757152836,
+      "parentPid": 71187,
+      "pid": 80824,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git worktree remove --force $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/warmup",
+      "firstObservedAtUnixMs": 1794757141356,
+      "lastObservedAtUnixMs": 1794757152836,
+      "parentPid": 80824,
+      "pid": 80825,
+      "sampleFile": null
+    },
+    {
+      "command": "sync",
+      "firstObservedAtUnixMs": 1794757153154,
+      "lastObservedAtUnixMs": 1794757153154,
+      "parentPid": 71187,
+      "pid": 81077,
+      "sampleFile": null
+    },
+    {
+      "command": "$REPO/target/kernel-profile-release-2026-11-15/bin/git-twig add --detach $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/w-0 HEAD",
+      "firstObservedAtUnixMs": 1794757154113,
+      "lastObservedAtUnixMs": 1794757211660,
+      "parentPid": 71187,
+      "pid": 81097,
+      "sampleFile": "samples/81097.txt"
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757154113,
+      "lastObservedAtUnixMs": 1794757154113,
+      "parentPid": 81097,
+      "pid": 81102,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757154113,
+      "lastObservedAtUnixMs": 1794757154113,
+      "parentPid": 81102,
+      "pid": 81103,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed check-attr -z --stdin filter working-tree-encoding ident text eol",
+      "firstObservedAtUnixMs": 1794757154431,
+      "lastObservedAtUnixMs": 1794757154431,
+      "parentPid": 81097,
+      "pid": 81118,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed check-attr -z --stdin filter working-tree-encoding ident text eol",
+      "firstObservedAtUnixMs": 1794757154431,
+      "lastObservedAtUnixMs": 1794757154431,
+      "parentPid": 81118,
+      "pid": 81119,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757176283,
+      "lastObservedAtUnixMs": 1794757176283,
+      "parentPid": 81097,
+      "pid": 81582,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757176283,
+      "lastObservedAtUnixMs": 1794757176283,
+      "parentPid": 81582,
+      "pid": 81583,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true read-tree 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757176604,
+      "lastObservedAtUnixMs": 1794757179170,
+      "parentPid": 81097,
+      "pid": 81590,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true read-tree 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757176604,
+      "lastObservedAtUnixMs": 1794757179170,
+      "parentPid": 81590,
+      "pid": 81591,
+      "sampleFile": "samples/81591.txt"
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true update-index --really-refresh",
+      "firstObservedAtUnixMs": 1794757179508,
+      "lastObservedAtUnixMs": 1794757210991,
+      "parentPid": 81097,
+      "pid": 81655,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true update-index --really-refresh",
+      "firstObservedAtUnixMs": 1794757179508,
+      "lastObservedAtUnixMs": 1794757210991,
+      "parentPid": 81655,
+      "pid": 81656,
+      "sampleFile": "samples/81656.txt"
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true diff-files --quiet --no-ext-diff --ignore-submodules=none",
+      "firstObservedAtUnixMs": 1794757211340,
+      "lastObservedAtUnixMs": 1794757211340,
+      "parentPid": 81097,
+      "pid": 82438,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true diff-files --quiet --no-ext-diff --ignore-submodules=none",
+      "firstObservedAtUnixMs": 1794757211340,
+      "lastObservedAtUnixMs": 1794757211340,
+      "parentPid": 82438,
+      "pid": 82439,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757211660,
+      "lastObservedAtUnixMs": 1794757211660,
+      "parentPid": 81097,
+      "pid": 82449,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757211660,
+      "lastObservedAtUnixMs": 1794757211660,
+      "parentPid": 82449,
+      "pid": 82450,
+      "sampleFile": null
+    },
+    {
+      "command": "git status --porcelain --untracked-files=no",
+      "firstObservedAtUnixMs": 1794757215331,
+      "lastObservedAtUnixMs": 1794757231871,
+      "parentPid": 71187,
+      "pid": 82534,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git status --porcelain --untracked-files=no",
+      "firstObservedAtUnixMs": 1794757215331,
+      "lastObservedAtUnixMs": 1794757231871,
+      "parentPid": 82534,
+      "pid": 82535,
+      "sampleFile": null
+    },
+    {
+      "command": "sync",
+      "firstObservedAtUnixMs": 1794757274044,
+      "lastObservedAtUnixMs": 1794757274044,
+      "parentPid": 71187,
+      "pid": 83782,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil detach $REPO/target/real-images/1794756708696-71187/linux-twig-1.mount",
+      "firstObservedAtUnixMs": 1794757275002,
+      "lastObservedAtUnixMs": 1794757275469,
+      "parentPid": 71187,
+      "pid": 83816,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil create -quiet -size 32g -type SPARSE -fs Case-sensitive APFS -volname TwigBench -nospotlight $REPO/target/real-images/1794756708696-71187/linux-git-1.sparseimage",
+      "firstObservedAtUnixMs": 1794757275790,
+      "lastObservedAtUnixMs": 1794757280569,
+      "parentPid": 71187,
+      "pid": 83840,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 2491FB8C-6DED-465D-9FB3-770190670AA1",
+      "firstObservedAtUnixMs": 1794757275790,
+      "lastObservedAtUnixMs": 1794757279933,
+      "parentPid": 83840,
+      "pid": 83842,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 2491FB8C-6DED-465D-9FB3-770190670AA1 -post-exec 4",
+      "firstObservedAtUnixMs": 1794757275790,
+      "lastObservedAtUnixMs": 1794757279933,
+      "parentPid": 83842,
+      "pid": 83843,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/Filesystems/apfs.fs/Contents/Resources/newfs_apfs -e -v TwigBench /dev/rdisk21s2",
+      "firstObservedAtUnixMs": 1794757276744,
+      "lastObservedAtUnixMs": 1794757279607,
+      "parentPid": 83843,
+      "pid": 83868,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil attach -quiet -nobrowse -owners on -mountpoint $REPO/target/real-images/1794756708696-71187/linux-git-1.mount $REPO/target/real-images/1794756708696-71187/linux-git-1.sparseimage",
+      "firstObservedAtUnixMs": 1794757280889,
+      "lastObservedAtUnixMs": 1794757281212,
+      "parentPid": 71187,
+      "pid": 83974,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 26CCB5F4-4294-4B82-9378-CE685256A741",
+      "firstObservedAtUnixMs": 1794757280889,
+      "lastObservedAtUnixMs": 1794757281212,
+      "parentPid": 83974,
+      "pid": 83975,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 26CCB5F4-4294-4B82-9378-CE685256A741 -post-exec 4",
+      "firstObservedAtUnixMs": 1794757280889,
+      "lastObservedAtUnixMs": 1794757281212,
+      "parentPid": 83975,
+      "pid": 83976,
+      "sampleFile": null
+    },
+    {
+      "command": "git -c core.hooksPath=/dev/null clone --shared --no-checkout -- $REPO/target/kernel-input.git $REPO/target/real-images/1794756708696-71187/linux-git-1.mount/seed",
+      "firstObservedAtUnixMs": 1794757281533,
+      "lastObservedAtUnixMs": 1794757289146,
+      "parentPid": 71187,
+      "pid": 83999,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -c core.hooksPath=/dev/null clone --shared --no-checkout -- $REPO/target/kernel-input.git $REPO/target/real-images/1794756708696-71187/linux-git-1.mount/seed",
+      "firstObservedAtUnixMs": 1794757281533,
+      "lastObservedAtUnixMs": 1794757289146,
+      "parentPid": 83999,
+      "pid": 84000,
+      "sampleFile": null
+    },
+    {
+      "command": "git-upload-pack $REPO/target/kernel-input.git",
+      "firstObservedAtUnixMs": 1794757281533,
+      "lastObservedAtUnixMs": 1794757289146,
+      "parentPid": 84000,
+      "pid": 84002,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git --shallow-file pack-objects --revs --stdout --thin --shallow --delta-base-offset --quiet",
+      "firstObservedAtUnixMs": 1794757281533,
+      "lastObservedAtUnixMs": 1794757288503,
+      "parentPid": 84002,
+      "pid": 84004,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git --shallow-file $REPO/target/real-images/1794756708696-71187/linux-git-1.mount/seed/.git/shallow_mxBE36 index-pack --stdin --fix-thin --keep=fetch-pack 84000 on Mac.localdomain --check-self-contained-and-connected",
+      "firstObservedAtUnixMs": 1794757281533,
+      "lastObservedAtUnixMs": 1794757289146,
+      "parentPid": 84000,
+      "pid": 84005,
+      "sampleFile": null
+    },
+    {
+      "command": "git -c core.hooksPath=/dev/null checkout --detach 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757289464,
+      "lastObservedAtUnixMs": 1794757315543,
+      "parentPid": 71187,
+      "pid": 84182,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -c core.hooksPath=/dev/null checkout --detach 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757289464,
+      "lastObservedAtUnixMs": 1794757315543,
+      "parentPid": 84182,
+      "pid": 84183,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757315862,
+      "lastObservedAtUnixMs": 1794757315862,
+      "parentPid": 71187,
+      "pid": 84769,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757315862,
+      "lastObservedAtUnixMs": 1794757315862,
+      "parentPid": 84769,
+      "pid": 84770,
+      "sampleFile": null
+    },
+    {
+      "command": "git worktree add --detach $REPO/target/real-images/1794756708696-71187/linux-git-1.mount/warmup HEAD",
+      "firstObservedAtUnixMs": 1794757326327,
+      "lastObservedAtUnixMs": 1794757346434,
+      "parentPid": 71187,
+      "pid": 84988,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git worktree add --detach $REPO/target/real-images/1794756708696-71187/linux-git-1.mount/warmup HEAD",
+      "firstObservedAtUnixMs": 1794757326327,
+      "lastObservedAtUnixMs": 1794757346434,
+      "parentPid": 84988,
+      "pid": 84989,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git reset --hard --no-recurse-submodules",
+      "firstObservedAtUnixMs": 1794757326327,
+      "lastObservedAtUnixMs": 1794757346434,
+      "parentPid": 84989,
+      "pid": 84990,
+      "sampleFile": null
+    },
+    {
+      "command": "git worktree remove --force $REPO/target/real-images/1794756708696-71187/linux-git-1.mount/warmup",
+      "firstObservedAtUnixMs": 1794757346759,
+      "lastObservedAtUnixMs": 1794757353159,
+      "parentPid": 71187,
+      "pid": 85419,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git worktree remove --force $REPO/target/real-images/1794756708696-71187/linux-git-1.mount/warmup",
+      "firstObservedAtUnixMs": 1794757346759,
+      "lastObservedAtUnixMs": 1794757353159,
+      "parentPid": 85419,
+      "pid": 85420,
+      "sampleFile": null
+    },
+    {
+      "command": "(sync)",
+      "firstObservedAtUnixMs": 1794757353476,
+      "lastObservedAtUnixMs": 1794757353476,
+      "parentPid": 71187,
+      "pid": 85560,
+      "sampleFile": null
+    },
+    {
+      "command": "git worktree add --detach $REPO/target/real-images/1794756708696-71187/linux-git-1.mount/w-0 HEAD",
+      "firstObservedAtUnixMs": 1794757354482,
+      "lastObservedAtUnixMs": 1794757381282,
+      "parentPid": 71187,
+      "pid": 85580,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git worktree add --detach $REPO/target/real-images/1794756708696-71187/linux-git-1.mount/w-0 HEAD",
+      "firstObservedAtUnixMs": 1794757354482,
+      "lastObservedAtUnixMs": 1794757381282,
+      "parentPid": 85580,
+      "pid": 85581,
+      "sampleFile": "samples/85581.txt"
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git reset --hard --no-recurse-submodules",
+      "firstObservedAtUnixMs": 1794757354482,
+      "lastObservedAtUnixMs": 1794757381282,
+      "parentPid": 85581,
+      "pid": 85582,
+      "sampleFile": null
+    },
+    {
+      "command": "sync",
+      "firstObservedAtUnixMs": 1794757381605,
+      "lastObservedAtUnixMs": 1794757381605,
+      "parentPid": 71187,
+      "pid": 86175,
+      "sampleFile": null
+    },
+    {
+      "command": "git status --porcelain --untracked-files=no",
+      "firstObservedAtUnixMs": 1794757382931,
+      "lastObservedAtUnixMs": 1794757383248,
+      "parentPid": 71187,
+      "pid": 86202,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git status --porcelain --untracked-files=no",
+      "firstObservedAtUnixMs": 1794757382931,
+      "lastObservedAtUnixMs": 1794757383248,
+      "parentPid": 86202,
+      "pid": 86203,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil detach $REPO/target/real-images/1794756708696-71187/linux-git-1.mount",
+      "firstObservedAtUnixMs": 1794757397030,
+      "lastObservedAtUnixMs": 1794757397668,
+      "parentPid": 71187,
+      "pid": 86504,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil create -quiet -size 32g -type SPARSE -fs Case-sensitive APFS -volname TwigBench -nospotlight $REPO/target/real-images/1794756708696-71187/linux-git-2.sparseimage",
+      "firstObservedAtUnixMs": 1794757397984,
+      "lastObservedAtUnixMs": 1794757398960,
+      "parentPid": 71187,
+      "pid": 86530,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid F6FBC0E0-0E1E-4549-B033-2B6F28DF658B",
+      "firstObservedAtUnixMs": 1794757397984,
+      "lastObservedAtUnixMs": 1794757398630,
+      "parentPid": 86530,
+      "pid": 86537,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid F6FBC0E0-0E1E-4549-B033-2B6F28DF658B -post-exec 4",
+      "firstObservedAtUnixMs": 1794757398308,
+      "lastObservedAtUnixMs": 1794757398630,
+      "parentPid": 86537,
+      "pid": 86538,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/Filesystems/apfs.fs/Contents/Resources/newfs_apfs -e -v TwigBench /dev/rdisk21s2",
+      "firstObservedAtUnixMs": 1794757398308,
+      "lastObservedAtUnixMs": 1794757398308,
+      "parentPid": 86538,
+      "pid": 86540,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil attach -quiet -nobrowse -owners on -mountpoint $REPO/target/real-images/1794756708696-71187/linux-git-2.mount $REPO/target/real-images/1794756708696-71187/linux-git-2.sparseimage",
+      "firstObservedAtUnixMs": 1794757399276,
+      "lastObservedAtUnixMs": 1794757399276,
+      "parentPid": 71187,
+      "pid": 86569,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid F668F15C-1394-4270-9EAF-53B997196DAE",
+      "firstObservedAtUnixMs": 1794757399276,
+      "lastObservedAtUnixMs": 1794757399276,
+      "parentPid": 86569,
+      "pid": 86570,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid F668F15C-1394-4270-9EAF-53B997196DAE -post-exec 4",
+      "firstObservedAtUnixMs": 1794757399276,
+      "lastObservedAtUnixMs": 1794757399276,
+      "parentPid": 86570,
+      "pid": 86571,
+      "sampleFile": null
+    },
+    {
+      "command": "git -c core.hooksPath=/dev/null clone --shared --no-checkout -- $REPO/target/kernel-input.git $REPO/target/real-images/1794756708696-71187/linux-git-2.mount/seed",
+      "firstObservedAtUnixMs": 1794757399591,
+      "lastObservedAtUnixMs": 1794757405284,
+      "parentPid": 71187,
+      "pid": 86587,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -c core.hooksPath=/dev/null clone --shared --no-checkout -- $REPO/target/kernel-input.git $REPO/target/real-images/1794756708696-71187/linux-git-2.mount/seed",
+      "firstObservedAtUnixMs": 1794757399591,
+      "lastObservedAtUnixMs": 1794757405284,
+      "parentPid": 86587,
+      "pid": 86588,
+      "sampleFile": null
+    },
+    {
+      "command": "git-upload-pack $REPO/target/kernel-input.git",
+      "firstObservedAtUnixMs": 1794757399591,
+      "lastObservedAtUnixMs": 1794757405284,
+      "parentPid": 86588,
+      "pid": 86589,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git --shallow-file pack-objects --revs --stdout --thin --shallow --delta-base-offset --quiet",
+      "firstObservedAtUnixMs": 1794757399591,
+      "lastObservedAtUnixMs": 1794757405284,
+      "parentPid": 86589,
+      "pid": 86591,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git --shallow-file $REPO/target/real-images/1794756708696-71187/linux-git-2.mount/seed/.git/shallow_pigER7 index-pack --stdin --fix-thin --keep=fetch-pack 86588 on Mac.localdomain --check-self-contained-and-connected",
+      "firstObservedAtUnixMs": 1794757399591,
+      "lastObservedAtUnixMs": 1794757405284,
+      "parentPid": 86588,
+      "pid": 86592,
+      "sampleFile": null
+    },
+    {
+      "command": "git -c core.hooksPath=/dev/null checkout --detach 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757405601,
+      "lastObservedAtUnixMs": 1794757423757,
+      "parentPid": 71187,
+      "pid": 86714,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -c core.hooksPath=/dev/null checkout --detach 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757405601,
+      "lastObservedAtUnixMs": 1794757423757,
+      "parentPid": 86714,
+      "pid": 86721,
+      "sampleFile": null
+    },
+    {
+      "command": "git worktree add --detach $REPO/target/real-images/1794756708696-71187/linux-git-2.mount/warmup HEAD",
+      "firstObservedAtUnixMs": 1794757426937,
+      "lastObservedAtUnixMs": 1794757450177,
+      "parentPid": 71187,
+      "pid": 87171,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git worktree add --detach $REPO/target/real-images/1794756708696-71187/linux-git-2.mount/warmup HEAD",
+      "firstObservedAtUnixMs": 1794757426937,
+      "lastObservedAtUnixMs": 1794757450177,
+      "parentPid": 87171,
+      "pid": 87172,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git reset --hard --no-recurse-submodules",
+      "firstObservedAtUnixMs": 1794757426937,
+      "lastObservedAtUnixMs": 1794757450177,
+      "parentPid": 87172,
+      "pid": 87173,
+      "sampleFile": null
+    },
+    {
+      "command": "git worktree remove --force $REPO/target/real-images/1794756708696-71187/linux-git-2.mount/warmup",
+      "firstObservedAtUnixMs": 1794757450499,
+      "lastObservedAtUnixMs": 1794757457237,
+      "parentPid": 71187,
+      "pid": 87659,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git worktree remove --force $REPO/target/real-images/1794756708696-71187/linux-git-2.mount/warmup",
+      "firstObservedAtUnixMs": 1794757450499,
+      "lastObservedAtUnixMs": 1794757457237,
+      "parentPid": 87659,
+      "pid": 87660,
+      "sampleFile": null
+    },
+    {
+      "command": "(sync)",
+      "firstObservedAtUnixMs": 1794757457549,
+      "lastObservedAtUnixMs": 1794757457549,
+      "parentPid": 71187,
+      "pid": 87806,
+      "sampleFile": null
+    },
+    {
+      "command": "git worktree add --detach $REPO/target/real-images/1794756708696-71187/linux-git-2.mount/w-0 HEAD",
+      "firstObservedAtUnixMs": 1794757460873,
+      "lastObservedAtUnixMs": 1794757487682,
+      "parentPid": 71187,
+      "pid": 87873,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git worktree add --detach $REPO/target/real-images/1794756708696-71187/linux-git-2.mount/w-0 HEAD",
+      "firstObservedAtUnixMs": 1794757460873,
+      "lastObservedAtUnixMs": 1794757487682,
+      "parentPid": 87873,
+      "pid": 87874,
+      "sampleFile": "samples/87874.txt"
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git reset --hard --no-recurse-submodules",
+      "firstObservedAtUnixMs": 1794757460873,
+      "lastObservedAtUnixMs": 1794757487682,
+      "parentPid": 87874,
+      "pid": 87875,
+      "sampleFile": null
+    },
+    {
+      "command": "sync",
+      "firstObservedAtUnixMs": 1794757488000,
+      "lastObservedAtUnixMs": 1794757488000,
+      "parentPid": 71187,
+      "pid": 88461,
+      "sampleFile": null
+    },
+    {
+      "command": "git status --porcelain --untracked-files=no",
+      "firstObservedAtUnixMs": 1794757489028,
+      "lastObservedAtUnixMs": 1794757489346,
+      "parentPid": 71187,
+      "pid": 88481,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git status --porcelain --untracked-files=no",
+      "firstObservedAtUnixMs": 1794757489028,
+      "lastObservedAtUnixMs": 1794757489346,
+      "parentPid": 88481,
+      "pid": 88482,
+      "sampleFile": null
+    },
+    {
+      "command": "(sync)",
+      "firstObservedAtUnixMs": 1794757501136,
+      "lastObservedAtUnixMs": 1794757501136,
+      "parentPid": 71187,
+      "pid": 88748,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil detach $REPO/target/real-images/1794756708696-71187/linux-git-2.mount",
+      "firstObservedAtUnixMs": 1794757503103,
+      "lastObservedAtUnixMs": 1794757504092,
+      "parentPid": 71187,
+      "pid": 88799,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil create -quiet -size 32g -type SPARSE -fs Case-sensitive APFS -volname TwigBench -nospotlight $REPO/target/real-images/1794756708696-71187/linux-twig-2.sparseimage",
+      "firstObservedAtUnixMs": 1794757504419,
+      "lastObservedAtUnixMs": 1794757505052,
+      "parentPid": 71187,
+      "pid": 88832,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 09AA5AB8-28DB-4D84-8FA6-7C11F92985C9",
+      "firstObservedAtUnixMs": 1794757504419,
+      "lastObservedAtUnixMs": 1794757504736,
+      "parentPid": 88832,
+      "pid": 88833,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 09AA5AB8-28DB-4D84-8FA6-7C11F92985C9 -post-exec 4",
+      "firstObservedAtUnixMs": 1794757504419,
+      "lastObservedAtUnixMs": 1794757504736,
+      "parentPid": 88833,
+      "pid": 88834,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/Filesystems/apfs.fs/Contents/Resources/newfs_apfs -e -v TwigBench /dev/rdisk21s2",
+      "firstObservedAtUnixMs": 1794757504419,
+      "lastObservedAtUnixMs": 1794757504419,
+      "parentPid": 88834,
+      "pid": 88839,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil attach -quiet -nobrowse -owners on -mountpoint $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount $REPO/target/real-images/1794756708696-71187/linux-twig-2.sparseimage",
+      "firstObservedAtUnixMs": 1794757505372,
+      "lastObservedAtUnixMs": 1794757505372,
+      "parentPid": 71187,
+      "pid": 88868,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 32540E7C-78A8-4345-9D77-9F2CC97767D5",
+      "firstObservedAtUnixMs": 1794757505372,
+      "lastObservedAtUnixMs": 1794757505372,
+      "parentPid": 88868,
+      "pid": 88869,
+      "sampleFile": null
+    },
+    {
+      "command": "/System/Library/PrivateFrameworks/DiskImages.framework/Resources/diskimages-helper -uuid 32540E7C-78A8-4345-9D77-9F2CC97767D5 -post-exec 4",
+      "firstObservedAtUnixMs": 1794757505372,
+      "lastObservedAtUnixMs": 1794757505372,
+      "parentPid": 88869,
+      "pid": 88870,
+      "sampleFile": null
+    },
+    {
+      "command": "git -c core.hooksPath=/dev/null clone --shared --no-checkout -- $REPO/target/kernel-input.git $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "firstObservedAtUnixMs": 1794757505690,
+      "lastObservedAtUnixMs": 1794757511692,
+      "parentPid": 71187,
+      "pid": 88886,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -c core.hooksPath=/dev/null clone --shared --no-checkout -- $REPO/target/kernel-input.git $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "firstObservedAtUnixMs": 1794757505690,
+      "lastObservedAtUnixMs": 1794757511692,
+      "parentPid": 88886,
+      "pid": 88887,
+      "sampleFile": null
+    },
+    {
+      "command": "git-upload-pack $REPO/target/kernel-input.git",
+      "firstObservedAtUnixMs": 1794757505690,
+      "lastObservedAtUnixMs": 1794757511692,
+      "parentPid": 88887,
+      "pid": 88888,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git --shallow-file pack-objects --revs --stdout --thin --shallow --delta-base-offset --quiet",
+      "firstObservedAtUnixMs": 1794757506009,
+      "lastObservedAtUnixMs": 1794757511374,
+      "parentPid": 88888,
+      "pid": 88895,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/opt/git/libexec/git-core/git --shallow-file $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed/.git/shallow_2ujL3j index-pack --stdin --fix-thin --keep=fetch-pack 88887 on Mac.localdomain --check-self-contained-and-connected",
+      "firstObservedAtUnixMs": 1794757506009,
+      "lastObservedAtUnixMs": 1794757511692,
+      "parentPid": 88887,
+      "pid": 88896,
+      "sampleFile": null
+    },
+    {
+      "command": "git -c core.hooksPath=/dev/null checkout --detach 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757512009,
+      "lastObservedAtUnixMs": 1794757535653,
+      "parentPid": 71187,
+      "pid": 89019,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -c core.hooksPath=/dev/null checkout --detach 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757512009,
+      "lastObservedAtUnixMs": 1794757535653,
+      "parentPid": 89019,
+      "pid": 89020,
+      "sampleFile": null
+    },
+    {
+      "command": "$REPO/target/kernel-profile-release-2026-11-15/bin/git-twig add --detach $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/warmup HEAD",
+      "firstObservedAtUnixMs": 1794757539171,
+      "lastObservedAtUnixMs": 1794757611794,
+      "parentPid": 71187,
+      "pid": 89614,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757539171,
+      "lastObservedAtUnixMs": 1794757539171,
+      "parentPid": 89614,
+      "pid": 89619,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757539171,
+      "lastObservedAtUnixMs": 1794757539171,
+      "parentPid": 89619,
+      "pid": 89620,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed check-attr -z --stdin filter working-tree-encoding ident text eol",
+      "firstObservedAtUnixMs": 1794757539488,
+      "lastObservedAtUnixMs": 1794757539488,
+      "parentPid": 89614,
+      "pid": 89637,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed check-attr -z --stdin filter working-tree-encoding ident text eol",
+      "firstObservedAtUnixMs": 1794757539488,
+      "lastObservedAtUnixMs": 1794757539488,
+      "parentPid": 89637,
+      "pid": 89638,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true read-tree 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757558757,
+      "lastObservedAtUnixMs": 1794757559081,
+      "parentPid": 89614,
+      "pid": 90021,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true read-tree 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757558757,
+      "lastObservedAtUnixMs": 1794757559081,
+      "parentPid": 90021,
+      "pid": 90022,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true update-index --really-refresh",
+      "firstObservedAtUnixMs": 1794757559412,
+      "lastObservedAtUnixMs": 1794757611126,
+      "parentPid": 89614,
+      "pid": 90036,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true update-index --really-refresh",
+      "firstObservedAtUnixMs": 1794757559412,
+      "lastObservedAtUnixMs": 1794757611126,
+      "parentPid": 90036,
+      "pid": 90037,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true diff-files --quiet --no-ext-diff --ignore-submodules=none",
+      "firstObservedAtUnixMs": 1794757611477,
+      "lastObservedAtUnixMs": 1794757611477,
+      "parentPid": 89614,
+      "pid": 91096,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true diff-files --quiet --no-ext-diff --ignore-submodules=none",
+      "firstObservedAtUnixMs": 1794757611477,
+      "lastObservedAtUnixMs": 1794757611477,
+      "parentPid": 91096,
+      "pid": 91098,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757611794,
+      "lastObservedAtUnixMs": 1794757611794,
+      "parentPid": 89614,
+      "pid": 91111,
+      "sampleFile": null
+    },
+    {
+      "command": "(git)",
+      "firstObservedAtUnixMs": 1794757611794,
+      "lastObservedAtUnixMs": 1794757611794,
+      "parentPid": 91111,
+      "pid": 91112,
+      "sampleFile": null
+    },
+    {
+      "command": "git worktree remove --force $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/warmup",
+      "firstObservedAtUnixMs": 1794757612114,
+      "lastObservedAtUnixMs": 1794757619759,
+      "parentPid": 71187,
+      "pid": 91121,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git worktree remove --force $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/warmup",
+      "firstObservedAtUnixMs": 1794757612114,
+      "lastObservedAtUnixMs": 1794757619759,
+      "parentPid": 91121,
+      "pid": 91122,
+      "sampleFile": null
+    },
+    {
+      "command": "$REPO/target/kernel-profile-release-2026-11-15/bin/git-twig add --detach $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/w-0 HEAD",
+      "firstObservedAtUnixMs": 1794757621077,
+      "lastObservedAtUnixMs": 1794757659054,
+      "parentPid": 71187,
+      "pid": 91327,
+      "sampleFile": "samples/91327.txt"
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed check-attr -z --stdin filter working-tree-encoding ident text eol",
+      "firstObservedAtUnixMs": 1794757621077,
+      "lastObservedAtUnixMs": 1794757621077,
+      "parentPid": 91327,
+      "pid": 91342,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed check-attr -z --stdin filter working-tree-encoding ident text eol",
+      "firstObservedAtUnixMs": 1794757621077,
+      "lastObservedAtUnixMs": 1794757621077,
+      "parentPid": 91342,
+      "pid": 91343,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true read-tree 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757639908,
+      "lastObservedAtUnixMs": 1794757640240,
+      "parentPid": 91327,
+      "pid": 91731,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true read-tree 23c62304dde29abe92013d85910d03a77dada35d",
+      "firstObservedAtUnixMs": 1794757639908,
+      "lastObservedAtUnixMs": 1794757640240,
+      "parentPid": 91731,
+      "pid": 91732,
+      "sampleFile": null
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true update-index --really-refresh",
+      "firstObservedAtUnixMs": 1794757640569,
+      "lastObservedAtUnixMs": 1794757658389,
+      "parentPid": 91327,
+      "pid": 91750,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true update-index --really-refresh",
+      "firstObservedAtUnixMs": 1794757640569,
+      "lastObservedAtUnixMs": 1794757658389,
+      "parentPid": 91750,
+      "pid": 91751,
+      "sampleFile": "samples/91751.txt"
+    },
+    {
+      "command": "git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true diff-files --quiet --no-ext-diff --ignore-submodules=none",
+      "firstObservedAtUnixMs": 1794757658728,
+      "lastObservedAtUnixMs": 1794757659054,
+      "parentPid": 91327,
+      "pid": 92156,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git -C $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed -c core.fsmonitor=false -c core.sparseCheckout=false -c core.filemode=true -c core.symlinks=true diff-files --quiet --no-ext-diff --ignore-submodules=none",
+      "firstObservedAtUnixMs": 1794757658728,
+      "lastObservedAtUnixMs": 1794757659054,
+      "parentPid": 92156,
+      "pid": 92157,
+      "sampleFile": null
+    },
+    {
+      "command": "sync",
+      "firstObservedAtUnixMs": 1794757659369,
+      "lastObservedAtUnixMs": 1794757659369,
+      "parentPid": 71187,
+      "pid": 92186,
+      "sampleFile": null
+    },
+    {
+      "command": "git status --porcelain --untracked-files=no",
+      "firstObservedAtUnixMs": 1794757661403,
+      "lastObservedAtUnixMs": 1794757677977,
+      "parentPid": 71187,
+      "pid": 92225,
+      "sampleFile": null
+    },
+    {
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git status --porcelain --untracked-files=no",
+      "firstObservedAtUnixMs": 1794757661403,
+      "lastObservedAtUnixMs": 1794757677977,
+      "parentPid": 92225,
+      "pid": 92226,
+      "sampleFile": null
+    },
+    {
+      "command": "(sync)",
+      "firstObservedAtUnixMs": 1794757689417,
+      "lastObservedAtUnixMs": 1794757689417,
+      "parentPid": 71187,
+      "pid": 92816,
+      "sampleFile": null
+    },
+    {
+      "command": "hdiutil detach $REPO/target/real-images/1794756708696-71187/linux-twig-2.mount",
+      "firstObservedAtUnixMs": 1794757690386,
+      "lastObservedAtUnixMs": 1794757690386,
+      "parentPid": 71187,
+      "pid": 92842,
+      "sampleFile": null
+    }
+  ],
+  "gitCalls": [
+    {
+      "schemaVersion": 1,
+      "pid": 71194,
+      "gitPid": 71195,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756708667,
+      "elapsedMs": 11.107166999999999,
+      "argv": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/kernel-input.git",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 71196,
+      "gitPid": 71197,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756708682,
+      "elapsedMs": 13.410542,
+      "argv": [
+        "rev-parse",
+        "--verify",
+        "23c62304dde29abe92013d85910d03a77dada35d^{commit}"
+      ],
+      "cwd": "$REPO/target/kernel-input.git",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 71204,
+      "gitPid": 71205,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756708741,
+      "elapsedMs": 11.22125,
+      "argv": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 71206,
+      "gitPid": 71207,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756708755,
+      "elapsedMs": 14.825750000000001,
+      "argv": [
+        "status",
+        "--porcelain"
+      ],
+      "cwd": "$REPO",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 71208,
+      "gitPid": 71209,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756708773,
+      "elapsedMs": 11.081125,
+      "argv": [
+        "--version"
+      ],
+      "cwd": "$REPO",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 71306,
+      "gitPid": 71307,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756711441,
+      "elapsedMs": 6271.613249999999,
+      "argv": [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "clone",
+        "--shared",
+        "--no-checkout",
+        "--",
+        "$REPO/target/kernel-input.git",
+        "$REPO/target/real-images/1794756708696-71187/linux-git-0.mount/seed"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-0.mount",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 71443,
+      "gitPid": 71444,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756717716,
+      "elapsedMs": 46891.664042000004,
+      "argv": [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "checkout",
+        "--detach",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 72465,
+      "gitPid": 72466,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756764610,
+      "elapsedMs": 15.324708,
+      "argv": [
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 72467,
+      "gitPid": 72468,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756764629,
+      "elapsedMs": 29.56475,
+      "argv": [
+        "ls-files",
+        "-z"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 72735,
+      "gitPid": 72736,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756776818,
+      "elapsedMs": 20441.849125,
+      "argv": [
+        "worktree",
+        "add",
+        "--detach",
+        "$REPO/target/real-images/1794756708696-71187/linux-git-0.mount/warmup",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 73162,
+      "gitPid": 73163,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756797267,
+      "elapsedMs": 6437.778709,
+      "argv": [
+        "worktree",
+        "remove",
+        "--force",
+        "$REPO/target/real-images/1794756708696-71187/linux-git-0.mount/warmup"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 73364,
+      "gitPid": 73365,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756806444,
+      "elapsedMs": 42461.267167000005,
+      "argv": [
+        "worktree",
+        "add",
+        "--detach",
+        "$REPO/target/real-images/1794756708696-71187/linux-git-0.mount/w-0",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 74299,
+      "gitPid": 74300,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756849936,
+      "elapsedMs": 549.001125,
+      "argv": [
+        "status",
+        "--porcelain",
+        "--untracked-files=no"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-0.mount/w-0",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 74720,
+      "gitPid": 74721,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756867901,
+      "elapsedMs": 6146.875875,
+      "argv": [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "clone",
+        "--shared",
+        "--no-checkout",
+        "--",
+        "$REPO/target/kernel-input.git",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 74853,
+      "gitPid": 74854,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756874052,
+      "elapsedMs": 18884.77325,
+      "argv": [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "checkout",
+        "--detach",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75254,
+      "gitPid": 75255,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756892940,
+      "elapsedMs": 25.076332999999998,
+      "argv": [
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75256,
+      "gitPid": 75257,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756892969,
+      "elapsedMs": 30.386584000000003,
+      "argv": [
+        "ls-files",
+        "-z"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75316,
+      "gitPid": 75317,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756895893,
+      "elapsedMs": 12.471083,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "rev-parse",
+        "--show-toplevel"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75318,
+      "gitPid": 75319,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756895908,
+      "elapsedMs": 15.22075,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "rev-parse",
+        "--verify",
+        "HEAD^{commit}"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75320,
+      "gitPid": 75321,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756895927,
+      "elapsedMs": 10.963583,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75322,
+      "gitPid": 75323,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756895941,
+      "elapsedMs": 11.351625,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "config",
+        "--bool",
+        "--get",
+        "core.sparseCheckout"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75324,
+      "gitPid": 75325,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756895956,
+      "elapsedMs": 10.495875,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "config",
+        "--bool",
+        "--get",
+        "core.sparseCheckoutCone"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75326,
+      "gitPid": 75327,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756895970,
+      "elapsedMs": 12.296958,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "config",
+        "--get",
+        "core.autocrlf"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75328,
+      "gitPid": 75329,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756895985,
+      "elapsedMs": 67.994083,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "ls-tree",
+        "-rz",
+        "--full-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75331,
+      "gitPid": 75332,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756896071,
+      "elapsedMs": 249.195958,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "check-attr",
+        "-z",
+        "--stdin",
+        "filter",
+        "working-tree-encoding",
+        "ident",
+        "text",
+        "eol"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75722,
+      "gitPid": 75723,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756914602,
+      "elapsedMs": 27.477458,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "rev-parse",
+        "--absolute-git-dir"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75724,
+      "gitPid": 75725,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756914633,
+      "elapsedMs": 406.911291,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "read-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/.git-twig-stage-75315-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/.git-twig-stage-75315-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 75738,
+      "gitPid": 75739,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756915043,
+      "elapsedMs": 31408.847667,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "update-index",
+        "--really-refresh"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/.git-twig-stage-75315-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/.git-twig-stage-75315-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76462,
+      "gitPid": 76463,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756946455,
+      "elapsedMs": 388.90587500000004,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "diff-files",
+        "--quiet",
+        "--no-ext-diff",
+        "--ignore-submodules=none"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/.git-twig-stage-75315-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/.git-twig-stage-75315-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76470,
+      "gitPid": 76471,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756946854,
+      "elapsedMs": 11.386084,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "rev-parse",
+        "--path-format=absolute",
+        "--git-common-dir"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76472,
+      "gitPid": 76473,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756946869,
+      "elapsedMs": 19.755417,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "worktree",
+        "add",
+        "--no-checkout",
+        "--detach",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/warmup",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76480,
+      "gitPid": 76481,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756946892,
+      "elapsedMs": 11.852167,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/warmup",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76482,
+      "gitPid": 76483,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756946912,
+      "elapsedMs": 135.450875,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/warmup",
+        "read-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76484,
+      "gitPid": 76485,
+      "parentPid": 75315,
+      "startedAtUnixMs": 1794756947051,
+      "elapsedMs": 11.849209,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/warmup",
+        "hook",
+        "run",
+        "--ignore-missing",
+        "post-checkout",
+        "--",
+        "0000000000000000000000000000000000000000",
+        "23c62304dde29abe92013d85910d03a77dada35d",
+        "1"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76486,
+      "gitPid": 76487,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794756947067,
+      "elapsedMs": 9177.20625,
+      "argv": [
+        "worktree",
+        "remove",
+        "--force",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/warmup"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76713,
+      "gitPid": 76714,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794756957194,
+      "elapsedMs": 13.600833,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "rev-parse",
+        "--show-toplevel"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76715,
+      "gitPid": 76716,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794756957211,
+      "elapsedMs": 14.485083,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "rev-parse",
+        "--verify",
+        "HEAD^{commit}"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76718,
+      "gitPid": 76719,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794756957229,
+      "elapsedMs": 16.735208,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76720,
+      "gitPid": 76721,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794756957248,
+      "elapsedMs": 11.198125,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "config",
+        "--bool",
+        "--get",
+        "core.sparseCheckout"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76722,
+      "gitPid": 76723,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794756957263,
+      "elapsedMs": 11.579041,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "config",
+        "--bool",
+        "--get",
+        "core.sparseCheckoutCone"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76724,
+      "gitPid": 76725,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794756957278,
+      "elapsedMs": 11.428166,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "config",
+        "--get",
+        "core.autocrlf"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76726,
+      "gitPid": 76727,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794756957293,
+      "elapsedMs": 66.848834,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "ls-tree",
+        "-rz",
+        "--full-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 76728,
+      "gitPid": 76729,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794756957378,
+      "elapsedMs": 323.993042,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "check-attr",
+        "-z",
+        "--stdin",
+        "filter",
+        "working-tree-encoding",
+        "ident",
+        "text",
+        "eol"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 77156,
+      "gitPid": 77157,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794756977479,
+      "elapsedMs": 29.044667,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "rev-parse",
+        "--absolute-git-dir"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 77158,
+      "gitPid": 77159,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794756977512,
+      "elapsedMs": 481.302292,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "read-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/.git-twig-stage-76712-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/.git-twig-stage-76712-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 77172,
+      "gitPid": 77173,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794756977998,
+      "elapsedMs": 25327.153917,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "update-index",
+        "--really-refresh"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/.git-twig-stage-76712-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/.git-twig-stage-76712-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 77774,
+      "gitPid": 77775,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794757003328,
+      "elapsedMs": 569.1665,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "diff-files",
+        "--quiet",
+        "--no-ext-diff",
+        "--ignore-submodules=none"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/.git-twig-stage-76712-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/.git-twig-stage-76712-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 77789,
+      "gitPid": 77790,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794757003902,
+      "elapsedMs": 10.838875,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "rev-parse",
+        "--path-format=absolute",
+        "--git-common-dir"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 77791,
+      "gitPid": 77792,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794757003918,
+      "elapsedMs": 18.872875,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+        "worktree",
+        "add",
+        "--no-checkout",
+        "--detach",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/w-0",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 77793,
+      "gitPid": 77794,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794757003940,
+      "elapsedMs": 11.6355,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/w-0",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 77795,
+      "gitPid": 77796,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794757003960,
+      "elapsedMs": 122.661292,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/w-0",
+        "read-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 77797,
+      "gitPid": 77798,
+      "parentPid": 76712,
+      "startedAtUnixMs": 1794757004086,
+      "elapsedMs": 10.479917,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/w-0",
+        "hook",
+        "run",
+        "--ignore-missing",
+        "post-checkout",
+        "--",
+        "0000000000000000000000000000000000000000",
+        "23c62304dde29abe92013d85910d03a77dada35d",
+        "1"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 77870,
+      "gitPid": 77871,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757007308,
+      "elapsedMs": 22175.524833,
+      "argv": [
+        "status",
+        "--porcelain",
+        "--untracked-files=no"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-0.mount/w-0",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 78735,
+      "gitPid": 78736,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757045552,
+      "elapsedMs": 6164.823333,
+      "argv": [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "clone",
+        "--shared",
+        "--no-checkout",
+        "--",
+        "$REPO/target/kernel-input.git",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 78864,
+      "gitPid": 78865,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757051721,
+      "elapsedMs": 18141.833167,
+      "argv": [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "checkout",
+        "--detach",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79268,
+      "gitPid": 79269,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757069866,
+      "elapsedMs": 15.5945,
+      "argv": [
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79270,
+      "gitPid": 79271,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757069885,
+      "elapsedMs": 30.195208,
+      "argv": [
+        "ls-files",
+        "-z"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79331,
+      "gitPid": 79332,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757072990,
+      "elapsedMs": 12.946584000000001,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "rev-parse",
+        "--show-toplevel"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79333,
+      "gitPid": 79334,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757073006,
+      "elapsedMs": 37.471375,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "rev-parse",
+        "--verify",
+        "HEAD^{commit}"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79341,
+      "gitPid": 79342,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757073052,
+      "elapsedMs": 11.257875,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79343,
+      "gitPid": 79344,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757073066,
+      "elapsedMs": 11.003667,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "config",
+        "--bool",
+        "--get",
+        "core.sparseCheckout"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79345,
+      "gitPid": 79346,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757073081,
+      "elapsedMs": 12.035584,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "config",
+        "--bool",
+        "--get",
+        "core.sparseCheckoutCone"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79347,
+      "gitPid": 79348,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757073097,
+      "elapsedMs": 11.598084,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "config",
+        "--get",
+        "core.autocrlf"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79349,
+      "gitPid": 79350,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757073112,
+      "elapsedMs": 85.365583,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "ls-tree",
+        "-rz",
+        "--full-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79351,
+      "gitPid": 79352,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757073215,
+      "elapsedMs": 275.542625,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "check-attr",
+        "-z",
+        "--stdin",
+        "filter",
+        "working-tree-encoding",
+        "ident",
+        "text",
+        "eol"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79899,
+      "gitPid": 79900,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757098183,
+      "elapsedMs": 33.810583,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "rev-parse",
+        "--absolute-git-dir"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79901,
+      "gitPid": 79902,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757098220,
+      "elapsedMs": 2681.1414170000003,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "read-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/.git-twig-stage-79330-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/.git-twig-stage-79330-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 79957,
+      "gitPid": 79958,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757100905,
+      "elapsedMs": 39279.891333,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "update-index",
+        "--really-refresh"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/.git-twig-stage-79330-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/.git-twig-stage-79330-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 80793,
+      "gitPid": 80794,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757140188,
+      "elapsedMs": 610.693708,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "diff-files",
+        "--quiet",
+        "--no-ext-diff",
+        "--ignore-submodules=none"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/.git-twig-stage-79330-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/.git-twig-stage-79330-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 80808,
+      "gitPid": 80809,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757140804,
+      "elapsedMs": 11.932666999999999,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "rev-parse",
+        "--path-format=absolute",
+        "--git-common-dir"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 80810,
+      "gitPid": 80811,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757140819,
+      "elapsedMs": 22.071042,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "worktree",
+        "add",
+        "--no-checkout",
+        "--detach",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/warmup",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 80812,
+      "gitPid": 80813,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757140845,
+      "elapsedMs": 12.405833,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/warmup",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 80814,
+      "gitPid": 80815,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757140867,
+      "elapsedMs": 122.521541,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/warmup",
+        "read-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 80822,
+      "gitPid": 80823,
+      "parentPid": 79330,
+      "startedAtUnixMs": 1794757140993,
+      "elapsedMs": 11.060791,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/warmup",
+        "hook",
+        "run",
+        "--ignore-missing",
+        "post-checkout",
+        "--",
+        "0000000000000000000000000000000000000000",
+        "23c62304dde29abe92013d85910d03a77dada35d",
+        "1"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 80824,
+      "gitPid": 80825,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757141009,
+      "elapsedMs": 11960.564417000001,
+      "argv": [
+        "worktree",
+        "remove",
+        "--force",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/warmup"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 81098,
+      "gitPid": 81099,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757153985,
+      "elapsedMs": 12.730458,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "rev-parse",
+        "--show-toplevel"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 81100,
+      "gitPid": 81101,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757154020,
+      "elapsedMs": 16.671792,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "rev-parse",
+        "--verify",
+        "HEAD^{commit}"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 81102,
+      "gitPid": 81103,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757154040,
+      "elapsedMs": 10.817333999999999,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 81110,
+      "gitPid": 81111,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757154054,
+      "elapsedMs": 12.067084000000001,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "config",
+        "--bool",
+        "--get",
+        "core.sparseCheckout"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 81112,
+      "gitPid": 81113,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757154069,
+      "elapsedMs": 11.90075,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "config",
+        "--bool",
+        "--get",
+        "core.sparseCheckoutCone"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 81114,
+      "gitPid": 81115,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757154084,
+      "elapsedMs": 11.313792,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "config",
+        "--get",
+        "core.autocrlf"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 81116,
+      "gitPid": 81117,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757154098,
+      "elapsedMs": 68.005625,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "ls-tree",
+        "-rz",
+        "--full-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 81118,
+      "gitPid": 81119,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757154184,
+      "elapsedMs": 362.132917,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "check-attr",
+        "-z",
+        "--stdin",
+        "filter",
+        "working-tree-encoding",
+        "ident",
+        "text",
+        "eol"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 81582,
+      "gitPid": 81583,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757176109,
+      "elapsedMs": 118.67191700000001,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "rev-parse",
+        "--absolute-git-dir"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 81590,
+      "gitPid": 81591,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757176233,
+      "elapsedMs": 3032.4455000000003,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "read-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/.git-twig-stage-81097-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/.git-twig-stage-81097-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 81655,
+      "gitPid": 81656,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757179269,
+      "elapsedMs": 31687.624083,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "update-index",
+        "--really-refresh"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/.git-twig-stage-81097-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/.git-twig-stage-81097-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 82438,
+      "gitPid": 82439,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757210960,
+      "elapsedMs": 615.059292,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "diff-files",
+        "--quiet",
+        "--no-ext-diff",
+        "--ignore-submodules=none"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/.git-twig-stage-81097-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/.git-twig-stage-81097-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 82447,
+      "gitPid": 82448,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757211580,
+      "elapsedMs": 11.269917000000001,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "rev-parse",
+        "--path-format=absolute",
+        "--git-common-dir"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 82449,
+      "gitPid": 82450,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757211594,
+      "elapsedMs": 21.924334,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+        "worktree",
+        "add",
+        "--no-checkout",
+        "--detach",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/w-0",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 82457,
+      "gitPid": 82458,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757211620,
+      "elapsedMs": 11.500083,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/w-0",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 82459,
+      "gitPid": 82460,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757211640,
+      "elapsedMs": 123.45825,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/w-0",
+        "read-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 82461,
+      "gitPid": 82462,
+      "parentPid": 81097,
+      "startedAtUnixMs": 1794757211767,
+      "elapsedMs": 11.199041999999999,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/w-0",
+        "hook",
+        "run",
+        "--ignore-missing",
+        "post-checkout",
+        "--",
+        "0000000000000000000000000000000000000000",
+        "23c62304dde29abe92013d85910d03a77dada35d",
+        "1"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 82534,
+      "gitPid": 82535,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757214969,
+      "elapsedMs": 17120.542833,
+      "argv": [
+        "status",
+        "--porcelain",
+        "--untracked-files=no"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-1.mount/w-0",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 83999,
+      "gitPid": 84000,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757281184,
+      "elapsedMs": 8021.820167,
+      "argv": [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "clone",
+        "--shared",
+        "--no-checkout",
+        "--",
+        "$REPO/target/kernel-input.git",
+        "$REPO/target/real-images/1794756708696-71187/linux-git-1.mount/seed"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-1.mount",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 84182,
+      "gitPid": 84183,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757289211,
+      "elapsedMs": 26541.106042,
+      "argv": [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "checkout",
+        "--detach",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 84767,
+      "gitPid": 84768,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757315755,
+      "elapsedMs": 23.158167,
+      "argv": [
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 84769,
+      "gitPid": 84770,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757315781,
+      "elapsedMs": 29.856458,
+      "argv": [
+        "ls-files",
+        "-z"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 84988,
+      "gitPid": 84989,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757326023,
+      "elapsedMs": 20572.796707999998,
+      "argv": [
+        "worktree",
+        "add",
+        "--detach",
+        "$REPO/target/real-images/1794756708696-71187/linux-git-1.mount/warmup",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 85419,
+      "gitPid": 85420,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757346601,
+      "elapsedMs": 6682.597583,
+      "argv": [
+        "worktree",
+        "remove",
+        "--force",
+        "$REPO/target/real-images/1794756708696-71187/linux-git-1.mount/warmup"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 85580,
+      "gitPid": 85581,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757354220,
+      "elapsedMs": 27264.05775,
+      "argv": [
+        "worktree",
+        "add",
+        "--detach",
+        "$REPO/target/real-images/1794756708696-71187/linux-git-1.mount/w-0",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-1.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 86202,
+      "gitPid": 86203,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757382619,
+      "elapsedMs": 576.977375,
+      "argv": [
+        "status",
+        "--porcelain",
+        "--untracked-files=no"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-1.mount/w-0",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 86587,
+      "gitPid": 86588,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757399364,
+      "elapsedMs": 6169.213625,
+      "argv": [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "clone",
+        "--shared",
+        "--no-checkout",
+        "--",
+        "$REPO/target/kernel-input.git",
+        "$REPO/target/real-images/1794756708696-71187/linux-git-2.mount/seed"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-2.mount",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 86714,
+      "gitPid": 86721,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757405539,
+      "elapsedMs": 18351.234,
+      "argv": [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "checkout",
+        "--detach",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 87110,
+      "gitPid": 87111,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757423893,
+      "elapsedMs": 18.480792,
+      "argv": [
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 87112,
+      "gitPid": 87113,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757423915,
+      "elapsedMs": 29.415167,
+      "argv": [
+        "ls-files",
+        "-z"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 87171,
+      "gitPid": 87172,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757426669,
+      "elapsedMs": 23628.195417,
+      "argv": [
+        "worktree",
+        "add",
+        "--detach",
+        "$REPO/target/real-images/1794756708696-71187/linux-git-2.mount/warmup",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 87659,
+      "gitPid": 87660,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757450304,
+      "elapsedMs": 7028.709417,
+      "argv": [
+        "worktree",
+        "remove",
+        "--force",
+        "$REPO/target/real-images/1794756708696-71187/linux-git-2.mount/warmup"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 87873,
+      "gitPid": 87874,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757460557,
+      "elapsedMs": 27180.908208,
+      "argv": [
+        "worktree",
+        "add",
+        "--detach",
+        "$REPO/target/real-images/1794756708696-71187/linux-git-2.mount/w-0",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 88481,
+      "gitPid": 88482,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757488794,
+      "elapsedMs": 538.5107919999999,
+      "argv": [
+        "status",
+        "--porcelain",
+        "--untracked-files=no"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-git-2.mount/w-0",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 88886,
+      "gitPid": 88887,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757505571,
+      "elapsedMs": 6170.2835000000005,
+      "argv": [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "clone",
+        "--shared",
+        "--no-checkout",
+        "--",
+        "$REPO/target/kernel-input.git",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 89019,
+      "gitPid": 89020,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757511743,
+      "elapsedMs": 23980.008584,
+      "argv": [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "checkout",
+        "--detach",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 89539,
+      "gitPid": 89540,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757535723,
+      "elapsedMs": 27.978958000000002,
+      "argv": [
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 89541,
+      "gitPid": 89542,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757535755,
+      "elapsedMs": 29.563458,
+      "argv": [
+        "ls-files",
+        "-z"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 89615,
+      "gitPid": 89616,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757539061,
+      "elapsedMs": 12.648833,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "rev-parse",
+        "--show-toplevel"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 89617,
+      "gitPid": 89618,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757539077,
+      "elapsedMs": 21.424417000000002,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "rev-parse",
+        "--verify",
+        "HEAD^{commit}"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 89619,
+      "gitPid": 89620,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757539101,
+      "elapsedMs": 11.943875,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 89627,
+      "gitPid": 89628,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757539117,
+      "elapsedMs": 11.573875000000001,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "config",
+        "--bool",
+        "--get",
+        "core.sparseCheckout"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 89631,
+      "gitPid": 89632,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757539131,
+      "elapsedMs": 11.815000000000001,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "config",
+        "--bool",
+        "--get",
+        "core.sparseCheckoutCone"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 89633,
+      "gitPid": 89634,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757539151,
+      "elapsedMs": 12.871,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "config",
+        "--get",
+        "core.autocrlf"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 89635,
+      "gitPid": 89636,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757539168,
+      "elapsedMs": 72.348,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "ls-tree",
+        "-rz",
+        "--full-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 89637,
+      "gitPid": 89638,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757539258,
+      "elapsedMs": 286.337875,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "check-attr",
+        "-z",
+        "--stdin",
+        "filter",
+        "working-tree-encoding",
+        "ident",
+        "text",
+        "eol"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 90019,
+      "gitPid": 90020,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757558437,
+      "elapsedMs": 36.37712500000001,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "rev-parse",
+        "--absolute-git-dir"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 90021,
+      "gitPid": 90022,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757558478,
+      "elapsedMs": 634.717917,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "read-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/.git-twig-stage-89614-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/.git-twig-stage-89614-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 90036,
+      "gitPid": 90037,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757559117,
+      "elapsedMs": 52127.007125,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "update-index",
+        "--really-refresh"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/.git-twig-stage-89614-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/.git-twig-stage-89614-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91096,
+      "gitPid": 91098,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757611246,
+      "elapsedMs": 364.43041700000003,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "diff-files",
+        "--quiet",
+        "--no-ext-diff",
+        "--ignore-submodules=none"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/.git-twig-stage-89614-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/.git-twig-stage-89614-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91105,
+      "gitPid": 91106,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757611616,
+      "elapsedMs": 12.042166,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "rev-parse",
+        "--path-format=absolute",
+        "--git-common-dir"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91107,
+      "gitPid": 91108,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757611632,
+      "elapsedMs": 15.90925,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "worktree",
+        "add",
+        "--no-checkout",
+        "--detach",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/warmup",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91109,
+      "gitPid": 91110,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757611651,
+      "elapsedMs": 10.499125,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/warmup",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91111,
+      "gitPid": 91112,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757611670,
+      "elapsedMs": 118.8815,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/warmup",
+        "read-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91119,
+      "gitPid": 91120,
+      "parentPid": 89614,
+      "startedAtUnixMs": 1794757611792,
+      "elapsedMs": 10.513875,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/warmup",
+        "hook",
+        "run",
+        "--ignore-missing",
+        "post-checkout",
+        "--",
+        "0000000000000000000000000000000000000000",
+        "23c62304dde29abe92013d85910d03a77dada35d",
+        "1"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91121,
+      "gitPid": 91122,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757611808,
+      "elapsedMs": 7999.939166,
+      "argv": [
+        "worktree",
+        "remove",
+        "--force",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/warmup"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91328,
+      "gitPid": 91329,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757620766,
+      "elapsedMs": 13.01675,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "rev-parse",
+        "--show-toplevel"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91330,
+      "gitPid": 91331,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757620782,
+      "elapsedMs": 14.791667,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "rev-parse",
+        "--verify",
+        "HEAD^{commit}"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91332,
+      "gitPid": 91333,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757620800,
+      "elapsedMs": 10.185542,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91334,
+      "gitPid": 91335,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757620813,
+      "elapsedMs": 9.806417,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "config",
+        "--bool",
+        "--get",
+        "core.sparseCheckout"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91336,
+      "gitPid": 91337,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757620826,
+      "elapsedMs": 10.360666,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "config",
+        "--bool",
+        "--get",
+        "core.sparseCheckoutCone"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91338,
+      "gitPid": 91339,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757620839,
+      "elapsedMs": 9.598374999999999,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "config",
+        "--get",
+        "core.autocrlf"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 1,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91340,
+      "gitPid": 91341,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757620851,
+      "elapsedMs": 65.2575,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "ls-tree",
+        "-rz",
+        "--full-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91342,
+      "gitPid": 91343,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757620934,
+      "elapsedMs": 283.248583,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "check-attr",
+        "-z",
+        "--stdin",
+        "filter",
+        "working-tree-encoding",
+        "ident",
+        "text",
+        "eol"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91727,
+      "gitPid": 91728,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757639630,
+      "elapsedMs": 14.894291,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "rev-parse",
+        "--absolute-git-dir"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91731,
+      "gitPid": 91732,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757639649,
+      "elapsedMs": 517.137875,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "read-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/.git-twig-stage-91327-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/.git-twig-stage-91327-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 91750,
+      "gitPid": 91751,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757640169,
+      "elapsedMs": 18218.989833,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "update-index",
+        "--really-refresh"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/.git-twig-stage-91327-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/.git-twig-stage-91327-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 92156,
+      "gitPid": 92157,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757658392,
+      "elapsedMs": 656.81875,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.sparseCheckout=false",
+        "-c",
+        "core.filemode=true",
+        "-c",
+        "core.symlinks=true",
+        "diff-files",
+        "--quiet",
+        "--no-ext-diff",
+        "--ignore-submodules=none"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/.git-twig-stage-91327-0/index",
+      "workTree": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/.git-twig-stage-91327-0/data"
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 92170,
+      "gitPid": 92171,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757659054,
+      "elapsedMs": 11.172917,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "rev-parse",
+        "--path-format=absolute",
+        "--git-common-dir"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 92172,
+      "gitPid": 92173,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757659068,
+      "elapsedMs": 18.787000000000003,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+        "worktree",
+        "add",
+        "--no-checkout",
+        "--detach",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/w-0",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 92174,
+      "gitPid": 92175,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757659090,
+      "elapsedMs": 11.262540999999999,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/w-0",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 92176,
+      "gitPid": 92177,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757659110,
+      "elapsedMs": 120.53025000000001,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/w-0",
+        "read-tree",
+        "23c62304dde29abe92013d85910d03a77dada35d"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 92178,
+      "gitPid": 92179,
+      "parentPid": 91327,
+      "startedAtUnixMs": 1794757659234,
+      "elapsedMs": 13.021916999999998,
+      "argv": [
+        "-C",
+        "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/w-0",
+        "hook",
+        "run",
+        "--ignore-missing",
+        "post-checkout",
+        "--",
+        "0000000000000000000000000000000000000000",
+        "23c62304dde29abe92013d85910d03a77dada35d",
+        "1"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/seed",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    },
+    {
+      "schemaVersion": 1,
+      "pid": 92225,
+      "gitPid": 92226,
+      "parentPid": 71187,
+      "startedAtUnixMs": 1794757661153,
+      "elapsedMs": 16800.999541,
+      "argv": [
+        "status",
+        "--porcelain",
+        "--untracked-files=no"
+      ],
+      "cwd": "$REPO/target/real-images/1794756708696-71187/linux-twig-2.mount/w-0",
+      "exitCode": 0,
+      "indexFile": null,
+      "workTree": null
+    }
+  ],
+  "sampling": [
+    {
+      "exitCode": 0,
+      "pid": 73365
+    },
+    {
+      "exitCode": 0,
+      "pid": 76712
+    },
+    {
+      "exitCode": 0,
+      "pid": 77173
+    },
+    {
+      "exitCode": 0,
+      "pid": 81097
+    },
+    {
+      "exitCode": 0,
+      "pid": 81591
+    },
+    {
+      "exitCode": 0,
+      "pid": 81656
+    },
+    {
+      "exitCode": 0,
+      "pid": 85581
+    },
+    {
+      "exitCode": 0,
+      "pid": 87874
+    },
+    {
+      "exitCode": 0,
+      "pid": 91327
+    },
+    {
+      "exitCode": 0,
+      "pid": 91751
+    }
+  ],
+  "supplementarySampling": [
+    {
+      "pid": 82535,
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git status --porcelain --untracked-files=no",
+      "sampleFile": "samples/first-status-82535.txt",
+      "startedAtUnixMs": 1794757225119,
+      "reason": "status command identifies its worktree through cwd, not argv; supplementary operator attachment",
+      "samplingIntervalMs": 5,
+      "exitCode": 0
+    },
+    {
+      "pid": 86203,
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git status --porcelain --untracked-files=no",
+      "sampleFile": "samples/first-status-86203.txt",
+      "startedAtUnixMs": 1794757383501,
+      "reason": "status command identifies its worktree through cwd, not argv; supplementary operator attachment",
+      "samplingIntervalMs": 5,
+      "exitCode": 255
+    },
+    {
+      "pid": 88482,
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git status --porcelain --untracked-files=no",
+      "sampleFile": "samples/first-status-88482.txt",
+      "startedAtUnixMs": 1794757489647,
+      "reason": "status command identifies its worktree through cwd, not argv; supplementary operator attachment",
+      "samplingIntervalMs": 5,
+      "exitCode": 255
+    },
+    {
+      "pid": 92226,
+      "command": "/opt/homebrew/Cellar/git/2.56.0_2/bin/git status --porcelain --untracked-files=no",
+      "sampleFile": "samples/first-status-92226.txt",
+      "startedAtUnixMs": 1794757662055,
+      "reason": "status command identifies its worktree through cwd, not argv; supplementary operator attachment",
+      "samplingIntervalMs": 5,
+      "exitCode": 0
+    }
+  ],
+  "supervisor": {
+    "schemaVersion": 1,
+    "phase": "finished",
+    "supervisorPid": 71170,
+    "startedAtUnix": 1794756708.643248,
+    "cleanupErrors": [],
+    "profilerPid": 71179,
+    "processGroup": 71179,
+    "hostFreeGiB": 1231.8478469848633,
+    "scratchAllocatedGiB": 0.0,
+    "elapsedSeconds": 990.6233398914337,
+    "updatedAt": "2026-11-15T15:48:19.266592+00:00",
+    "harnessPid": 71187,
+    "sampledProcesses": 10,
+    "cohorts": [
+      {
+        "backend": "git",
+        "repeat": 0,
+        "succeeded": 1,
+        "failed": 0,
+        "createWallMs": 42465.15475,
+        "verifiedFiles": 97371
+      },
+      {
+        "backend": "twig",
+        "repeat": 0,
+        "succeeded": 1,
+        "failed": 0,
+        "createWallMs": 46910.95225,
+        "verifiedFiles": 97371
+      },
+      {
+        "backend": "twig",
+        "repeat": 1,
+        "succeeded": 1,
+        "failed": 0,
+        "createWallMs": 57801.736750000004,
+        "verifiedFiles": 97371
+      },
+      {
+        "backend": "git",
+        "repeat": 1,
+        "succeeded": 1,
+        "failed": 0,
+        "createWallMs": 27267.968084,
+        "verifiedFiles": 97371
+      },
+      {
+        "backend": "git",
+        "repeat": 2,
+        "succeeded": 1,
+        "failed": 0,
+        "createWallMs": 27185.423084,
+        "verifiedFiles": 97371
+      },
+      {
+        "backend": "twig",
+        "repeat": 2,
+        "succeeded": 1,
+        "failed": 0,
+        "createWallMs": 38489.3425,
+        "verifiedFiles": 97371
+      }
+    ],
+    "measurementFailures": [],
+    "exitCode": 0,
+    "finishedAtUnix": 1794757699.301625
+  },
+  "sampleFiles": [
+    {
+      "path": "kernel-profile-release-samples/73365.stderr",
+      "sha256": "1557b58478cfabe1dea3a4d5700b11c417b3da1ebaa00df68103d3b71d71b8f0"
+    },
+    {
+      "path": "kernel-profile-release-samples/73365.txt",
+      "sha256": "5bb9000554e3a892dd317d8ff320d2121930efd8e003cbaafba2b15e224b0a14"
+    },
+    {
+      "path": "kernel-profile-release-samples/76712.stderr",
+      "sha256": "21904d5f0e421dc937599a4ab295d0476a98f371ef57ecbf89d5e9fa53ceb402"
+    },
+    {
+      "path": "kernel-profile-release-samples/76712.txt",
+      "sha256": "d6d2ade1c06febfac4b06ed10bf4c79c6c692c99fcb27ccb298ba4b780c0d7b6"
+    },
+    {
+      "path": "kernel-profile-release-samples/77173.stderr",
+      "sha256": "80d7c068083062d6924272721c4e724e40fa61d8e9b17f8b1acbf77dc0584f92"
+    },
+    {
+      "path": "kernel-profile-release-samples/77173.txt",
+      "sha256": "9dd304f0bf9147cd6b2a4d2d790790b7d79b1050fe2d327cde00b9805d3c6519"
+    },
+    {
+      "path": "kernel-profile-release-samples/81097.stderr",
+      "sha256": "c6322e983e1e066563bbd1c7f31ab9199a07a02476ff965e4e6eca8ec563f37f"
+    },
+    {
+      "path": "kernel-profile-release-samples/81097.txt",
+      "sha256": "5d7c02773d1321e461582c1e990a445fcf7ac09155332bf771c112373e69b69e"
+    },
+    {
+      "path": "kernel-profile-release-samples/81591.stderr",
+      "sha256": "82eb21ef2f13ea57318d970ff05b0ab7dc7c9346f25b6703ad2045cdc04e33c0"
+    },
+    {
+      "path": "kernel-profile-release-samples/81591.txt",
+      "sha256": "00cc98699459a91d20f7d40f519ace83cc382f83554611565431c0e16c8cdfc4"
+    },
+    {
+      "path": "kernel-profile-release-samples/81656.stderr",
+      "sha256": "736d9058044b02fd51cbd404a504f64e28559e1297a9797c1787413099dec093"
+    },
+    {
+      "path": "kernel-profile-release-samples/81656.txt",
+      "sha256": "d8e21b19920a1fb8b9eee40acaddcfaf6c7809f2f58af95038008d3ffb21dd34"
+    },
+    {
+      "path": "kernel-profile-release-samples/85581.stderr",
+      "sha256": "5c65ad9362d34167634602e40dfb57ab25c21adb9da89996411a4c74796bd426"
+    },
+    {
+      "path": "kernel-profile-release-samples/85581.txt",
+      "sha256": "ccca591789dc8b5a85b510d22a3f85155416195e1e26f047e13dac832517804b"
+    },
+    {
+      "path": "kernel-profile-release-samples/87874.stderr",
+      "sha256": "89ba86f05d03c7bbabc2e39d622ee4c3b48e33120398f9e7b6fd70a9af2af7bc"
+    },
+    {
+      "path": "kernel-profile-release-samples/87874.txt",
+      "sha256": "cf1438fb8aa843ac70cc04ea7bdabfa5821b195b194b85d599031d661fc8266a"
+    },
+    {
+      "path": "kernel-profile-release-samples/91327.stderr",
+      "sha256": "69c9d654bef3c2c502753e1b2f5076e64d5c2fb987278b5d774593c4784318f1"
+    },
+    {
+      "path": "kernel-profile-release-samples/91327.txt",
+      "sha256": "3ecf420db8ef47b77ba1ddffcf19121f6b409316294ff0995eee4cf25a518748"
+    },
+    {
+      "path": "kernel-profile-release-samples/91751.stderr",
+      "sha256": "76f83438021c0869e73c77e1e2f0e69aa06e43ab32f235dc16a38b21cc95bb85"
+    },
+    {
+      "path": "kernel-profile-release-samples/91751.txt",
+      "sha256": "1b215964fcabcbc760185822f3a675446420f19e4d05ac300f3fd8f9ddc38b33"
+    },
+    {
+      "path": "kernel-profile-release-samples/first-status-82535.stderr",
+      "sha256": "fd9f7cd27440dbab8af43095b9b2679729fae171c9ce52ce448cca0bc8496be5"
+    },
+    {
+      "path": "kernel-profile-release-samples/first-status-82535.txt",
+      "sha256": "b9ad49256467027aeab1705e3cb6f67cacbc227fefce67fd8673433be63c53ab"
+    },
+    {
+      "path": "kernel-profile-release-samples/first-status-86203.stderr",
+      "sha256": "fa3e356ed93976565948492cfe084d0faf2a45969c52a19f50fd39d46af87dbe"
+    },
+    {
+      "path": "kernel-profile-release-samples/first-status-88482.stderr",
+      "sha256": "d3fdc55a352701d95d0fcbc98ba9fc2b416f7dcde4bf51da5b3c495bd757587b"
+    },
+    {
+      "path": "kernel-profile-release-samples/first-status-92226.stderr",
+      "sha256": "8630701347bedabe5591e6c068871fbb966752049faf693be5d7b0ffe283a731"
+    },
+    {
+      "path": "kernel-profile-release-samples/first-status-92226.txt",
+      "sha256": "cc0dc314df2850426fbbfaaa17966a0b52fa2906278bcd63a61f352739e6e7d0"
+    }
+  ],
+  "trace2": "kernel-profile-release.trace2.jsonl",
+  "notes": [
+    "Original capture selector missed first-status processes because the worktree is the cwd, not an argv parameter. All first-status timings/Trace2 events remain present; supplementary stacks cover the last two Twig rounds.",
+    "Two supplementary Git status attachments exited before sampling; exit255 and stderr are retained, not zero-cost profiles.",
+    "Home/project paths normalized to placeholders; stack samples include blocked waits, not CPU percentages or syscall counts. Original release candidate unchanged."
+  ]
+}

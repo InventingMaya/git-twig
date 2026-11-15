@@ -223,9 +223,14 @@ fn run() -> Result<()> {
     let child_id = child.id();
     loop {
         for p in processes(child_id)? {
-            let workload = p.command.contains("/w-") || seen_ancestor_workload(p.parent_pid, &seen);
+            let workload = p.command.contains("/w-")
+                || is_first_status(&p.command)
+                || seen_ancestor_workload(p.parent_pid, &seen);
             let current = seen.entry(p.pid).or_insert(p.clone());
             current.last_observed_at_unix_ms = p.last_observed_at_unix_ms;
+            if !p.command.starts_with('(') {
+                current.command.clone_from(&p.command);
+            }
             let target = p
                 .command
                 .starts_with(&candidate.to_string_lossy().to_string())
@@ -285,6 +290,13 @@ fn run() -> Result<()> {
     }
     Ok(())
 }
+fn is_first_status(command: &str) -> bool {
+    command.split_whitespace().collect::<Vec<_>>().ends_with(&[
+        "status",
+        "--porcelain",
+        "--untracked-files=no",
+    ])
+}
 fn seen_ancestor_workload(mut pid: u32, seen: &HashMap<u32, Process>) -> bool {
     for _ in 0..32 {
         let Some(parent) = seen.get(&pid) else {
@@ -312,6 +324,13 @@ mod tests {
     #[test]
     fn redacts_project_paths() {
         assert_eq!(redact("/project/target/x", "/project"), "$REPO/target/x");
+    }
+    #[test]
+    fn status_is_detected_without_a_worktree_in_argv() {
+        assert!(is_first_status(
+            "/opt/git status --porcelain --untracked-files=no"
+        ));
+        assert!(!is_first_status("/opt/git config --get status"));
     }
     #[test]
     fn missing_ancestor_is_not_workload() {

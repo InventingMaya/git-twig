@@ -1,0 +1,77 @@
+{
+  "notes": [
+    "Instrumented elapsed times, not replacement benchmark results.",
+    "Residual includes Rust, process startup, wrapper bookkeeping and scheduling; not pure filesystem CPU.",
+    "No nested Git durations are summed. Stack samples include waits, not syscall counts or CPU percentages."
+  ],
+  "points": [
+    {
+      "backend": "git",
+      "createMs": 42464.796167,
+      "firstStatusMs": 556.430833,
+      "gitCheckoutMs": 42464.796167,
+      "nativePid": null,
+      "otherGitMs": 0.0,
+      "outsideGitMs": 0.0,
+      "repeat": 0,
+      "stagedRefreshMs": 0.0
+    },
+    {
+      "backend": "twig",
+      "createMs": 46910.557666,
+      "firstStatusMs": 22179.514874999997,
+      "gitCheckoutMs": 0.0,
+      "nativePid": 76712,
+      "otherGitMs": 1723.87025,
+      "outsideGitMs": 19859.533499,
+      "repeat": 0,
+      "stagedRefreshMs": 25327.153917
+    },
+    {
+      "backend": "twig",
+      "createMs": 57801.422709,
+      "firstStatusMs": 17123.82675,
+      "gitCheckoutMs": 0.0,
+      "nativePid": 81097,
+      "otherGitMs": 4451.168087,
+      "outsideGitMs": 21662.630538999998,
+      "repeat": 1,
+      "stagedRefreshMs": 31687.624083
+    },
+    {
+      "backend": "git",
+      "createMs": 27267.649834,
+      "firstStatusMs": 580.4298329999999,
+      "gitCheckoutMs": 27267.649834,
+      "nativePid": null,
+      "otherGitMs": 0.0,
+      "outsideGitMs": 0.0,
+      "repeat": 1,
+      "stagedRefreshMs": 0.0
+    },
+    {
+      "backend": "git",
+      "createMs": 27184.928542,
+      "firstStatusMs": 542.406417,
+      "gitCheckoutMs": 27184.928542,
+      "nativePid": null,
+      "otherGitMs": 0.0,
+      "outsideGitMs": 0.0,
+      "repeat": 2,
+      "stagedRefreshMs": 0.0
+    },
+    {
+      "backend": "twig",
+      "createMs": 38488.787375,
+      "firstStatusMs": 16805.621875,
+      "gitCheckoutMs": 0.0,
+      "nativePid": 91327,
+      "otherGitMs": 1779.891041,
+      "outsideGitMs": 18489.906501,
+      "repeat": 2,
+      "stagedRefreshMs": 18218.989833
+    }
+  ],
+  "schemaVersion": 1,
+  "source": "kernel-profile-release.json"
+}

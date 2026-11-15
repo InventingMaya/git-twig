@@ -59,6 +59,35 @@ start with unprivileged stack sampling and Trace2 instead. The wrapper, polling,
 Trace2 and sampler add observer overhead, so this is diagnostic evidence, not a new
 performance comparison. No optimization or broad compatibility change is included.
 
+## Recorded findings and next decision
+
+The [versioned capture](../../bench/results/2026-11-15-real/kernel-profile-release.json),
+[generated elapsed breakdown](../../bench/results/2026-11-15-real/kernel-profile-release.svg)
+and [Trace2 events](../../bench/results/2026-11-15-real/kernel-profile-release.trace2.jsonl)
+back these findings. All recorded creates passed independent verification and source
+isolation checks. Original samplers succeeded; supplementary short Git-status
+attachments that ended before sampling are retained as failures, not invented data.
+
+The dominant individual Git subprocess is staged `update-index --really-refresh`,
+not process startup across the short plumbing calls. Trace2 reports scanning every
+tracked kernel entry during that refresh and again on the installed worktree's
+first status. Source inspection explains the latter: `finish_install` creates a
+fresh index with `read-tree`, discarding the staging index's populated stat cache.
+Preserving that cache is a separate potential optimization, not part of directory
+cloning.
+
+Native parent stacks also show time in `clonefileat`, chmod, lstat and mkdir, with
+substantial blocked time waiting for Git. These are wall-clock stack observations,
+not syscall counters or CPU utilization. Directory cloning is the user's selected
+next change; compare uninstrumented old/new release CLIs before claiming a win.
+
+The initial selector missed status stacks because the worktree was in cwd rather
+than argv. An operational supplemental sampler captured the remaining Twig status
+operations; wrapper timings and Trace2 remained available for every round. The
+subsequent Rust selector recognizes the status command independently of cwd and
+retains post-exec command observations. The first missing status stack is not
+retrospectively fabricated.
+
 ## Validation
 
 Run a small real-CLI smoke capture through the wrapper before the kernel capture.
