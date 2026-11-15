@@ -1,6 +1,12 @@
 {
   "entries": [
     {
+      "name": "new repo (empty commit)",
+      "repository": "empty",
+      "timing": "bench/results/2026-11-15-real/empty-host.json",
+      "allocation": null
+    },
+    {
       "name": "git-twig",
       "repository": "twig",
       "timing": "bench/results/2026-11-15-real/host.json",
@@ -35,6 +41,7 @@
     "Host-APFS creation timings and isolated-image allocation are separate measurements of the same pinned trees and candidate binary. Round counts are shown; budget-stopped suites retain their stop events.",
     "Plain Git's nonzero failure count is an observed concurrent commondir-registration race. Failed attempts remain in the timing samples; a fast failed batch is not a complete successful cohort.",
     "Earlier kernel attempts were budget-stopped. The unrestricted 100-way restart is being run separately; unfinished measurements are never filled in with projections.",
-    "**Linux kernel (prior attempts):** both 100-worker cohorts were launched but budget-stopped before completion; no completed kernel timing/space comparison is claimed. See [pinned input](bench/results/2026-11-15-real/kernel-input.json), [Git attempt](bench/results/2026-11-15-real/kernel-n100-git-event.json), and [Twig attempt](bench/results/2026-11-15-real/kernel-n100-twig-event.json). The exploratory single-worktree run was also incomplete as a paired comparison."
+    "**Linux kernel (prior attempts):** both 100-worker cohorts were launched but budget-stopped before completion; no completed kernel timing/space comparison is claimed. See [pinned input](bench/results/2026-11-15-real/kernel-input.json), [Git attempt](bench/results/2026-11-15-real/kernel-n100-git-event.json), and [Twig attempt](bench/results/2026-11-15-real/kernel-n100-twig-event.json). The exploratory single-worktree run was also incomplete as a paired comparison.",
+    "The new-repo fixture contains zero tracked files and one empty initial commit, not an unborn HEAD. Its private-write probe is not applicable and allocation was not measured on the shared host filesystem."
   ]
 }
