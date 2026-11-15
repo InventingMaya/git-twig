@@ -332,7 +332,12 @@ fn non_utf8_empty_large_and_sparse_files_have_private_writes() -> Result<()> {
         os::unix::ffi::OsStringExt,
     };
     let f = Fixture::new()?;
-    let name = std::ffi::OsString::from_vec(b"non-utf8-\xff".to_vec());
+    // APFS requires valid Unicode names; Linux exercises the raw-byte path here.
+    let name = std::ffi::OsString::from_vec(if cfg!(target_os = "macos") {
+        b"unicode-file-shapes".to_vec()
+    } else {
+        b"non-utf8-\xff".to_vec()
+    });
     fs::create_dir(f.source.join(&name))?;
     fs::write(f.source.join(&name).join("empty"), b"")?;
     fs::write(
