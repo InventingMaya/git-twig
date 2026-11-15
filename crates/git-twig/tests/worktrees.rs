@@ -421,3 +421,122 @@ fn concurrent_creators_do_not_overwrite_each_other() -> Result<()> {
     assert_ne!(a.status.success(), b.status.success());
     clean(&f.destination())
 }
+
+#[cfg(unix)]
+#[test]
+fn directory_clones_filter_extras_without_following_links() -> Result<()> {
+    use std::os::unix::fs::{MetadataExt, PermissionsExt, symlink};
+    let f = Fixture::new()?;
+    let tree = f.source.join("tree");
+    fs::create_dir(&tree)?;
+    fs::write(tree.join("a"), "same\n")?;
+    fs::hard_link(tree.join("a"), tree.join("b"))?;
+    symlink("a", tree.join("link"))?;
+    git(&f.source, &["add", "."])?;
+    git(&f.source, &["commit", "-m", "nested tree"])?;
+    fs::create_dir_all(tree.join("ignored/deep"))?;
+    fs::write(tree.join("ignored/deep/secret"), "excluded")?;
+    fs::set_permissions(tree.join("ignored/deep"), fs::Permissions::from_mode(0o555))?;
+    fs::set_permissions(tree.join("ignored"), fs::Permissions::from_mode(0o555))?;
+    fs::write(tree.join("untracked"), "excluded")?;
+    let outside = f.root.join("outside");
+    fs::create_dir(&outside)?;
+    fs::write(outside.join("keep"), "untouched")?;
+    symlink(&outside, tree.join("escape"))?;
+    let before = git(&f.source, &["status", "--porcelain"])?.stdout;
+    let output = checked(f.add()?)?;
+    native(&output);
+    if cfg!(target_os = "macos") {
+        assert!(String::from_utf8_lossy(&output.stderr).contains("APFS directory clones: 1"));
+        let stage = fs::read_dir(&f.root)?
+            .filter_map(Result::ok)
+            .find(|entry| {
+                entry
+                    .file_name()
+                    .to_string_lossy()
+                    .starts_with(".git-twig-stage-")
+            })
+            .expect("private staging directory retained");
+        assert_eq!(fs::metadata(stage.path())?.permissions().mode() & 0o077, 0);
+    }
+    let destination = f.destination().join("tree");
+    assert!(!destination.join("ignored").exists());
+    assert!(!destination.join("untracked").exists());
+    assert!(fs::symlink_metadata(destination.join("escape")).is_err());
+    assert_eq!(fs::read_link(destination.join("link"))?, Path::new("a"));
+    assert_ne!(
+        fs::metadata(destination.join("a"))?.ino(),
+        fs::metadata(destination.join("b"))?.ino()
+    );
+    clean(&f.destination())?;
+    fs::write(destination.join("a"), "private")?;
+    assert_eq!(fs::read(destination.join("b"))?, b"same\n");
+    assert_eq!(fs::read(tree.join("a"))?, b"same\n");
+    assert_eq!(fs::read(outside.join("keep"))?, b"untouched");
+    assert_eq!(git(&f.source, &["status", "--porcelain"])?.stdout, before);
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn directory_clone_permissions_follow_umask_not_source_modes() -> Result<()> {
+    use std::os::unix::{fs::PermissionsExt, process::CommandExt};
+    let f = Fixture::new()?;
+    let tree = f.source.join("tree");
+    fs::create_dir(&tree)?;
+    fs::write(tree.join("file"), "read only")?;
+    fs::write(tree.join("exec"), "#!/bin/sh\n")?;
+    fs::set_permissions(tree.join("exec"), fs::Permissions::from_mode(0o755))?;
+    git(&f.source, &["add", "."])?;
+    git(&f.source, &["commit", "-m", "modes"])?;
+    fs::set_permissions(tree.join("file"), fs::Permissions::from_mode(0o444))?;
+    fs::set_permissions(&tree, fs::Permissions::from_mode(0o555))?;
+    let mut child = command(env!("CARGO_BIN_EXE_git-twig"), &f.source);
+    child.args(["add", "--detach", "../feature"]);
+    // SAFETY: async-signal-safe, changes only the forked child's umask.
+    unsafe {
+        child.pre_exec(|| {
+            libc::umask(0o077);
+            Ok(())
+        });
+    }
+    let output = checked(child.output()?)?;
+    native(&output);
+    for (name, expected) in [("tree", 0o700), ("tree/file", 0o600), ("tree/exec", 0o700)] {
+        assert_eq!(
+            fs::metadata(f.destination().join(name))?
+                .permissions()
+                .mode()
+                & 0o777,
+            expected
+        );
+    }
+    assert_eq!(fs::metadata(&tree)?.permissions().mode() & 0o777, 0o555);
+    assert_eq!(
+        fs::metadata(tree.join("file"))?.permissions().mode() & 0o777,
+        0o444
+    );
+    clean(&f.destination())
+}
+
+#[cfg(unix)]
+#[test]
+fn replaced_directory_symlink_delegates_without_traversing_it() -> Result<()> {
+    use std::os::unix::fs::symlink;
+    let f = Fixture::new()?;
+    fs::create_dir_all(f.source.join("tree/sub"))?;
+    fs::write(f.source.join("tree/sub/file"), "committed")?;
+    git(&f.source, &["add", "."])?;
+    git(&f.source, &["commit", "-m", "directory"])?;
+    fs::rename(f.source.join("tree/sub"), f.root.join("outside"))?;
+    symlink(f.root.join("outside"), f.source.join("tree/sub"))?;
+    let output = checked(f.add()?)?;
+    assert!(!String::from_utf8_lossy(&output.stderr).contains("APFS CoW: verified"));
+    assert_eq!(
+        fs::read(f.destination().join("tree/sub/file"))?,
+        b"committed"
+    );
+    assert!(fs::symlink_metadata(f.source.join("tree/sub"))?.is_symlink());
+    assert_eq!(fs::read(f.root.join("outside/file"))?, b"committed");
+    clean(&f.destination())
+}

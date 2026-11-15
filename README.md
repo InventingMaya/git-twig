@@ -48,7 +48,7 @@ Time is batch creation; space is additional APFS allocation after first status. 
 Creation is wall time for the entire batch at the recorded concurrency, excluding first status. Values are medians of the recorded timing rounds; one round is an observation, not a stable estimate. Allocation is additional **filesystem-allocated MiB after first status**, including indexes, retained staging and APFS metadata, measured separately on isolated images. Ranges retain observed allocator variation; they are not confidence intervals. Missing measurements are not zeros. Never infer exclusive APFS allocation from logical size or `du`.
 
 - These are local, warm-cache results on a shared Mac, not universal speed guarantees. Input commits and hardware are recorded in each raw run.
-- Only tracked committed files are copied. Ignored dependencies and build artifacts are excluded.
+- Only tracked committed files are included in finished worktrees. Ignored dependencies and build artifacts inside bulk-cloned subtrees are pruned before registration.
 - For host-APFS rows, allocation was measured separately on isolated images using the same pinned trees and candidate binary. The kernel row uses matched case-sensitive APFS images for both timing and allocation. Round counts are shown.
 - Plain Git's nonzero failure count is an observed concurrent commondir-registration race. Failed attempts remain in the timing samples; a fast failed batch is not a complete successful cohort.
 - The new-repo fixture contains zero tracked files and one empty initial commit, not an unborn HEAD. Its private-write probe is not applicable and allocation was not measured on the shared host filesystem.

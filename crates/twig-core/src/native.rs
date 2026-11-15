@@ -4,7 +4,7 @@ use anyhow::bail;
 use std::{ffi::OsString, path::Path};
 
 #[cfg(target_os = "macos")]
-pub fn clone_file(source: &Path, destination: &Path) -> Result<()> {
+pub fn clone_path(source: &Path, destination: &Path) -> Result<()> {
     use std::{ffi::CString, os::unix::ffi::OsStrExt};
     let source = CString::new(source.as_os_str().as_bytes())?;
     let destination = CString::new(destination.as_os_str().as_bytes())?;
@@ -26,7 +26,7 @@ pub fn clone_file(source: &Path, destination: &Path) -> Result<()> {
 }
 
 #[cfg(not(target_os = "macos"))]
-pub fn clone_file(_: &Path, _: &Path) -> Result<()> {
+pub fn clone_path(_: &Path, _: &Path) -> Result<()> {
     bail!("native cloning requires macOS")
 }
 
@@ -42,6 +42,11 @@ impl FileModes {
             regular: creation_permissions(&stage.join("regular-mode"), 0o666)?,
             executable: creation_permissions(&stage.join("executable-mode"), 0o777)?,
         })
+    }
+
+    pub fn apply_directory(&self, path: &Path) -> Result<()> {
+        std::fs::set_permissions(path, self.executable.clone())?;
+        Ok(())
     }
 
     pub fn apply(&self, path: &Path, executable: bool) -> Result<()> {

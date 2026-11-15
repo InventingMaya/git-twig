@@ -1,5 +1,6 @@
 //! Native CoW materialization with Git-owned linked-worktree bookkeeping.
 mod native;
+mod snapshot;
 mod tree;
 
 use anyhow::{Context, Result, bail, ensure};
@@ -154,9 +155,8 @@ fn prepare(cwd: &Path, request: &AddRequest) -> Result<Option<Prepared>> {
     let data = stage.join("data");
     fs::create_dir(&data)?;
     let modes = native::FileModes::new(&stage)?;
-    for entry in &entries {
-        materialize(&root, &data, entry, &modes)?;
-    }
+    let directories = snapshot::materialize(&root, &data, &entries, &modes)?;
+    trace(&format!("APFS directory clones: {directories}"));
     verify(&root, &data, &stage.join("index"), &commit)?;
     Ok(Some(Prepared {
         root,
@@ -164,43 +164,6 @@ fn prepare(cwd: &Path, request: &AddRequest) -> Result<Option<Prepared>> {
         stage,
         commit,
     }))
-}
-
-fn materialize(
-    root: &Path,
-    destination: &Path,
-    entry: &Entry,
-    modes: &native::FileModes,
-) -> Result<()> {
-    let source = root.join(&entry.path);
-    // Reject replaced directory ancestors instead of following links out of the checkout.
-    let mut ancestor = root.to_path_buf();
-    for component in entry.path.parent().context("missing parent")?.components() {
-        ancestor.push(component);
-        ensure!(
-            fs::symlink_metadata(&ancestor)?.is_dir(),
-            "source ancestor is not a directory"
-        );
-    }
-    let target = destination.join(&entry.path);
-    fs::create_dir_all(target.parent().context("missing target parent")?)?;
-    match entry.kind {
-        Kind::File { executable } => {
-            ensure!(
-                fs::symlink_metadata(&source)?.is_file(),
-                "source is not a regular file"
-            );
-            native::clone_file(&source, &target)?;
-            ensure!(
-                fs::symlink_metadata(&target)?.is_file(),
-                "source type changed during clone"
-            );
-            modes.apply(&target, executable)?;
-        }
-        Kind::Symlink => native::symlink(&fs::read_link(&source)?, &target)?,
-        Kind::Submodule => bail!("submodules are not supported by the fast path"),
-    }
-    Ok(())
 }
 
 fn verify(root: &Path, data: &Path, index: &Path, commit: &str) -> Result<()> {
@@ -379,7 +342,18 @@ fn create_stage(parent: &Path) -> Result<PathBuf> {
             std::process::id(),
             NEXT_STAGE.fetch_add(1, Ordering::Relaxed)
         ));
-        match fs::create_dir(&path) {
+        let created = {
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::DirBuilderExt;
+                fs::DirBuilder::new().mode(0o700).create(&path)
+            }
+            #[cfg(not(unix))]
+            {
+                fs::create_dir(&path)
+            }
+        };
+        match created {
             Ok(()) => return Ok(path),
             Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
             Err(error) => return Err(error.into()),

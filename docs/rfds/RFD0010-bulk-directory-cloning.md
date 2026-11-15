@@ -1,0 +1,63 @@
+# RFD0010 — Bulk directory cloning
+
+- Status: implementation snapshot
+- Author: leostera
+- Date: 2026-11-15
+
+## Decision and motivation
+
+Replace per-tracked-file materialization with APFS directory clones of tracked
+root subtrees, as requested after [release profiling](RFD0009-profile-release-overheads.md).
+The Darwin API is still `clonefile`, accepting directories, as in
+[Rift's exact-copy backend](https://github.com/anomalyco/rift/blob/7077f47ae1f3800bed2c689142d0b32ea568c5fa/crates/core/src/strategy/apfs.rs).
+Correctness probes on this Mac confirmed directory cloning with no-follow flags,
+symlink preservation, new inodes for source hardlink aliases, and private writes.
+These are correctness probes, not performance claims.
+
+## Contract
+
+Build a typed directory trie from Git's parsed committed inventory. Bulk-clone each
+tracked root directory, clone root regular files individually, and recreate root
+symlinks. Never clone the repository root: its .git and unrelated root trees are
+not included. All clones reject source-path symlink traversal.
+
+Reduce each private cloned subtree to its tracked inventory. Remove unexpected
+entries without following symlinks, including ignored/untracked content inside a
+tracked directory. Empty untracked directories disappear too. Reject type changes
+or missing tracked entries. Normalize regular/executable file permissions and
+directory permissions from the caller's umask rather than inheriting arbitrary
+source restrictions. Read-only excluded directories are made owner-accessible only
+inside the private snapshot for removal; source permissions remain unchanged.
+
+Create staging atomically with owner-only directory permissions. A cloned tracked
+subtree can temporarily include ignored files until pruning completes; failures
+retain staging for inspection, so that privacy boundary matters. The final worktree
+contains only committed tracked entries. Independently verify the staged bytes,
+Git modes and symlinks before registration, as before. Unsupported inputs or failed
+preparation delegate to stock Git without mutating its worktree registry.
+
+Git still owns linked-worktree registration, refs, hooks and index construction.
+Do not copy Rift's independent .git/repository snapshot semantics. Do not reuse the
+staged index in this change: isolate directory-cloning effects first.
+
+## Validation and reporting
+
+Retain existing compatibility tests. Add directory-clone selection, nested ignored
+and untracked pruning, symlink escape rejection, hardlink-alias independence,
+source isolation, private staging, read-only input and restrictive-umask tests.
+
+Freeze the old and new optimized release executables. Compare real CLI creates
+with the same pinned kernel tree, uninstrumented harness, case-sensitive APFS image
+capacity, count and concurrency. Verify all outputs and source isolation after
+creation. Keep old raw results, commit every new raw point, and generate summaries
+from data. Profiling timings are not the baseline for an improvement claim.
+
+## Alternatives and limitations
+
+Cloning the entire root also clones .git and unrelated dependencies needlessly.
+Per-file cloning is simpler to filter but repeats ancestor checks, directory
+creation and clone syscalls. A maximal clean-subtree planner could avoid cloning
+nested ignored dependencies but adds inventory/selection complexity; defer until
+measured need. Bulk-clone-plus-prune can be expensive when a tracked subtree holds
+large ignored directory trees. It still requires per-entry permission normalization
+and Git content verification. No speedup is assumed before the release comparison.
