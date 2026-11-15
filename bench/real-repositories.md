@@ -35,6 +35,13 @@ byte/symlink/executable verification happen after all create workers join.
 Per-operation first-status latency is recorded separately; the aggregate
 status-and-verification time includes verification and is not pure status time.
 
+## Fixed-count sequential runs
+
+Use `--worktrees 10 --concurrency 1 --repeats 1` for ten creates per backend,
+one at a time. Without `--worktrees`, the total defaults to concurrency as before.
+Creation timestamps in each operation prove whether intervals overlap. A returned
+CLI is checkpointed immediately; independent verification follows after all creates.
+
 ## Direct host timing
 
 Use `--filesystem host` to measure normal host-APFS creation without the disk-image

@@ -11,7 +11,8 @@ const START: &str = "<!-- twig-bench:start -->";
 const END: &str = "<!-- twig-bench:end -->";
 const METRICS: &[&str] = &[
     "tracked files",
-    "parallel creates",
+    "worktrees per run",
+    "simultaneous creates",
     "timing filesystem",
     "Git create",
     "Twig create",
@@ -90,6 +91,11 @@ fn column(entry: &Entry) -> Result<Column> {
             entry.name
         );
         ensure!(
+            worktree_count(&timing)? == worktree_count(allocation)?,
+            "different worktree counts for {}",
+            entry.name
+        );
+        ensure!(
             timing["concurrency"] == allocation["concurrency"],
             "different concurrency for {}",
             entry.name
@@ -129,6 +135,28 @@ fn column(entry: &Entry) -> Result<Column> {
         }
     }
     validate_rows(&rows, &entry.name)?;
+    let expected_count = worktree_count(&timing)?;
+    for row in &rows {
+        let operations = row["operations"].as_array().context("operations")?;
+        ensure!(
+            operations.len() as u64 == expected_count,
+            "incomplete operation list for {}",
+            entry.name
+        );
+        if timing["concurrency"] == 1 {
+            for pair in operations.windows(2) {
+                ensure!(
+                    pair[0]["createFinishedAtMs"]
+                        .as_f64()
+                        .context("sequential finish timestamp")?
+                        <= pair[1]["createStartedAtMs"]
+                            .as_f64()
+                            .context("sequential start timestamp")?,
+                    "sequential operations overlap"
+                );
+            }
+        }
+    }
     let tracked = if let Some(reference) = rows.first() {
         reference["trackedFiles"].to_string()
     } else if let Some(path) = &entry.input {
@@ -158,6 +186,7 @@ fn column(entry: &Entry) -> Result<Column> {
         heading: format!("[{}]({})", entry.name, entry.timing),
         cells: vec![
             tracked,
+            expected_count.to_string(),
             timing["concurrency"].to_string(),
             filesystem.into(),
             wall_cell(&gt, missing)?,
@@ -187,6 +216,13 @@ fn column(entry: &Entry) -> Result<Column> {
             },
         ],
     })
+}
+
+fn worktree_count(run: &Value) -> Result<u64> {
+    run.get("worktreesPerCohort")
+        .unwrap_or(&run["concurrency"])
+        .as_u64()
+        .context("worktree count")
 }
 
 fn validate_rows(rows: &[&Value], name: &str) -> Result<()> {

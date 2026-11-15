@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "reason": "User requested stopping Twig and comparing both runs at the recorded thirty-minute snapshots",
+  "requestedAtUnix": 1794752928.2866838,
+  "suiteElapsedSecondsAtStop": 2341.2607858181,
+  "elapsedIncludesSetupAndWarmup": true,
+  "requestedComparisonSeconds": 1800,
+  "completedVerifiedCohorts": 0,
+  "lastRecordedCompletedCliCalls": 0,
+  "lastOperationalSnapshot": {
+    "schemaVersion": 1,
+    "phase": "running",
+    "startedAtUnix": 1794750587.025898,
+    "timeLimitSeconds": null,
+    "selectedBackend": "twig",
+    "stockGitInterruptedEvent": "../kernel-completion-2026-11-15/git-user-interrupted.json",
+    "scratchLimitGiB": 250,
+    "imageCapacityGiB": 224,
+    "minimumHostFreeGiB": 128,
+    "sourceCommit": "23c62304dde29abe92013d85910d03a77dada35d",
+    "trackedFiles": 97371,
+    "candidateSha256": "65efbfe49fac73fcf9f75a85366bc020f8a5dd62bf0baa7f1c5d1b3e26a92d50",
+    "harnessSha256": "9a6e1a0fbd367e6eb1909ae44c6882e4043398bcc62e83443c39e91618915528",
+    "supervisorPid": 31741,
+    "output": "results.json",
+    "log": "run.log",
+    "cleanupErrors": [],
+    "childPid": 31743,
+    "processGroup": 31743,
+    "progress": [],
+    "volumes": [
+      {
+        "name": "linux-twig-0.mount",
+        "diagnosticAllocatedGiB": 3.211994171142578,
+        "diagnosticInodesInUse": 2297330
+      }
+    ],
+    "diagnosticBackingGiB": 3.2578277587890625,
+    "hostFreeGiB": 863.0055236816406,
+    "elapsedSeconds": 2332.3081028461456,
+    "lastUpdatedUtc": "2026-11-15T14:28:39.334004+00:00",
+    "cohorts": [],
+    "measurementFailures": []
+  },
+  "notACompletedPerformanceMeasurement": true
+}

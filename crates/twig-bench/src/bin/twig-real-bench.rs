@@ -9,7 +9,11 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
     process::{Command, Output},
-    sync::{Arc, Barrier, mpsc},
+    sync::{
+        Arc, Barrier,
+        atomic::{AtomicUsize, Ordering},
+        mpsc,
+    },
     thread,
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
@@ -55,6 +59,7 @@ struct Suite {
     platform: String,
     cpu: String,
     concurrency: usize,
+    worktrees_per_cohort: usize,
     repeats: usize,
     repositories: Vec<Repository>,
     notes: Vec<String>,
@@ -101,6 +106,8 @@ struct Space {
 struct Operation {
     worker: usize,
     create_ms: f64,
+    create_started_at_ms: f64,
+    create_finished_at_ms: f64,
     first_status_ms: Option<f64>,
     exit_code: Option<i32>,
     native_cow: bool,
@@ -131,6 +138,7 @@ struct Expected {
 struct CohortOptions {
     filesystem: Filesystem,
     warmup: bool,
+    worktrees: usize,
 }
 
 struct Image {
@@ -144,7 +152,7 @@ struct Image {
 fn main() -> Result<()> {
     if env::args().any(|arg| arg == "--help") {
         println!(
-            "twig-real-bench --repo label=/absolute/repo [--repo ...] --concurrency 100 --repeats 3 --output target/real-results/run.json\nOptional: --filesystem host (retains fixtures, does not measure allocation), --revision label=COMMIT (after --repo).\nmacOS only. --filesystem case-sensitive-image supports case-colliding trees; --image-gib configures sparse image capacity (default 8). Images are detached and deleted after measurement.\nOriginal repositories are read-only inputs. Results default to target/ (not published)."
+            "twig-real-bench --repo label=/absolute/repo [--repo ...] --concurrency 100 --repeats 3 --output target/real-results/run.json\nSequential example: --worktrees 10 --concurrency 1 --repeats 1\nOptional: --filesystem host (retains fixtures, does not measure allocation), --revision label=COMMIT (after --repo).\nmacOS only. --filesystem case-sensitive-image supports case-colliding trees; --image-gib configures sparse image capacity (default 8). Images are detached and deleted after measurement.\nOriginal repositories are read-only inputs. Results default to target/ (not published)."
         );
         return Ok(());
     }
@@ -155,6 +163,7 @@ fn main() -> Result<()> {
     let cwd = env::current_dir()?;
     let mut repositories = Vec::new();
     let mut concurrency = 100;
+    let mut worktrees = None;
     let mut repeats = 3;
     let mut output = None;
     let mut candidate_path = cwd.join("target/release/git-twig");
@@ -225,12 +234,18 @@ fn main() -> Result<()> {
             }
             "--image-gib" => image_size_gib = value.parse()?,
             "--concurrency" => concurrency = value.parse()?,
+            "--worktrees" => worktrees = Some(value.parse::<usize>()?),
             "--repeats" => repeats = value.parse()?,
             "--output" => output = Some(PathBuf::from(value)),
             "--candidate" => candidate_path = PathBuf::from(value),
             _ => anyhow::bail!("unknown option: {arg}"),
         }
     }
+    let worktrees = worktrees.unwrap_or(concurrency);
+    ensure!(
+        (1..=1000).contains(&worktrees) && concurrency <= worktrees,
+        "worktrees must be 1..1000 and at least the concurrency"
+    );
     ensure!(
         !repositories.is_empty()
             && (1..=128).contains(&concurrency)
@@ -264,11 +279,11 @@ fn main() -> Result<()> {
         candidate_sha256: digest.split_whitespace().next().context("missing candidate hash")?.into(),
         git_version: capture(&cwd, "git", &["--version".into()])?,
         platform: format!("{} {} {}", env::consts::OS, env::consts::ARCH, capture(&cwd, "uname", &["-r".into()])?),
-        cpu: capture(&cwd, "sysctl", &["-n".into(), "machdep.cpu.brand_string".into()])?, concurrency, repeats, repositories: repositories.clone(),
+        cpu: capture(&cwd, "sysctl", &["-n".into(), "machdep.cpu.brand_string".into()])?, concurrency, worktrees_per_cohort: worktrees, repeats, repositories: repositories.clone(),
         notes: vec![
             "Each image-backed backend/repeat gets a fresh, isolated sparse APFS image (capacity/format recorded in imageSizeGiB/filesystem). Seed uses git clone --shared --no-checkout plus explicit pinned-commit checkout. Original repositories and object stores are read-only inputs; seed history uses alternates outside image.".into(),
-            "One warmup per backend removed before baseline space snapshot. Global/system Git config and hooks disabled for fixture setup; no ignored/untracked dependencies or build output copied. Backend order alternates by repeat.".into(),
-            "A barrier releases all CLI workers simultaneously. Create wall time includes thread startup/barrier/join, per-operation latency starts at barrier release. No verification/generation competes with creates. No retries: failures are data.".into(),
+            if warmup { "One operation warmup per backend; removed before image space snapshots, retained on host. Global/system Git config and hooks disabled for fixture setup; no ignored/untracked dependencies or build output copied. Backend order alternates by repeat.".into() } else { "Operation warmup disabled; seed checkout still warms input objects/files. Global/system Git config and fixture hooks disabled.".into() },
+            "A barrier releases the bounded worker pool simultaneously; each worker starts its next queued create only after its previous CLI returns. worktreesPerCohort is the total count; concurrency is the maximum in flight. Create wall time includes thread startup/barrier/join, per-operation latency starts at barrier release. No verification/generation competes with creates. No retries: failures are data.".into(),
             "First git status is measured sequentially after all creates and the initial space snapshot. Full byte/symlink/executable verification follows each first status; its CPU is outside creation timing. A first-status sum is not a concurrent-status wall time.".into(),
             "Allocated space is total minus free blocks from statvfs on the isolated APFS filesystem, sampled after sync until stable (or marked unstable). This includes working files, indexes, retained staging and filesystem metadata, not logical size/du/st_blocks. Host sparse-image allocation is not the metric.".into(),
             "After initial verification/space measurement, one byte in one regular file per successful checkout is changed in place. Additional filesystem allocation is sampled; seed file must remain unchanged. Images are detached and deleted after saving each cohort; no benchmark input paths or source file contents are serialized.".into(),
@@ -294,7 +309,7 @@ fn main() -> Result<()> {
                     continue;
                 }
                 eprintln!(
-                    "{}: {backend}, repeat {}/{repeats}, {concurrency} simultaneous creates",
+                    "{}: {backend}, repeat {}/{repeats}, {worktrees} creates with concurrency {concurrency}",
                     repository.label,
                     repeat + 1
                 );
@@ -312,7 +327,11 @@ fn main() -> Result<()> {
                         concurrency,
                         &candidate,
                         &image.mount,
-                        CohortOptions { filesystem, warmup },
+                        CohortOptions {
+                            filesystem,
+                            warmup,
+                            worktrees,
+                        },
                     )
                 });
                 match result {
@@ -461,7 +480,14 @@ fn cohort(
     let expected = expected_files(&seed)?;
     let logical_bytes = expected.iter().map(|entry| entry.data.len() as u64).sum();
     if options.warmup {
-        let warmup = create(&seed, &mount.join("warmup"), candidate, backend, 0, None);
+        let warmup = create(
+            &seed,
+            &mount.join("warmup"),
+            candidate,
+            backend,
+            0,
+            Instant::now(),
+        );
         ensure!(
             warmup.error.is_none() && (backend != "twig" || warmup.native_cow),
             "warmup did not use expected backend: {:?}",
@@ -489,33 +515,41 @@ fn cohort(
     }
     let before = filesystem.snapshot(mount)?;
     let barrier = Arc::new(Barrier::new(concurrency));
+    let next = Arc::new(AtomicUsize::new(0));
     let (sender, receiver) = mpsc::channel();
     let checkpoint = mount.with_extension("creation.json");
     let start = Instant::now();
     let handles = (0..concurrency)
-        .map(|worker| {
+        .map(|_| {
             let seed = seed.clone();
-            let destination = mount.join(format!("w-{worker}"));
+            let mount = mount.to_path_buf();
             let candidate = candidate.to_path_buf();
             let backend = backend.to_owned();
             let barrier = Arc::clone(&barrier);
+            let next = Arc::clone(&next);
             let sender = sender.clone();
             thread::spawn(move || {
-                let outcome = create(
-                    &seed,
-                    &destination,
-                    &candidate,
-                    &backend,
-                    worker,
-                    Some(barrier),
-                );
-                let _ = sender.send(outcome);
+                barrier.wait();
+                loop {
+                    let worker = next.fetch_add(1, Ordering::Relaxed);
+                    if worker >= options.worktrees {
+                        break;
+                    }
+                    let destination = mount.join(format!("w-{worker}"));
+                    let outcome = create(&seed, &destination, &candidate, &backend, worker, start);
+                    if sender.send(outcome).is_err() {
+                        break;
+                    }
+                }
             })
         })
         .collect::<Vec<_>>();
-    eprintln!("cohort workers launched: {concurrency}");
+    eprintln!(
+        "cohort workers launched: {concurrency}; queued creates: {}",
+        options.worktrees
+    );
     drop(sender);
-    let mut operations = Vec::with_capacity(concurrency);
+    let mut operations = Vec::with_capacity(options.worktrees);
     for mut operation in receiver {
         if let Some(error) = &mut operation.error {
             *error = error
@@ -524,8 +558,9 @@ fn cohort(
         }
         operations.push(operation);
         eprintln!(
-            "{backend}: CLI completed {}/{concurrency}; content verification pending",
-            operations.len()
+            "{backend}: CLI completed {}/{}; content verification pending",
+            operations.len(),
+            options.worktrees
         );
         let progress = CreationProgress {
             schema_version: 1,
@@ -534,7 +569,7 @@ fn cohort(
             source_commit: &repository.commit,
             backend,
             repeat,
-            expected_operations: concurrency,
+            expected_operations: options.worktrees,
             elapsed_ms: ms(start),
             operations: &operations,
         };
@@ -544,10 +579,18 @@ fn cohort(
         handle.join().expect("CLI worker panicked");
     }
     ensure!(
-        operations.len() == concurrency,
+        operations.len() == options.worktrees,
         "a CLI worker did not return an outcome"
     );
     operations.sort_by_key(|operation| operation.worker);
+    if concurrency == 1 {
+        ensure!(
+            operations
+                .windows(2)
+                .all(|pair| pair[0].create_finished_at_ms <= pair[1].create_started_at_ms),
+            "sequential creates overlapped"
+        );
+    }
     let create_wall_ms = ms(start);
     let after_create = filesystem.snapshot(mount)?;
     let status_start = Instant::now();
@@ -638,7 +681,7 @@ fn cohort(
         creates_per_second: succeeded as f64 * 1000.0 / create_wall_ms,
         status_and_verification_wall_ms,
         succeeded,
-        failed: concurrency - succeeded,
+        failed: options.worktrees - succeeded,
         verified_files,
         source_unchanged,
         private_write_tested: first.is_some(),
@@ -673,7 +716,7 @@ fn create(
     candidate: &Path,
     backend: &str,
     worker: usize,
-    barrier: Option<Arc<Barrier>>,
+    cohort_start: Instant,
 ) -> Operation {
     let mut command = if backend == "git" {
         command("git", seed)
@@ -687,16 +730,17 @@ fn create(
         .args(["add", "--detach"])
         .arg(destination)
         .arg("HEAD");
-    if let Some(barrier) = barrier {
-        barrier.wait();
-    }
     let start = Instant::now();
+    let create_started_at_ms = start.duration_since(cohort_start).as_secs_f64() * 1000.0;
     let output = command.output();
     let elapsed = ms(start);
+    let create_finished_at_ms = ms(cohort_start);
     match output {
         Ok(output) => Operation {
             worker,
             create_ms: elapsed,
+            create_started_at_ms,
+            create_finished_at_ms,
             first_status_ms: None,
             exit_code: output.status.code(),
             native_cow: String::from_utf8_lossy(&output.stderr)
@@ -711,6 +755,8 @@ fn create(
         Err(error) => Operation {
             worker,
             create_ms: elapsed,
+            create_started_at_ms,
+            create_finished_at_ms,
             first_status_ms: None,
             exit_code: None,
             native_cow: false,

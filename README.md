@@ -20,7 +20,8 @@ Performance depends on the workload; tiny repositories can be slower.
 | metric | [new repo (empty commit)](bench/results/2026-11-15-real/empty-host.json) | [git-twig](bench/results/2026-11-15-real/host.json) | [Axo](bench/results/2026-11-15-real/host.json) | [Linux kernel (1)](bench/results/2026-11-15-real/kernel-n1.json) | [Linux kernel (100, prior attempt)](bench/results/2026-11-15-real/kernel-n100-git.json) |
 |---|---|---|---|---|---|
 | tracked files | 0 | 45 | 2083 | 97371 | 97371 |
-| parallel creates | 100 | 100 | 100 | 1 | 100 |
+| worktrees per run | 100 | 100 | 100 | 1 | 100 |
+| simultaneous creates | 100 | 100 | 100 | 1 | 100 |
 | timing filesystem | host APFS | host APFS | host APFS | case-sensitive APFS image | case-sensitive APFS image |
 | Git create | 1.79 s | 4.90 s | 279.81 s | 65.37 s | budget stopped |
 | Twig create | 8.02 s | 10.13 s | 138.79 s | budget stopped | budget stopped |
@@ -36,10 +37,10 @@ Creation is wall time for the entire concurrent cohort, excluding first status. 
 - Only tracked committed files are copied. Ignored dependencies and build artifacts are excluded.
 - Host-APFS creation timings and isolated-image allocation are separate measurements of the same pinned trees and candidate binary. Round counts are shown; budget-stopped suites retain their stop events.
 - Plain Git's nonzero failure count is an observed concurrent commondir-registration race. Failed attempts remain in the timing samples; a fast failed batch is not a complete successful cohort.
-- Earlier kernel attempts were budget-stopped. The subsequent regular-Git run was user-interrupted, and a Twig-only 100-way run is now in progress; unfinished measurements are never filled in with projections.
+- Earlier kernel attempts were budget-stopped. The subsequent regular-Git run was user-interrupted, and the subsequent parallel Twig-only run was also user-interrupted; unfinished measurements are never filled in with projections.
 - **Linux kernel (prior attempts):** both 100-worker cohorts were launched but budget-stopped before completion; no completed kernel timing/space comparison is claimed. See [pinned input](bench/results/2026-11-15-real/kernel-input.json), [Git attempt](bench/results/2026-11-15-real/kernel-n100-git-event.json), and [Twig attempt](bench/results/2026-11-15-real/kernel-n100-twig-event.json). The exploratory single-worktree run was also incomplete as a paired comparison.
 - The new-repo fixture contains zero tracked files and one empty initial commit, not an unborn HEAD. Its private-write probe is not applicable and allocation was not measured on the shared host filesystem.
-- The long regular-Git kernel run was [user-interrupted](bench/results/2026-11-15-real/kernel-git-user-interrupted.json) before any verified cohort completed. Its elapsed suite time includes setup/warmup and is not a completed create-time measurement. The Twig-only run will be reported separately; no speedup will be inferred from an unfinished Git baseline.
+- The long regular-Git kernel run was [user-interrupted](bench/results/2026-11-15-real/kernel-git-user-interrupted.json) before any verified cohort completed. Its elapsed suite time includes setup/warmup and is not a completed create-time measurement. The parallel Twig-only run was also [user-interrupted](bench/results/2026-11-15-real/kernel-twig-user-interrupted.json). A fresh ten-worktree sequential comparison is being prepared; no speedup is inferred from unfinished runs.
 
 [Methodology](bench/real-repositories.md) · [raw run index](bench/results/readme.json). First-status latency, p95/p99, errors, source revisions, candidate SHA-256, platform and full samples are in the linked raw runs.
 
