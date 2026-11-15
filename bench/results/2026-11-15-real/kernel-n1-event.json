@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "concurrency": 1,
+  "startedAtUnix": 1794744501.667063,
+  "finishedAtUnix": 1794745104.1879082,
+  "elapsedSeconds": 602.5208451747894,
+  "maximumSeconds": 600,
+  "budgetStopped": true,
+  "exitCode": -15,
+  "ownedImagesRemovedAfterExit": [
+    "linux-twig-0.sparseimage"
+  ],
+  "rawResults": "kernel-n1.json",
+  "rawMeasurementsUnchanged": true
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "backend": "git",
+  "concurrency": 100,
+  "maximumSeconds": 120,
+  "cohortLaunched": true,
+  "budgetStopped": true,
+  "completedVerifiedCohort": false,
+  "rawMeasurementsUnchanged": true,
+  "ownedImagesRemovedAfterExit": true,
+  "cleanupNote": "Initial detach was busy; remaining owned process group was killed and its image was then detached and removed."
+}

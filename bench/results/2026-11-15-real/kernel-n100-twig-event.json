@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "backend": "twig",
+  "cohortLaunched": true,
+  "concurrency": 100,
+  "startedAtUnix": 1794745706.878816,
+  "finishedAtUnix": 1794745811.588425,
+  "elapsedSeconds": 104.70960903167725,
+  "maximumSeconds": 101.641184091568,
+  "budgetStopped": true,
+  "exitCode": -15,
+  "ownedImagesRemovedAfterExit": [
+    "linux-twig-0.sparseimage"
+  ],
+  "rawResults": "kernel-n100-twig.json",
+  "rawMeasurementsUnchanged": true
+}
