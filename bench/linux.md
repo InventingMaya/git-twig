@@ -1,0 +1,95 @@
+# Linux CLI benchmarks
+
+Question: does verified Linux CoW reduce actual worktree creation time and additional
+filesystem allocation versus the installed stock Git? Correctness requires zero wrong
+checkouts and source mutations. Time improvements are a measurement, not a promise.
+
+## Build and inputs
+
+```sh
+cargo build --release --workspace --locked
+# New paths only; deterministic xorshift bytes are not zero/compression fixtures.
+target/release/twig-fixture target/inputs/byte-heavy/main 16 4194304
+target/release/twig-fixture target/inputs/file-heavy/main 4096 1024
+```
+
+Use `--repo label=/absolute/path/to/repo` for public real repositories. The harness
+pins HEAD and creates a new seed; original repositories are read-only inputs.
+`--revision label=FULL_OID` overrides the pin. Custom conversion attributes and
+unsupported checkout semantics are outside the native subset; warmup must select
+native CoW or the run fails. Do not remove attributes just to label a modified
+fixture an unmodified real repository.
+
+## Isolated Linux environment
+
+Run on Linux with Git 2.40+, `xfsprogs`, `btrfs-progs`, `util-linux`, `sudo`, and
+`sha256sum`. Setup needs noninteractive permission to mount/unmount fresh loopback
+images and change their mountpoint ownership. Run the harness unprivileged; do not
+change the host's sudo policy for a benchmark. A disposable privileged Ubuntu
+container is one option. Bind-mount the repository directory (including `main/`
+and its sibling worktree) at the same absolute path so Git worktree metadata resolves.
+Do not mount credentials or unrelated directories. Record the image ID/digest and
+installed tool versions with the run. Rust compilation can happen outside the
+container; export `TWIG_BENCH_RUST_VERSION="$(rustc --version)"` from that toolchain.
+
+Loopback mount may need `/dev/loopN` device nodes in the container when the host
+already uses all existing nodes. Never format or detach an unrelated loop device.
+The harness formats only a newly created regular file and retains it after unmount.
+`TWIG_BENCH_ROOT=1` permits direct mount commands in an explicitly root-run test
+container; leave it unset for unprivileged measurements.
+
+## Measure
+
+Start with two worktrees and one paired round as a smoke test. Then commit the
+harness/candidate, build release binaries, and run at least three paired rounds.
+The timestamped raw output must not exist beforehand.
+
+```sh
+repo="$PWD/target/inputs/byte-heavy/main"
+target/release/twig-real-bench --filesystem linux-xfs-image \
+  --repo "byte-heavy=$repo" --concurrency 1 --worktrees 4 --repeats 3 \
+  --image-gib 8 --output target/linux-results/linux-xfs-byte-c1.json
+# Repeat with linux-btrfs-image and file-heavy/real public inputs.
+# Ramp concurrency 1,4,16,64, up to128, keeping cohort sizes explicit.
+target/release/twig-real-plot target/linux-results/linux-xfs-byte-c1.json
+```
+
+Keep in-progress outputs under ignored `target/` so raw files do not mark later
+runs dirty. After the suite, copy publishable JSON/SVG into `bench/results/` and
+commit them. `--note TEXT` records environment details and explicit budget stops.
+
+Plots are SVG; percentile/allocation tables go to stdout, not evidence markdown.
+Each filesystem/backend/repeat gets a fresh image, seed, warmup and registry.
+Backend order alternates. JSON includes every attempt, native selection, exact
+input commit/tree, candidate SHA-256, harness revision/dirty state, versions, CPU,
+kernel, capacity, samples and allocation stabilization observations. Scratch
+append-only completion JSONL preserves interrupted outcomes. Native Twig is
+mandatory; fallback is an error rather than a covert stock-Git measurement.
+
+Creation is the bounded cohort's wall time through the final CLI completion,
+excluding final coordinator checkpoint/join work. Raw per-operation create latency,
+first-status latency, harness CPU and observer wall time are separate. First status
+and exhaustive byte/link/executable verification run only after all creates.
+After verification, a nonzero byte in an existing regular file is changed privately;
+its offset and file length are recorded. An all-empty/all-zero fixture cannot prove
+existing-data-block CoW and reports that probe as not applicable.
+
+Space is **additional isolated filesystem allocation after first status**, sampled
+with statvfs after sync until stable or flagged unstable. It includes indexes,
+metadata and retained staging. Shared data is counted once at filesystem level;
+this is not summed file blocks, `du`, exact per-file exclusive allocation or host
+image allocation. Btrfs statfs is an allocator estimate, not raw-device physical
+accounting. Report observed ranges, negative deltas, failures and unstable snapshots.
+
+Stop a ramp on correctness failure, unexplained errors, or an explicit disk/time
+budget. Publish the stopping reason with raw data; a budget stop is not measured
+maximum capacity. If a baseline cohort fails, retain its time/error records but do
+not compare it as an equally complete successful cohort. Harness CPU and observer
+lag help identify driver bottlenecks; compare the next level before calling a
+flattening curve target saturation.
+
+All images and fixtures remain under `target/real-images/`; disk use grows across
+runs. Do not benchmark alongside the correctness stress suite or other image I/O.
+Results describe warm-cache loopback files on the recorded backing filesystem and
+a shared host, not cold-cache or bare-device performance. See
+[RFD0012](../docs/rfds/RFD0012-linux-correctness-and-measurement.md).

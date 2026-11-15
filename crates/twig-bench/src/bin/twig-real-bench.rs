@@ -6,7 +6,7 @@ use std::{
     env,
     ffi::{CString, OsString},
     fs::{self, OpenOptions},
-    io::Write,
+    io::{Seek, SeekFrom, Write},
     path::{Path, PathBuf},
     process::{Command, Output},
     sync::{
@@ -24,12 +24,17 @@ enum Filesystem {
     IsolatedImage,
     CaseSensitiveImage,
     Host,
+    LinuxXfsImage,
+    LinuxBtrfsImage,
 }
 
 impl Filesystem {
     fn snapshot(self, path: &Path) -> Result<Option<Space>> {
         match self {
-            Self::IsolatedImage | Self::CaseSensitiveImage => Ok(Some(settled_space(path)?)),
+            Self::IsolatedImage
+            | Self::CaseSensitiveImage
+            | Self::LinuxXfsImage
+            | Self::LinuxBtrfsImage => Ok(Some(settled_space(path)?)),
             Self::Host => Ok(None),
         }
     }
@@ -77,6 +82,8 @@ struct Cohort {
     tracked_files: usize,
     logical_bytes_per_worktree: u64,
     create_wall_ms: f64,
+    harness_cpu_ms_during_create: f64,
+    observer_wall_ms: f64,
     creates_per_second: f64,
     status_and_verification_wall_ms: f64,
     succeeded: usize,
@@ -84,6 +91,8 @@ struct Cohort {
     verified_files: usize,
     source_unchanged: bool,
     private_write_tested: bool,
+    private_write_file_bytes: Option<usize>,
+    private_write_offset: Option<usize>,
     before: Option<Space>,
     after_create: Option<Space>,
     after_status: Option<Space>,
@@ -152,13 +161,13 @@ struct Image {
 fn main() -> Result<()> {
     if env::args().any(|arg| arg == "--help") {
         println!(
-            "twig-real-bench --repo label=/absolute/repo [--repo ...] --concurrency 100 --repeats 3 --output target/real-results/run.json\nSequential example: --worktrees 10 --concurrency 1 --repeats 1\nOptional: --filesystem host (retains fixtures, does not measure allocation), --revision label=COMMIT (after --repo).\nmacOS only. --filesystem case-sensitive-image supports case-colliding trees; --image-gib configures sparse image capacity (default 8). Images are detached and deleted after measurement.\nOriginal repositories are read-only inputs. Results default to target/ (not published)."
+            "twig-real-bench --repo label=/absolute/repo [--repo ...] --concurrency 100 --repeats 3 --output target/real-results/run.json\nSequential example: --worktrees 10 --concurrency 1 --repeats 1\nOptional: --filesystem host (retains fixtures, does not measure allocation), --revision label=COMMIT (after --repo).\nmacOS: --filesystem isolated-image or case-sensitive-image. Linux: --filesystem linux-xfs-image or linux-btrfs-image (mkfs + noninteractive sudo mount/umount required). --image-gib sets capacity (default 8). Linux images/fixtures are retained after unmount; APFS images are disposable.\nOriginal repositories are read-only inputs. Results default to target/ (not published)."
         );
         return Ok(());
     }
     ensure!(
-        cfg!(target_os = "macos"),
-        "isolated APFS benchmarks require macOS"
+        cfg!(any(target_os = "macos", target_os = "linux")),
+        "image benchmarks require macOS or Linux"
     );
     let cwd = env::current_dir()?;
     let mut repositories = Vec::new();
@@ -171,6 +180,7 @@ fn main() -> Result<()> {
     let mut image_size_gib: u64 = 8;
     let mut warmup = true;
     let mut selected_backend = None;
+    let mut run_notes = Vec::new();
     let mut args = env::args().skip(1);
     while let Some(arg) = args.next() {
         let value = args.next().context("option requires a value")?;
@@ -219,12 +229,15 @@ fn main() -> Result<()> {
                     "host" => Filesystem::Host,
                     "isolated-image" => Filesystem::IsolatedImage,
                     "case-sensitive-image" => Filesystem::CaseSensitiveImage,
+                    "linux-xfs-image" => Filesystem::LinuxXfsImage,
+                    "linux-btrfs-image" => Filesystem::LinuxBtrfsImage,
                     _ => anyhow::bail!(
-                        "filesystem must be host, isolated-image or case-sensitive-image"
+                        "filesystem must be host, isolated-image, case-sensitive-image, linux-xfs-image or linux-btrfs-image"
                     ),
                 }
             }
             "--warmup" => warmup = value.parse()?,
+            "--note" => run_notes.push(value),
             "--backend" => {
                 ensure!(
                     value == "git" || value == "twig",
@@ -241,6 +254,14 @@ fn main() -> Result<()> {
             _ => anyhow::bail!("unknown option: {arg}"),
         }
     }
+    ensure!(
+        match filesystem {
+            Filesystem::LinuxXfsImage | Filesystem::LinuxBtrfsImage => cfg!(target_os = "linux"),
+            Filesystem::IsolatedImage | Filesystem::CaseSensitiveImage => cfg!(target_os = "macos"),
+            Filesystem::Host => true,
+        },
+        "selected image format is not supported on this platform"
+    );
     let worktrees = worktrees.unwrap_or(concurrency);
     ensure!(
         (1..=1000).contains(&worktrees) && concurrency <= worktrees,
@@ -264,35 +285,77 @@ fn main() -> Result<()> {
     fs::create_dir_all(&root)?;
     let root = fs::canonicalize(root)?;
     let candidate = fs::canonicalize(candidate_path)?;
-    let digest = capture(
-        &cwd,
-        "shasum",
-        &[
-            OsString::from("-a"),
-            "256".into(),
-            candidate.as_os_str().into(),
-        ],
-    )?;
+    let digest = if cfg!(target_os = "linux") {
+        capture(&cwd, "sha256sum", &[candidate.as_os_str().into()])?
+    } else {
+        capture(
+            &cwd,
+            "shasum",
+            &["-a".into(), "256".into(), candidate.as_os_str().into()],
+        )?
+    };
+    let cpu = if cfg!(target_os = "linux") {
+        fs::read_to_string("/proc/cpuinfo")?
+            .lines()
+            .find_map(|line| {
+                line.strip_prefix("model name")
+                    .and_then(|s| s.split_once(':'))
+                    .map(|(_, model)| model.trim().to_owned())
+            })
+            .unwrap_or_else(|| env::consts::ARCH.into())
+    } else {
+        capture(
+            &cwd,
+            "sysctl",
+            &["-n".into(), "machdep.cpu.brand_string".into()],
+        )?
+    };
     let mut suite = Suite {
-        schema_version: 2, filesystem, warmup, selected_backend: selected_backend.clone(), image_size_gib: if filesystem == Filesystem::Host { None } else { Some(image_size_gib) }, suite: "real-apfs-cohort".into(), generated_at_unix_ms: timestamp,
+        schema_version: 3, filesystem, warmup, selected_backend: selected_backend.clone(), image_size_gib: if filesystem == Filesystem::Host { None } else { Some(image_size_gib) }, suite: "real-image-cohort".into(), generated_at_unix_ms: timestamp,
         commit: git_text(&cwd, &["rev-parse", "HEAD"])?, dirty: !git_text(&cwd, &["status", "--porcelain"])?.is_empty(),
         candidate_sha256: digest.split_whitespace().next().context("missing candidate hash")?.into(),
         git_version: capture(&cwd, "git", &["--version".into()])?,
         platform: format!("{} {} {}", env::consts::OS, env::consts::ARCH, capture(&cwd, "uname", &["-r".into()])?),
-        cpu: capture(&cwd, "sysctl", &["-n".into(), "machdep.cpu.brand_string".into()])?, concurrency, worktrees_per_cohort: worktrees, repeats, repositories: repositories.clone(),
+        cpu, concurrency, worktrees_per_cohort: worktrees, repeats, repositories: repositories.clone(),
         notes: vec![
-            "Each image-backed backend/repeat gets a fresh, isolated sparse APFS image (capacity/format recorded in imageSizeGiB/filesystem). Seed uses git clone --shared --no-checkout plus explicit pinned-commit checkout. Original repositories and object stores are read-only inputs; seed history uses alternates outside image.".into(),
-            if warmup { "One operation warmup per backend; removed before image space snapshots, retained on host. Global/system Git config and hooks disabled for fixture setup; no ignored/untracked dependencies or build output copied. Backend order alternates by repeat.".into() } else { "Operation warmup disabled; seed checkout still warms input objects/files. Global/system Git config and fixture hooks disabled.".into() },
-            "A barrier releases the bounded worker pool simultaneously; each worker starts its next queued create only after its previous CLI returns. worktreesPerCohort is the total count; concurrency is the maximum in flight. Create wall time includes thread startup/barrier/join, per-operation latency starts at barrier release. No verification/generation competes with creates. No retries: failures are data.".into(),
+            "Each image-backed backend/repeat gets a fresh, isolated sparse filesystem image (capacity/format recorded in imageSizeGiB/filesystem). Seed uses git clone --shared --no-checkout plus explicit pinned-commit checkout. Original repositories and object stores are read-only inputs; seed history uses alternates outside image.".into(),
+            if warmup { "One operation warmup per backend; removed before APFS space snapshots, retained on Linux and host. Global/system Git config and hooks disabled for fixture setup; no ignored/untracked dependencies or build output copied. Backend order alternates by repeat.".into() } else { "Operation warmup disabled; seed checkout still warms input objects/files. Global/system Git config and fixture hooks disabled.".into() },
+            "A barrier releases the bounded worker pool simultaneously; each worker starts its next queued create only after its previous CLI returns. worktreesPerCohort is the total count; concurrency is the maximum in flight. Create wall time includes thread startup/barrier and ends at the last CLI completion, excluding final coordinator checkpoint/join work. Per-operation latency measures only that CLI. harnessCpuMsDuringCreate records self CPU (coordinator and worker threads), excluding CLI child CPU. No verification/generation competes with creates. No retries: failures are data.".into(),
             "First git status is measured sequentially after all creates and the initial space snapshot. Full byte/symlink/executable verification follows each first status; its CPU is outside creation timing. A first-status sum is not a concurrent-status wall time.".into(),
-            "Allocated space is total minus free blocks from statvfs on the isolated APFS filesystem, sampled after sync until stable (or marked unstable). This includes working files, indexes, retained staging and filesystem metadata, not logical size/du/st_blocks. Host sparse-image allocation is not the metric.".into(),
-            "After initial verification/space measurement, one byte in one regular file per successful checkout is changed in place. Additional filesystem allocation is sampled; seed file must remain unchanged. Images are detached and deleted after saving each cohort; no benchmark input paths or source file contents are serialized.".into(),
-            "Local warm-cache results. A sparse APFS image is a controlled filesystem, not a claim about native host-volume maximum throughput. Report failures alongside latency and allocation; do not compare unequal successful counts as identical capacity.".into(),
+            "Allocated space is total minus free blocks from statvfs on the isolated filesystem, sampled after sync until stable (or marked unstable). This includes working files, indexes, retained staging and filesystem metadata, not logical size/du/st_blocks. Host sparse-image allocation is not the metric.".into(),
+            "After initial verification/space measurement, one data-bearing byte in one nonempty regular file per successful checkout (offset and file length recorded) is changed in place. Additional filesystem allocation is sampled; seed file must remain unchanged. APFS images are detached and deleted after saving each cohort; Linux images and fixtures are retained after unmount; no benchmark input paths or source file contents are serialized.".into(),
+            "Local warm-cache results. A sparse loopback/disk image is a controlled filesystem, not a claim about native host-volume maximum throughput. Report failures alongside latency and allocation; do not compare unequal successful counts as identical capacity.".into(),
         ], cohorts: vec![], failures: vec![],
     };
+    if matches!(
+        filesystem,
+        Filesystem::LinuxXfsImage | Filesystem::LinuxBtrfsImage
+    ) {
+        suite.notes.push("Linux images use the host kernel through loopback devices. XFS is formatted with reflink=1; Btrfs uses default features (no compression). Filesystem allocation includes metadata/logs and shared data counted once. Native Twig reflinks are mandatory. Each backend/repeat gets a separate filesystem, seed, warmup and registry. Images and fixtures are retained; mount/mkfs require root or noninteractive sudo inside a dedicated test environment. These are not bare-device performance numbers.".into());
+        suite.notes.push(format!(
+            "Rust: {}; UID: {}; image tool: {}",
+            env::var("TWIG_BENCH_RUST_VERSION")
+                .or_else(|_| capture(&cwd, "rustc", &["--version".into()]))
+                .unwrap_or_else(|_| {
+                    "compiler outside measurement container; candidate SHA-256 recorded".into()
+                }),
+            capture(&cwd, "id", &["-u".into()])?,
+            capture(
+                &cwd,
+                if filesystem == Filesystem::LinuxXfsImage {
+                    "mkfs.xfs"
+                } else {
+                    "mkfs.btrfs"
+                },
+                &["-V".into()]
+            )
+            .unwrap_or_else(|_| "see environment".into())
+        ));
+    }
     if filesystem == Filesystem::Host {
         suite.notes.push("Filesystem=host overrides image setup/cleanup notes: fresh cohort directories and warmup worktrees are retained, no allocation snapshots/deltas are reported, no sync is forced. Use isolated-image runs for space comparisons. Input revisions can be pinned to match earlier image runs.".into());
     }
+    suite.notes.extend(run_notes);
     save(&output, &suite)?;
     for repository in &repositories {
         for repeat in 0..repeats {
@@ -316,7 +379,10 @@ fn main() -> Result<()> {
                 let stem = root.join(format!("{}-{backend}-{repeat}", repository.label));
                 let mut image = Image::new(&stem, filesystem, image_size_gib);
                 let prepare = match filesystem {
-                    Filesystem::IsolatedImage | Filesystem::CaseSensitiveImage => image.attach(),
+                    Filesystem::IsolatedImage
+                    | Filesystem::CaseSensitiveImage
+                    | Filesystem::LinuxXfsImage
+                    | Filesystem::LinuxBtrfsImage => image.attach(),
                     Filesystem::Host => fs::create_dir(&image.mount).map_err(Into::into),
                 };
                 let result = prepare.and_then(|()| {
@@ -353,12 +419,17 @@ fn main() -> Result<()> {
                         repository.label
                     )),
                 }
-                save(&output, &suite)?;
-                if filesystem != Filesystem::Host {
-                    image.cleanup()?;
-                } else {
-                    eprintln!("  host fixtures retained at {}", image.mount.display());
-                }
+                persist_and_cleanup(
+                    || save(&output, &suite),
+                    || {
+                        if filesystem != Filesystem::Host {
+                            image.cleanup()
+                        } else {
+                            eprintln!("  host fixtures retained at {}", image.mount.display());
+                            Ok(())
+                        }
+                    },
+                )?;
                 ensure!(
                     suite.failures.is_empty(),
                     "setup/measurement failure saved to {}",
@@ -374,7 +445,16 @@ fn main() -> Result<()> {
 impl Image {
     fn new(stem: &Path, filesystem: Filesystem, size_gib: u64) -> Self {
         Self {
-            path: stem.with_extension("sparseimage"),
+            path: stem.with_extension(
+                if matches!(
+                    filesystem,
+                    Filesystem::LinuxXfsImage | Filesystem::LinuxBtrfsImage
+                ) {
+                    "img"
+                } else {
+                    "sparseimage"
+                },
+            ),
             mount: stem.with_extension("mount"),
             attached: false,
             filesystem,
@@ -382,6 +462,12 @@ impl Image {
         }
     }
     fn attach(&mut self) -> Result<()> {
+        if matches!(
+            self.filesystem,
+            Filesystem::LinuxXfsImage | Filesystem::LinuxBtrfsImage
+        ) {
+            return self.attach_linux();
+        }
         checked(
             Command::new("hdiutil")
                 .args(["create", "-quiet", "-size"])
@@ -415,7 +501,52 @@ impl Image {
         fs::write(self.mount.join(".metadata_never_index"), [])?;
         Ok(())
     }
+    fn attach_linux(&mut self) -> Result<()> {
+        // Format only a newly created, benchmark-owned regular file, never a device.
+        OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&self.path)?
+            .set_len(self.size_gib * 1024 * 1024 * 1024)?;
+        let mut format = Command::new(if self.filesystem == Filesystem::LinuxXfsImage {
+            "mkfs.xfs"
+        } else {
+            "mkfs.btrfs"
+        });
+        format.arg("-q");
+        if self.filesystem == Filesystem::LinuxXfsImage {
+            format.args(["-m", "reflink=1"]);
+        }
+        checked(format.arg(&self.path).output()?)?;
+        fs::create_dir(&self.mount)?;
+        checked(
+            privileged("mount")
+                .args(["-o", "loop"])
+                .arg(&self.path)
+                .arg(&self.mount)
+                .output()?,
+        )?;
+        self.attached = true;
+        let owner = format!(
+            "{}:{}",
+            capture(&self.mount, "id", &["-u".into()])?,
+            capture(&self.mount, "id", &["-g".into()])?
+        );
+        checked(privileged("chown").arg(owner).arg(&self.mount).output()?)?;
+        Ok(())
+    }
     fn cleanup(&mut self) -> Result<()> {
+        if matches!(
+            self.filesystem,
+            Filesystem::LinuxXfsImage | Filesystem::LinuxBtrfsImage
+        ) {
+            if self.attached {
+                checked(privileged("umount").arg(&self.mount).output()?)?;
+                self.attached = false;
+            }
+            eprintln!("  Linux image retained at {}", self.path.display());
+            return Ok(());
+        }
         if self.attached {
             checked(
                 Command::new("hdiutil")
@@ -493,7 +624,10 @@ fn cohort(
             "warmup did not use expected backend: {:?}",
             warmup.error
         );
-        if filesystem != Filesystem::Host {
+        if matches!(
+            filesystem,
+            Filesystem::IsolatedImage | Filesystem::CaseSensitiveImage
+        ) {
             checked(
                 command("git", &seed)
                     .args(["worktree", "remove", "--force"])
@@ -517,7 +651,12 @@ fn cohort(
     let barrier = Arc::new(Barrier::new(concurrency));
     let next = Arc::new(AtomicUsize::new(0));
     let (sender, receiver) = mpsc::channel();
-    let checkpoint = mount.with_extension("creation.json");
+    let checkpoint = mount.with_extension("creation.jsonl");
+    let mut progress_file = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(checkpoint)?;
+    let cpu_before = self_cpu_ms()?;
     let start = Instant::now();
     let handles = (0..concurrency)
         .map(|_| {
@@ -550,6 +689,7 @@ fn cohort(
     );
     drop(sender);
     let mut operations = Vec::with_capacity(options.worktrees);
+    let mut observer_error = None;
     for mut operation in receiver {
         if let Some(error) = &mut operation.error {
             *error = error
@@ -563,7 +703,7 @@ fn cohort(
             options.worktrees
         );
         let progress = CreationProgress {
-            schema_version: 1,
+            schema_version: 2,
             phase: "creation; verification pending",
             repository: &repository.label,
             source_commit: &repository.commit,
@@ -571,12 +711,20 @@ fn cohort(
             repeat,
             expected_operations: options.worktrees,
             elapsed_ms: ms(start),
-            operations: &operations,
+            operations: &operations[operations.len() - 1..],
         };
-        save_creation_progress(&checkpoint, &progress)?;
+        if observer_error.is_none() {
+            observer_error = save_creation_progress(&mut progress_file, &progress).err();
+        }
     }
     for handle in handles {
-        handle.join().expect("CLI worker panicked");
+        if handle.join().is_err() && observer_error.is_none() {
+            observer_error = Some(anyhow::anyhow!("CLI worker panicked"));
+        }
+    }
+    // Never leave CLI workers running while the caller unmounts their filesystem.
+    if let Some(error) = observer_error {
+        return Err(error.context("creation observer failed after all workers joined"));
     }
     ensure!(
         operations.len() == options.worktrees,
@@ -591,7 +739,10 @@ fn cohort(
             "sequential creates overlapped"
         );
     }
-    let create_wall_ms = ms(start);
+    let observer_wall_ms = ms(start);
+    let harness_cpu_ms_during_create = self_cpu_ms()? - cpu_before;
+    // End at the last CLI completion, not after coordinator checkpoint/join work.
+    let create_wall_ms = creation_makespan(&operations);
     let after_create = filesystem.snapshot(mount)?;
     let status_start = Instant::now();
     let mut verified_files = 0;
@@ -626,8 +777,12 @@ fn cohort(
     }
     let status_and_verification_wall_ms = ms(status_start);
     let after_status = filesystem.snapshot(mount)?;
-    let first = expected.iter().find(|entry| !entry.symlink);
-    if let Some(first) = first {
+    let probe = private_write_probe(&expected);
+    if let Some(PrivateWriteProbe {
+        entry: first,
+        offset,
+    }) = probe
+    {
         for operation in &mut operations {
             if !operation.verified {
                 continue;
@@ -636,10 +791,22 @@ fn cohort(
                 .join(format!("w-{}", operation.worker))
                 .join(&first.path);
             let write = (|| -> Result<()> {
-                OpenOptions::new()
-                    .write(true)
-                    .open(destination)?
-                    .write_all(&[first.data.first().map_or(0x42, |byte| byte ^ 0xff)])?;
+                let mut file = OpenOptions::new().write(true).open(destination)?;
+                file.seek(SeekFrom::Start(offset as u64))?;
+                file.write_all(&[first.data[offset] ^ 0xff])?;
+                let status = command("git", &mount.join(format!("w-{}", operation.worker)))
+                    .args([
+                        "-c",
+                        "core.fsmonitor=false",
+                        "diff-files",
+                        "--quiet",
+                        "--no-ext-diff",
+                    ])
+                    .output()?;
+                ensure!(
+                    status.status.code() == Some(1),
+                    "Git did not detect the private write"
+                );
                 Ok(())
             })();
             if let Err(error) = write {
@@ -648,13 +815,13 @@ fn cohort(
             }
         }
     }
-    let after_private_writes = if first.is_some() {
+    let after_private_writes = if probe.is_some() {
         filesystem.snapshot(mount)?
     } else {
         None
     };
-    let source_unchanged = match first {
-        Some(first) => fs::read(seed.join(&first.path))? == first.data,
+    let source_unchanged = match probe {
+        Some(PrivateWriteProbe { entry, .. }) => fs::read(seed.join(&entry.path))? == entry.data,
         None => git_text(&seed, &["status", "--porcelain"])?.is_empty(),
     };
     ensure!(source_unchanged, "seed changed after private writes");
@@ -678,13 +845,17 @@ fn cohort(
         tracked_files: expected.len(),
         logical_bytes_per_worktree: logical_bytes,
         create_wall_ms,
+        harness_cpu_ms_during_create,
+        observer_wall_ms,
         creates_per_second: succeeded as f64 * 1000.0 / create_wall_ms,
         status_and_verification_wall_ms,
         succeeded,
         failed: options.worktrees - succeeded,
         verified_files,
         source_unchanged,
-        private_write_tested: first.is_some(),
+        private_write_tested: probe.is_some(),
+        private_write_file_bytes: probe.map(|probe| probe.entry.data.len()),
+        private_write_offset: probe.map(|probe| probe.offset),
         growth_after_create_bytes: allocation_delta(&after_create, &before),
         growth_after_status_bytes: allocation_delta(&after_status, &before),
         private_write_growth_bytes: allocation_delta(&after_private_writes, &after_status),
@@ -696,11 +867,49 @@ fn cohort(
     })
 }
 
-fn save_creation_progress(path: &Path, progress: &CreationProgress<'_>) -> Result<()> {
-    let temporary = path.with_extension("json.tmp");
-    fs::write(&temporary, serde_json::to_vec_pretty(progress)?)?;
-    fs::rename(temporary, path)?;
+#[derive(Clone, Copy)]
+struct PrivateWriteProbe<'a> {
+    entry: &'a Expected,
+    offset: usize,
+}
+fn private_write_probe(expected: &[Expected]) -> Option<PrivateWriteProbe<'_>> {
+    expected
+        .iter()
+        .filter(|entry| !entry.symlink)
+        .find_map(|entry| {
+            // A nonzero byte is data-bearing even when the file has sparse zero holes.
+            entry
+                .data
+                .iter()
+                .position(|byte| *byte != 0)
+                .map(|offset| PrivateWriteProbe { entry, offset })
+        })
+}
+fn creation_makespan(operations: &[Operation]) -> f64 {
+    operations
+        .iter()
+        .map(|op| op.create_finished_at_ms)
+        .fold(0.0, f64::max)
+}
+fn save_creation_progress(file: &mut fs::File, progress: &CreationProgress<'_>) -> Result<()> {
+    serde_json::to_writer(&mut *file, progress)?;
+    file.write_all(b"\n")?;
     Ok(())
+}
+
+fn persist_and_cleanup(
+    save: impl FnOnce() -> Result<()>,
+    cleanup: impl FnOnce() -> Result<()>,
+) -> Result<()> {
+    let saved = save();
+    let cleaned = cleanup();
+    match (saved, cleaned) {
+        (Ok(()), Ok(())) => Ok(()),
+        (Err(save), Err(cleanup)) => {
+            anyhow::bail!("save failed: {save:#}; cleanup also failed: {cleanup:#}")
+        }
+        (Err(error), _) | (_, Err(error)) => Err(error),
+    }
 }
 
 fn allocation_delta(after: &Option<Space>, before: &Option<Space>) -> Option<i128> {
@@ -744,7 +953,7 @@ fn create(
             first_status_ms: None,
             exit_code: output.status.code(),
             native_cow: String::from_utf8_lossy(&output.stderr)
-                .contains("APFS CoW: verified tracked files"),
+                .contains("CoW: verified tracked files"),
             verified: false,
             error: if output.status.success() {
                 None
@@ -818,6 +1027,22 @@ fn verify_file(root: &Path, entry: &Expected) -> Result<()> {
     }
     Ok(())
 }
+fn self_cpu_ms() -> Result<f64> {
+    let mut usage = std::mem::MaybeUninit::<libc::rusage>::uninit();
+    // SAFETY: usage points to writable rusage storage; RUSAGE_SELF excludes CLI children.
+    ensure!(
+        unsafe { libc::getrusage(libc::RUSAGE_SELF, usage.as_mut_ptr()) } == 0,
+        "getrusage failed: {}",
+        std::io::Error::last_os_error()
+    );
+    // SAFETY: successful getrusage initialized usage.
+    let usage = unsafe { usage.assume_init() };
+    Ok(
+        (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec) as f64 * 1000.0
+            + (usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) as f64 / 1000.0,
+    )
+}
+
 fn settled_space(mount: &Path) -> Result<Space> {
     checked(Command::new("sync").output()?)?;
     let mut observations = vec![];
@@ -860,12 +1085,24 @@ fn space(mount: &Path) -> Result<Space> {
         observed_allocated_bytes: vec![],
     })
 }
+fn privileged(program: &str) -> Command {
+    // Root is useful in a disposable container; never request interactive credentials.
+    if env::var_os("TWIG_BENCH_ROOT").is_some() {
+        Command::new(program)
+    } else {
+        let mut command = Command::new("sudo");
+        command.args(["-n", program]);
+        command
+    }
+}
+
 fn command(program: impl AsRef<std::ffi::OsStr>, cwd: &Path) -> Command {
     let mut command = Command::new(program);
     command
         .current_dir(cwd)
         .env("GIT_CONFIG_NOSYSTEM", "1")
         .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("XDG_CONFIG_HOME", "/nonexistent/twig-bench")
         .env("GIT_TERMINAL_PROMPT", "0")
         .env("TWIG_TRACE", "1");
     command
@@ -906,6 +1143,51 @@ fn save(path: &Path, suite: &Suite) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn cleanup_runs_even_if_saving_fails_and_both_errors_survive() {
+        let cleaned = std::cell::Cell::new(false);
+        let result = persist_and_cleanup(
+            || anyhow::bail!("disk full"),
+            || {
+                cleaned.set(true);
+                anyhow::bail!("busy mount")
+            },
+        );
+        assert!(cleaned.get());
+        let error = format!("{:#}", result.unwrap_err());
+        assert!(error.contains("disk full") && error.contains("busy mount"));
+    }
+    #[test]
+    fn private_writes_skip_empty_and_sparse_holes() {
+        let entry = |data| Expected {
+            path: "file".into(),
+            data,
+            symlink: false,
+            executable: false,
+        };
+        let entries = [entry(vec![]), entry(vec![0, 0, 42])];
+        let probe = private_write_probe(&entries).unwrap();
+        assert_eq!(probe.offset, 2);
+        assert_eq!(probe.entry.data.len(), 3);
+        assert!(private_write_probe(&[entry(vec![]), entry(vec![0; 32])]).is_none());
+    }
+    #[test]
+    fn creation_makespan_uses_cli_endpoints_not_observer_delay() {
+        let operation = |end| Operation {
+            worker: 0,
+            create_ms: 1.0,
+            create_started_at_ms: end - 1.0,
+            create_finished_at_ms: end,
+            first_status_ms: None,
+            exit_code: Some(0),
+            native_cow: false,
+            verified: false,
+            error: None,
+        };
+        let operations = [operation(7.0), operation(19.0), operation(13.0)];
+        std::thread::sleep(Duration::from_millis(5)); // Simulate a delayed observer.
+        assert_eq!(creation_makespan(&operations), 19.0);
+    }
     #[test]
     fn host_mode_has_no_allocation_measurement() {
         assert!(

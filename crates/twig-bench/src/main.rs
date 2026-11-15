@@ -315,7 +315,9 @@ fn measure(fixture: &Fixture, backend: &str, name: &str, result: &mut Operation)
     result.native_cow =
         String::from_utf8_lossy(&output.stderr).contains("CoW: verified tracked files");
     ensure!(
-        backend != "twig" || !cfg!(target_os = "macos") || result.native_cow,
+        backend != "twig"
+            || !cfg!(any(target_os = "macos", target_os = "linux"))
+            || result.native_cow,
         "candidate silently fell back to Git: {}",
         String::from_utf8_lossy(&output.stderr)
     );
