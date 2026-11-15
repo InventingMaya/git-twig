@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 2,
+  "filesystem": "case-sensitive-image",
+  "imageSizeGib": 32,
+  "warmup": true,
+  "selectedBackend": "twig",
+  "suite": "real-apfs-cohort",
+  "generatedAtUnixMs": 1794758911416,
+  "commit": "cf9b046236d48af857e5db37456ad328b1973484",
+  "dirty": false,
+  "candidateSha256": "65efbfe49fac73fcf9f75a85366bc020f8a5dd62bf0baa7f1c5d1b3e26a92d50",
+  "gitVersion": "git version 2.56.0",
+  "platform": "macos aarch64 25.5.0",
+  "cpu": "Apple M1 Ultra",
+  "concurrency": 1,
+  "worktreesPerCohort": 10,
+  "repeats": 1,
+  "repositories": [
+    {
+      "label": "linux",
+      "commit": "23c62304dde29abe92013d85910d03a77dada35d"
+    }
+  ],
+  "notes": [
+    "Each image-backed backend/repeat gets a fresh, isolated sparse APFS image (capacity/format recorded in imageSizeGiB/filesystem). Seed uses git clone --shared --no-checkout plus explicit pinned-commit checkout. Original repositories and object stores are read-only inputs; seed history uses alternates outside image.",
+    "One operation warmup per backend; removed before image space snapshots, retained on host. Global/system Git config and hooks disabled for fixture setup; no ignored/untracked dependencies or build output copied. Backend order alternates by repeat.",
+    "A barrier releases the bounded worker pool simultaneously; each worker starts its next queued create only after its previous CLI returns. worktreesPerCohort is the total count; concurrency is the maximum in flight. Create wall time includes thread startup/barrier/join, per-operation latency starts at barrier release. No verification/generation competes with creates. No retries: failures are data.",
+    "First git status is measured sequentially after all creates and the initial space snapshot. Full byte/symlink/executable verification follows each first status; its CPU is outside creation timing. A first-status sum is not a concurrent-status wall time.",
+    "Allocated space is total minus free blocks from statvfs on the isolated APFS filesystem, sampled after sync until stable (or marked unstable). This includes working files, indexes, retained staging and filesystem metadata, not logical size/du/st_blocks. Host sparse-image allocation is not the metric.",
+    "After initial verification/space measurement, one byte in one regular file per successful checkout is changed in place. Additional filesystem allocation is sampled; seed file must remain unchanged. Images are detached and deleted after saving each cohort; no benchmark input paths or source file contents are serialized.",
+    "Local warm-cache results. A sparse APFS image is a controlled filesystem, not a claim about native host-volume maximum throughput. Report failures alongside latency and allocation; do not compare unequal successful counts as identical capacity."
+  ],
+  "cohorts": [
+    {
+      "repository": "linux",
+      "sourceCommit": "23c62304dde29abe92013d85910d03a77dada35d",
+      "sourceTree": "78c11a69c8b8226b0cefc40082c0cdc8030b2f8b",
+      "backend": "twig",
+      "repeat": 0,
+      "trackedFiles": 97371,
+      "logicalBytesPerWorktree": 1676008970,
+      "createWallMs": 592004.5742500001,
+      "createsPerSecond": 0.016891761373075232,
+      "statusAndVerificationWallMs": 288710.109167,
+      "succeeded": 10,
+      "failed": 0,
+      "verifiedFiles": 973710,
+      "sourceUnchanged": true,
+      "privateWriteTested": true,
+      "before": {
+        "allocatedBytes": 2355552256,
+        "totalBytes": 34149982208,
+        "stable": true,
+        "observedAllocatedBytes": [
+          2355552256,
+          2355552256,
+          2355552256
+        ]
+      },
+      "afterCreate": {
+        "allocatedBytes": 2956595200,
+        "totalBytes": 34149982208,
+        "stable": false,
+        "observedAllocatedBytes": [
+          2956210176,
+          2956214272,
+          2956218368,
+          2956226560,
+          2956230656,
+          2956238848,
+          2956251136,
+          2956259328,
+          2956566528,
+          2956570624,
+          2956578816,
+          2956595200
+        ]
+      },
+      "afterStatus": {
+        "allocatedBytes": 2956079104,
+        "totalBytes": 34149982208,
+        "stable": true,
+        "observedAllocatedBytes": [
+          2956079104,
+          2956079104,
+          2956079104
+        ]
+      },
+      "afterPrivateWrites": {
+        "allocatedBytes": 2956242944,
+        "totalBytes": 34149982208,
+        "stable": true,
+        "observedAllocatedBytes": [
+          2956242944,
+          2956242944,
+          2956242944
+        ]
+      },
+      "growthAfterCreateBytes": 601042944,
+      "growthAfterStatusBytes": 600526848,
+      "privateWriteGrowthBytes": 163840,
+      "operations": [
+        {
+          "worker": 0,
+          "createMs": 56142.327083,
+          "createStartedAtMs": 0.088,
+          "createFinishedAtMs": 56142.415166,
+          "firstStatusMs": 17829.280292,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 1,
+          "createMs": 49489.028667,
+          "createStartedAtMs": 56142.440458000005,
+          "createFinishedAtMs": 105631.469166,
+          "firstStatusMs": 19625.2785,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 2,
+          "createMs": 64892.645708000004,
+          "createStartedAtMs": 105631.48475,
+          "createFinishedAtMs": 170524.1305,
+          "firstStatusMs": 23061.985083,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 3,
+          "createMs": 61389.064584,
+          "createStartedAtMs": 170524.14791600002,
+          "createFinishedAtMs": 231913.21254100002,
+          "firstStatusMs": 16895.358,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 4,
+          "createMs": 44742.409167,
+          "createStartedAtMs": 231913.232416,
+          "createFinishedAtMs": 276655.641625,
+          "firstStatusMs": 16230.906957999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 5,
+          "createMs": 104130.304834,
+          "createStartedAtMs": 276655.659666,
+          "createFinishedAtMs": 380785.964541,
+          "firstStatusMs": 17725.290958999998,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 6,
+          "createMs": 60079.253708000004,
+          "createStartedAtMs": 380785.979375,
+          "createFinishedAtMs": 440865.23312499997,
+          "firstStatusMs": 15057.603916,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 7,
+          "createMs": 52950.099459,
+          "createStartedAtMs": 440865.255791,
+          "createFinishedAtMs": 493815.355291,
+          "firstStatusMs": 15842.165417,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 8,
+          "createMs": 57409.775958,
+          "createStartedAtMs": 493815.369875,
+          "createFinishedAtMs": 551225.1458749999,
+          "firstStatusMs": 15955.054208,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        },
+        {
+          "worker": 9,
+          "createMs": 40778.897625,
+          "createStartedAtMs": 551225.165833,
+          "createFinishedAtMs": 592004.063541,
+          "firstStatusMs": 17319.528292000003,
+          "exitCode": 0,
+          "nativeCow": true,
+          "verified": true,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "failures": []
+}

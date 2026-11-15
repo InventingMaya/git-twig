@@ -1,0 +1,43 @@
+{
+  "configuration": {
+    "concurrency": 1,
+    "filesystem": "case-sensitive-image",
+    "repeats": 1,
+    "worktreesPerCohort": 10
+  },
+  "notes": [
+    "One uninstrumented local round per variant on a shared Mac; sequential order and host activity can affect timings. Not a stable improvement estimate.",
+    "Creation excludes first status. Space is additional isolated filesystem allocation after first status, including indexes/staging/metadata; bounds retain observed allocator variation."
+  ],
+  "rows": [
+    {
+      "allocationHighMiB": 18764.3359375,
+      "allocationLowMiB": 18763.38671875,
+      "candidateSha256": "a1431f8601d8d83a1f251ffa8c1414ae5e0fe24344ccb05fee7f54655ed59d7e",
+      "createWallMs": 194986.40825,
+      "label": "Git",
+      "verifiedFiles": 973710
+    },
+    {
+      "allocationHighMiB": 572.70703125,
+      "allocationLowMiB": 572.70703125,
+      "candidateSha256": "65efbfe49fac73fcf9f75a85366bc020f8a5dd62bf0baa7f1c5d1b3e26a92d50",
+      "createWallMs": 592004.5742500001,
+      "label": "Twig per-file",
+      "verifiedFiles": 973710
+    },
+    {
+      "allocationHighMiB": 549.39453125,
+      "allocationLowMiB": 549.390625,
+      "candidateSha256": "a1431f8601d8d83a1f251ffa8c1414ae5e0fe24344ccb05fee7f54655ed59d7e",
+      "createWallMs": 272341.415666,
+      "label": "Twig directory",
+      "verifiedFiles": 973710
+    }
+  ],
+  "schemaVersion": 1,
+  "sources": [
+    "kernel-per-file10.json",
+    "kernel-directory10.json"
+  ]
+}

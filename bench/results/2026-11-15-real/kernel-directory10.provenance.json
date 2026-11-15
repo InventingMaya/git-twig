@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-15T16:08:31.254753+00:00",
+  "commit": "cf9b046236d48af857e5db37456ad328b1973484",
+  "dirty": false,
+  "sourceCommit": "23c62304dde29abe92013d85910d03a77dada35d",
+  "trackedFiles": 97371,
+  "baselineGit": "git version 2.56.0",
+  "configuration": {
+    "worktreesPerCohort": 10,
+    "concurrency": 1,
+    "repeats": 1,
+    "warmup": true,
+    "filesystem": "case-sensitive-image",
+    "imageCapacityGiB": 32,
+    "minimumHostFreeGiB": 128,
+    "scratchLimitGiB": 250,
+    "instrumented": false
+  },
+  "binaries": {
+    "git-twig-per-file": {
+      "sha256": "65efbfe49fac73fcf9f75a85366bc020f8a5dd62bf0baa7f1c5d1b3e26a92d50",
+      "buildProfile": "release",
+      "sourceCommit": "f335c8e9246c1d60ac21f6f2b5ed4a44476250bf"
+    },
+    "git-twig-directory": {
+      "sha256": "a1431f8601d8d83a1f251ffa8c1414ae5e0fe24344ccb05fee7f54655ed59d7e",
+      "buildProfile": "release",
+      "sourceCommit": "cf9b046236d48af857e5db37456ad328b1973484"
+    },
+    "twig-real-bench": {
+      "sha256": "b60ab99c48f6724a246897c277575c9aa85e2eb139f119b42ad3b0e089afee03",
+      "buildProfile": "release",
+      "sourceCommit": "f335c8e9246c1d60ac21f6f2b5ed4a44476250bf"
+    }
+  },
+  "notes": [
+    "Fresh per-file Twig baseline, then fresh Git/directory-Twig paired cohort. One round is an observation, not a stable estimate.",
+    "All CLI creates sequential, verification outside creation intervals. Same frozen uninstrumented harness and pinned kernel tree.",
+    "Staged/final index handling unchanged; this isolates bulk directory cloning."
+  ]
+}

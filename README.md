@@ -17,30 +17,32 @@ Performance depends on the workload; tiny repositories can be slower.
 
 <!-- Generated from bench/results/readme.json by twig-readme-table. Do not edit numbers. -->
 
-| metric | [new repo (empty commit)](bench/results/2026-11-15-real/empty-host.json) | [git-twig](bench/results/2026-11-15-real/host.json) | [Axo](bench/results/2026-11-15-real/host.json) | [Linux kernel (10 sequential)](bench/results/2026-11-15-real/kernel-sequential10.json) |
-|---|---|---|---|---|
-| Git time | 1.79 s | 4.90 s† | 279.81 s | 201.93 s |
-| Twig time | 8.02 s | 10.13 s | 138.79 s | 365.14 s |
-| Git space | not measured | 53.0 MiB | 3100.2–3101.2 MiB | 18762.4–18762.8 MiB |
-| Twig space | not measured | 7.1 MiB | 164.9 MiB | 573.0 MiB |
+[Linux kernel (10 sequential)](bench/results/2026-11-15-real/kernel-directory10.json): **97.1% less disk** (34.2× smaller).
 
-Time is batch creation; space is additional APFS allocation after first status. Batch sizes differ by repository. † Includes failed CLI attempts; see setup below.
+| Repository | Disk saved with Twig | Disk: Git → Twig | Batch create: Git → Twig | Twig speed |
+|---|---|---|---|---|
+| [Linux kernel (10 sequential)](bench/results/2026-11-15-real/kernel-directory10.json) | **97.1% less disk** (34.2× smaller) | 18.3 GiB → 549 MiB | 3m15s → 4m32s | 1.40× slower |
+| [Axo](bench/results/2026-11-15-real/host.json) | **94.7% less disk** (18.8× smaller) | 3.0 GiB → 165 MiB | 4m40s → 2m19s | 2.02× faster |
+| [git-twig](bench/results/2026-11-15-real/host.json)† | **86.6% less disk** (7.5× smaller) | 53.0 MiB → 7.1 MiB | 4.90s → 10.13s | 2.07× slower |
+| [new repo (empty commit)](bench/results/2026-11-15-real/empty-host.json) | not measured | not measured | 1.79s → 8.02s | 4.49× slower |
+
+**Arrows mean Git → Twig.** Disk is additional APFS allocation after first status; time is whole-batch creation, not per worktree. Rounded values; multipliers use unrounded measurements. Batch sizes differ by repository. † Includes failed attempts.
 
 <details>
 <summary>Setup, verification and detailed measurements</summary>
 
-| metric | [new repo (empty commit)](bench/results/2026-11-15-real/empty-host.json) | [git-twig](bench/results/2026-11-15-real/host.json) | [Axo](bench/results/2026-11-15-real/host.json) | [Linux kernel (10 sequential)](bench/results/2026-11-15-real/kernel-sequential10.json) |
+| metric | [new repo (empty commit)](bench/results/2026-11-15-real/empty-host.json) | [git-twig](bench/results/2026-11-15-real/host.json) | [Axo](bench/results/2026-11-15-real/host.json) | [Linux kernel (10 sequential)](bench/results/2026-11-15-real/kernel-directory10.json) |
 |---|---|---|---|---|
 | tracked files | 0 | 45 | 2083 | 97371 |
 | worktrees per run | 100 | 100 | 100 | 10 |
 | simultaneous creates | 100 | 100 | 100 | 1 |
 | timing filesystem | host APFS | host APFS | host APFS | case-sensitive APFS image |
-| Git create | 1.79 s | 4.90 s† | 279.81 s | 201.93 s |
-| Twig create | 8.02 s | 10.13 s | 138.79 s | 365.14 s |
-| Git first status (median) | 0.01 s | 0.02 s | 0.04 s | 1.78 s |
-| Twig first status (median) | 0.01 s | 0.02 s | 0.32 s | 16.34 s |
-| Git allocation | not measured | 53.0 MiB | 3100.2–3101.2 MiB | 18762.4–18762.8 MiB |
-| Twig allocation | not measured | 7.1 MiB | 164.9 MiB | 573.0 MiB |
+| Git create | 1.79 s | 4.90 s† | 279.81 s | 194.99 s |
+| Twig create | 8.02 s | 10.13 s | 138.79 s | 272.34 s |
+| Git first status (median) | 0.01 s | 0.02 s | 0.04 s | 1.91 s |
+| Twig first status (median) | 0.01 s | 0.02 s | 0.32 s | 18.36 s |
+| Git allocation | not measured | 53.0 MiB | 3100.2–3101.2 MiB | 18763.4–18764.3 MiB |
+| Twig allocation | not measured | 7.1 MiB | 164.9 MiB | 549.4 MiB |
 | paired timing rounds | 3 | 3 | 1 | 1 |
 | Git / Twig failed attempts | 0 / 0 | 2 / 0 | 0 / 0 | 0 / 0 |
 | status | completed | completed | completed | completed |
@@ -48,6 +50,7 @@ Time is batch creation; space is additional APFS allocation after first status. 
 Creation is wall time for the entire batch at the recorded concurrency, excluding first status. Values are medians of the recorded timing rounds; one round is an observation, not a stable estimate. Allocation is additional **filesystem-allocated MiB after first status**, including indexes, retained staging and APFS metadata, measured separately on isolated images. Ranges retain observed allocator variation; they are not confidence intervals. Missing measurements are not zeros. Never infer exclusive APFS allocation from logical size or `du`.
 
 - These are local, warm-cache results on a shared Mac, not universal speed guarantees. Input commits and hardware are recorded in each raw run.
+- The kernel row uses the directory-clone release (cf9b046); the other rows retain the earlier per-file release measurements. See the [old/new kernel comparison](bench/results/2026-11-15-real/kernel-directory-comparison.summary.md) and [chart](bench/results/2026-11-15-real/kernel-directory-comparison.svg). One sequential local round per variant is not a stable speedup estimate.
 - Only tracked committed files are included in finished worktrees. Ignored dependencies and build artifacts inside bulk-cloned subtrees are pruned before registration.
 - For host-APFS rows, allocation was measured separately on isolated images using the same pinned trees and candidate binary. The kernel row uses matched case-sensitive APFS images for both timing and allocation. Round counts are shown.
 - Plain Git's nonzero failure count is an observed concurrent commondir-registration race. Failed attempts remain in the timing samples; a fast failed batch is not a complete successful cohort.

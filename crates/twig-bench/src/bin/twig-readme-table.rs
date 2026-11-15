@@ -41,9 +41,18 @@ struct Entry {
     #[serde(default)]
     incomplete: bool,
 }
+#[derive(Default)]
+struct Comparison {
+    git_time_ms: Option<f64>,
+    twig_time_ms: Option<f64>,
+    git_space_bytes: Option<f64>,
+    twig_space_bytes: Option<f64>,
+    failed_attempts: bool,
+}
 struct Column {
     heading: String,
     cells: Vec<String>,
+    comparison: Comparison,
 }
 
 fn main() -> Result<()> {
@@ -57,31 +66,17 @@ fn main() -> Result<()> {
     let mut block = String::from(
         "\n\n<!-- Generated from bench/results/readme.json by twig-readme-table. Do not edit numbers. -->\n\n",
     );
-    let summary = [
-        ("Git time", "Git create"),
-        ("Twig time", "Twig create"),
-        ("Git space", "Git allocation"),
-        ("Twig space", "Twig allocation"),
-    ];
-    let summary_columns = columns
-        .iter()
-        .map(|column| Column {
-            heading: column.heading.clone(),
-            cells: summary
-                .iter()
-                .map(|(_, source)| {
-                    let index = METRICS
-                        .iter()
-                        .position(|metric| metric == source)
-                        .expect("summary metric exists");
-                    column.cells[index].clone()
-                })
-                .collect(),
-        })
-        .collect::<Vec<_>>();
-    let labels = summary.iter().map(|(label, _)| *label).collect::<Vec<_>>();
-    block.push_str(&render_table(&labels, &summary_columns)?);
-    block.push_str("\nTime is batch creation; space is additional APFS allocation after first status. Batch sizes differ by repository. † Includes failed CLI attempts; see setup below.\n\n<details>\n<summary>Setup, verification and detailed measurements</summary>\n\n");
+    for (entry, column) in manifest.entries.iter().zip(&columns) {
+        if entry.repository == "linux" {
+            block.push_str(&format!(
+                "{}: {}.\n\n",
+                column.heading,
+                column.comparison.disk_saved()
+            ));
+        }
+    }
+    block.push_str(&render_summary(&columns));
+    block.push_str("\n**Arrows mean Git → Twig.** Disk is additional APFS allocation after first status; time is whole-batch creation, not per worktree. Rounded values; multipliers use unrounded measurements. Batch sizes differ by repository. † Includes failed attempts.\n\n<details>\n<summary>Setup, verification and detailed measurements</summary>\n\n");
     block.push_str(&render_table(METRICS, &columns)?);
     block.push_str("\nCreation is wall time for the entire batch at the recorded concurrency, excluding first status. Values are medians of the recorded timing rounds; one round is an observation, not a stable estimate. Allocation is additional **filesystem-allocated MiB after first status**, including indexes, retained staging and APFS metadata, measured separately on isolated images. Ranges retain observed allocator variation; they are not confidence intervals. Missing measurements are not zeros. Never infer exclusive APFS allocation from logical size or `du`.\n\n");
     for note in &manifest.notes {
@@ -212,6 +207,15 @@ fn column(entry: &Entry) -> Result<Column> {
     };
     Ok(Column {
         heading: format!("[{}]({})", entry.name, entry.timing),
+        comparison: Comparison {
+            git_time_ms: median_field(&gt, "createWallMs")?,
+            twig_time_ms: median_field(&tt, "createWallMs")?,
+            git_space_bytes: median_field(&ga, "growthAfterStatusBytes")?,
+            twig_space_bytes: median_field(&ta, "growthAfterStatusBytes")?,
+            failed_attempts: rows
+                .iter()
+                .any(|row| row["failed"].as_u64().is_some_and(|count| count > 0)),
+        },
         cells: vec![
             tracked,
             expected_count.to_string(),
@@ -246,6 +250,114 @@ fn column(entry: &Entry) -> Result<Column> {
             },
         ],
     })
+}
+
+fn median_field(rows: &[&Value], key: &str) -> Result<Option<f64>> {
+    if rows.is_empty() {
+        return Ok(None);
+    }
+    let values = rows
+        .iter()
+        .map(|row| row[key].as_f64().with_context(|| format!("missing {key}")))
+        .collect::<Result<Vec<_>>>()?;
+    Ok(Some(median(values)))
+}
+fn positive_pair(git: Option<f64>, twig: Option<f64>) -> Option<(f64, f64)> {
+    git.zip(twig).filter(|(g, t)| *g > 0.0 && *t > 0.0)
+}
+impl Comparison {
+    fn disk_saved(&self) -> String {
+        let Some((git, twig)) = positive_pair(self.git_space_bytes, self.twig_space_bytes) else {
+            return if self.git_space_bytes.is_some() && self.twig_space_bytes.is_some() {
+                "not comparable"
+            } else {
+                "not measured"
+            }
+            .into();
+        };
+        if twig < git {
+            format!(
+                "**{:.1}% less disk** ({:.1}× smaller)",
+                (1.0 - twig / git) * 100.0,
+                git / twig
+            )
+        } else if twig > git {
+            format!(
+                "**{:.1}% more disk** ({:.1}× larger)",
+                (twig / git - 1.0) * 100.0,
+                twig / git
+            )
+        } else {
+            "same disk usage".into()
+        }
+    }
+    fn speed(&self) -> String {
+        let Some((git, twig)) = positive_pair(self.git_time_ms, self.twig_time_ms) else {
+            return "not measured".into();
+        };
+        if twig < git {
+            format!("{:.2}× faster", git / twig)
+        } else if twig > git {
+            format!("{:.2}× slower", twig / git)
+        } else {
+            "same speed".into()
+        }
+    }
+}
+fn time(value: Option<f64>) -> String {
+    match value {
+        None => "not measured".into(),
+        Some(ms) if ms >= 60000.0 => {
+            let seconds = (ms / 1000.0).round() as u64;
+            format!("{}m{:02}s", seconds / 60, seconds % 60)
+        }
+        Some(ms) if ms >= 1000.0 => format!("{:.2}s", ms / 1000.0),
+        Some(ms) => format!("{ms:.0}ms"),
+    }
+}
+fn space(value: Option<f64>) -> String {
+    match value {
+        None => "not measured".into(),
+        Some(bytes) if bytes.abs() >= 1073741824.0 => format!("{:.1} GiB", bytes / 1073741824.0),
+        Some(bytes) if bytes.abs() >= 104857600.0 => format!("{:.0} MiB", bytes / 1048576.0),
+        Some(bytes) if bytes.abs() >= 1048576.0 => format!("{:.1} MiB", bytes / 1048576.0),
+        Some(bytes) => format!("{:.0} KiB", bytes / 1024.0),
+    }
+}
+fn render_summary(columns: &[Column]) -> String {
+    let mut table = String::from(
+        "| Repository | Disk saved with Twig | Disk: Git → Twig | Batch create: Git → Twig | Twig speed |\n|---|---|---|---|---|\n",
+    );
+    let mut ordered = columns.iter().collect::<Vec<_>>();
+    ordered.sort_by(|left, right| {
+        right
+            .comparison
+            .git_space_bytes
+            .unwrap_or(f64::NEG_INFINITY)
+            .total_cmp(&left.comparison.git_space_bytes.unwrap_or(f64::NEG_INFINITY))
+    });
+    for column in ordered {
+        let c = &column.comparison;
+        let marker = if c.failed_attempts { "†" } else { "" };
+        let disk = if c.git_space_bytes.is_none() && c.twig_space_bytes.is_none() {
+            "not measured".into()
+        } else {
+            format!(
+                "{} → {}",
+                space(c.git_space_bytes),
+                space(c.twig_space_bytes)
+            )
+        };
+        table.push_str(&format!(
+            "| {}{marker} | {} | {disk} | {} → {} | {} |\n",
+            column.heading,
+            c.disk_saved(),
+            time(c.git_time_ms),
+            time(c.twig_time_ms),
+            c.speed()
+        ));
+    }
+    table
 }
 
 fn worktree_count(run: &Value) -> Result<u64> {
@@ -437,15 +549,17 @@ mod tests {
         assert_eq!(median(vec![4.0, 1.0, 3.0]), 3.0);
     }
     #[test]
-    fn repositories_are_columns_and_metrics_are_rows() {
+    fn detailed_table_has_metric_rows() {
         let columns = vec![
             Column {
                 heading: "one".into(),
                 cells: vec!["1".into(), "2".into()],
+                comparison: Comparison::default(),
             },
             Column {
                 heading: "two".into(),
                 cells: vec!["3".into(), "4".into()],
+                comparison: Comparison::default(),
             },
         ];
         assert_eq!(
@@ -457,6 +571,39 @@ mod tests {
     fn failed_creates_are_flagged_in_compact_time_cells() {
         let row = serde_json::json!({"createWallMs":1000.0,"failed":1});
         assert_eq!(wall_cell(&[&row], "not measured").unwrap(), "1.00 s†");
+    }
+    #[test]
+    fn savings_and_speed_have_explicit_direction() {
+        let c = Comparison {
+            git_time_ms: Some(1000.0),
+            twig_time_ms: Some(2000.0),
+            git_space_bytes: Some(100.0),
+            twig_space_bytes: Some(20.0),
+            failed_attempts: false,
+        };
+        assert_eq!(c.disk_saved(), "**80.0% less disk** (5.0× smaller)");
+        assert_eq!(c.speed(), "2.00× slower");
+        let opposite = Comparison {
+            git_time_ms: Some(2000.0),
+            twig_time_ms: Some(1000.0),
+            git_space_bytes: Some(20.0),
+            twig_space_bytes: Some(100.0),
+            failed_attempts: false,
+        };
+        assert_eq!(opposite.speed(), "2.00× faster");
+        assert_eq!(opposite.disk_saved(), "**400.0% more disk** (5.0× larger)");
+    }
+    #[test]
+    fn summary_has_repository_rows_and_no_setup_stats() {
+        let table = render_summary(&[Column {
+            heading: "repo".into(),
+            cells: vec![],
+            comparison: Comparison::default(),
+        }]);
+        assert!(table.starts_with("| Repository | Disk saved with Twig |"));
+        assert!(table.contains("| repo | not measured |"));
+        assert!(!table.contains("tracked files"));
+        assert!(!table.contains("simultaneous creates"));
     }
     #[test]
     fn missing_measurements_are_not_zeros() {

@@ -61,3 +61,21 @@ nested ignored dependencies but adds inventory/selection complexity; defer until
 measured need. Bulk-clone-plus-prune can be expensive when a tracked subtree holds
 large ignored directory trees. It still requires per-entry permission normalization
 and Git content verification. No speedup is assumed before the release comparison.
+
+## Recorded comparison
+
+The [frozen executable provenance](../../bench/results/2026-11-15-real/kernel-directory10.provenance.json),
+[fresh per-file baseline](../../bench/results/2026-11-15-real/kernel-per-file10.json),
+[Git/directory pair](../../bench/results/2026-11-15-real/kernel-directory10.json), and
+[generated comparison](../../bench/results/2026-11-15-real/kernel-directory-comparison.svg)
+record the uninstrumented experiment. Every checkout passed independent content,
+mode and symlink verification; sources remained unchanged and owned images were
+removed. The directory candidate was faster than the fresh per-file candidate in
+this observation but still slower to create than stock Git, while retaining the
+large allocation advantage. No index handling was changed.
+
+This is a sequential single round on a shared host, not a causal or stable speedup
+estimate. The same per-file executable has an earlier completed run with different
+observed timing; retain both datasets rather than selecting a favorable baseline.
+Future work on the independently observed index-refresh/first-status cost should
+be isolated and remeasured rather than attributed to directory cloning.

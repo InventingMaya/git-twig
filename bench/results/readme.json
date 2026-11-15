@@ -21,13 +21,14 @@
     {
       "name": "Linux kernel (10 sequential)",
       "repository": "linux",
-      "timing": "bench/results/2026-11-15-real/kernel-sequential10.json",
-      "allocation": "bench/results/2026-11-15-real/kernel-sequential10.json",
+      "timing": "bench/results/2026-11-15-real/kernel-directory10.json",
+      "allocation": "bench/results/2026-11-15-real/kernel-directory10.json",
       "input": "bench/results/2026-11-15-real/kernel-input.json"
     }
   ],
   "notes": [
     "These are local, warm-cache results on a shared Mac, not universal speed guarantees. Input commits and hardware are recorded in each raw run.",
+    "The kernel row uses the directory-clone release (cf9b046); the other rows retain the earlier per-file release measurements. See the [old/new kernel comparison](bench/results/2026-11-15-real/kernel-directory-comparison.summary.md) and [chart](bench/results/2026-11-15-real/kernel-directory-comparison.svg). One sequential local round per variant is not a stable speedup estimate.",
     "Only tracked committed files are included in finished worktrees. Ignored dependencies and build artifacts inside bulk-cloned subtrees are pruned before registration.",
     "For host-APFS rows, allocation was measured separately on isolated images using the same pinned trees and candidate binary. The kernel row uses matched case-sensitive APFS images for both timing and allocation. Round counts are shown.",
     "Plain Git's nonzero failure count is an observed concurrent commondir-registration race. Failed attempts remain in the timing samples; a fast failed batch is not a complete successful cohort.",
