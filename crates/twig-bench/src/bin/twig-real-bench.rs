@@ -1044,7 +1044,10 @@ fn self_cpu_ms() -> Result<f64> {
 }
 
 fn settled_space(mount: &Path) -> Result<Space> {
-    checked(Command::new("sync").output()?)?;
+    let mut sync = Command::new("sync");
+    #[cfg(target_os = "linux")]
+    sync.arg("-f").arg(mount); // syncfs: never flush unrelated host filesystems.
+    checked(sync.output()?)?;
     let mut observations = vec![];
     let mut snapshot = space(mount)?;
     for _ in 0..12 {
