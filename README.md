@@ -27,7 +27,7 @@ and ignored files aren't copied. Unsupported options use `git worktree`.
 
 | Repo | `git worktree` | `git twig` | Improvement |
 |---|---|---|---|
-| [new repo (empty commit)](bench/results/2026-11-15-real/empty-host.json) | 1.79s / not measured | 8.02s / not measured | 4.49× slower / not measured |
+| [new repo (empty commit)](bench/results/2026-11-15-real/empty-directory-host.json) | 1.77s / 3.3 MiB | 5.78s / 3.4 MiB | 3.26× slower / 1.0× more space |
 | [git-twig](bench/results/2026-11-15-real/host.json)† | 4.90s / 53.0 MiB | 10.13s / 7.1 MiB | 2.07× slower / **7.5× less space** |
 | [Axo](bench/results/2026-11-15-real/host.json) | 4m40s / 3.0 GiB | 2m19s / 165 MiB | 2.02× faster / **18.8× less space** |
 | [Linux kernel (10 sequential)](bench/results/2026-11-15-real/kernel-directory10.json) | 3m15s / 18.3 GiB | 4m32s / 549 MiB | 1.40× slower / **34.2× less space** |
