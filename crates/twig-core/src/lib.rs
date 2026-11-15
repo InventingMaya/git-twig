@@ -153,8 +153,9 @@ fn prepare(cwd: &Path, request: &AddRequest) -> Result<Option<Prepared>> {
     trace(&format!("staging retained at {}", stage.display()));
     let data = stage.join("data");
     fs::create_dir(&data)?;
+    let modes = native::FileModes::new(&stage)?;
     for entry in &entries {
-        materialize(&root, &data, entry)?;
+        materialize(&root, &data, entry, &modes)?;
     }
     verify(&root, &data, &stage.join("index"), &commit)?;
     Ok(Some(Prepared {
@@ -165,7 +166,12 @@ fn prepare(cwd: &Path, request: &AddRequest) -> Result<Option<Prepared>> {
     }))
 }
 
-fn materialize(root: &Path, destination: &Path, entry: &Entry) -> Result<()> {
+fn materialize(
+    root: &Path,
+    destination: &Path,
+    entry: &Entry,
+    modes: &native::FileModes,
+) -> Result<()> {
     let source = root.join(&entry.path);
     // Reject replaced directory ancestors instead of following links out of the checkout.
     let mut ancestor = root.to_path_buf();
@@ -189,7 +195,7 @@ fn materialize(root: &Path, destination: &Path, entry: &Entry) -> Result<()> {
                 fs::symlink_metadata(&target)?.is_file(),
                 "source type changed during clone"
             );
-            native::set_executable(&target, executable)?;
+            modes.apply(&target, executable)?;
         }
         Kind::Symlink => native::symlink(&fs::read_link(&source)?, &target)?,
         Kind::Submodule => bail!("submodules are not supported by the fast path"),
@@ -234,6 +240,27 @@ fn verify(root: &Path, data: &Path, index: &Path, commit: &str) -> Result<()> {
 
 fn install(cwd: &Path, args: &[OsString], prepared: Prepared) -> Result<i32> {
     trace("APFS CoW: verified tracked files");
+    // Git enumerates peer worktree metadata while registering. Serialize Twig registrars
+    // so none observes a peer between mkdir and writing commondir/HEAD.
+    let common_dir = output_path(
+        checked(git(&prepared.root).args([
+            "rev-parse",
+            "--path-format=absolute",
+            "--git-common-dir",
+        ]))?
+        .stdout,
+    )?;
+    let state_dir = common_dir.join("twigs");
+    fs::create_dir_all(&state_dir)?;
+    let registration_lock = fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .open(state_dir.join("registration.lock"))?;
+    registration_lock
+        .lock()
+        .context("cannot lock Git worktree registration")?;
     // Preserve Git's branch validation and registration. No fallback after this mutation.
     let status = git(cwd)
         .args(["worktree", "add", "--no-checkout"])
@@ -249,6 +276,8 @@ fn install(cwd: &Path, args: &[OsString], prepared: Prepared) -> Result<i32> {
             prepared.stage.display()
         )
     })?;
+    // Do not hold the registry lock across user hooks (which may invoke Twig again).
+    drop(registration_lock);
     let zero = "0".repeat(prepared.commit.len());
     let code = git(&prepared.destination)
         .args([

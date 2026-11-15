@@ -30,20 +30,42 @@ pub fn clone_file(_: &Path, _: &Path) -> Result<()> {
     bail!("native cloning requires macOS")
 }
 
-pub fn set_executable(path: &Path, executable: bool) -> Result<()> {
+/// Discover effective creation permissions without changing the process-global umask.
+pub struct FileModes {
+    regular: std::fs::Permissions,
+    executable: std::fs::Permissions,
+}
+
+impl FileModes {
+    pub fn new(stage: &Path) -> Result<Self> {
+        Ok(Self {
+            regular: creation_permissions(&stage.join("regular-mode"), 0o666)?,
+            executable: creation_permissions(&stage.join("executable-mode"), 0o777)?,
+        })
+    }
+
+    pub fn apply(&self, path: &Path, executable: bool) -> Result<()> {
+        let permissions = if executable {
+            &self.executable
+        } else {
+            &self.regular
+        };
+        std::fs::set_permissions(path, permissions.clone())?;
+        Ok(())
+    }
+}
+
+fn creation_permissions(path: &Path, mode: u32) -> Result<std::fs::Permissions> {
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create_new(true);
     #[cfg(unix)]
     {
-        use std::{fs, os::unix::fs::PermissionsExt};
-        fs::set_permissions(
-            path,
-            fs::Permissions::from_mode(if executable { 0o755 } else { 0o644 }),
-        )?;
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(mode);
     }
     #[cfg(not(unix))]
-    {
-        let _ = (path, executable);
-    }
-    Ok(())
+    let _ = mode;
+    Ok(options.open(path)?.metadata()?.permissions())
 }
 
 pub fn symlink(source: &Path, destination: &Path) -> Result<()> {

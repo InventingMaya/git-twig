@@ -96,6 +96,9 @@ fn creates_real_clean_worktree_without_source_hardlinks() -> Result<()> {
     let f = Fixture::new()?;
     let output = checked(f.add()?)?;
     native(&output);
+    if cfg!(target_os = "macos") {
+        assert!(f.source.join(".git/twigs/registration.lock").is_file());
+    }
     clean(&f.destination())?;
     assert_eq!(
         git(&f.destination(), &["branch", "--show-current"])?.stdout,
@@ -298,6 +301,42 @@ fn filters_and_sparse_checkouts_delegate() -> Result<()> {
     Ok(())
 }
 
+#[cfg(unix)]
+#[test]
+fn respects_restrictive_umask() -> Result<()> {
+    use std::os::unix::{fs::PermissionsExt, process::CommandExt};
+    let f = Fixture::new()?;
+    let mut child = command(env!("CARGO_BIN_EXE_git-twig"), &f.source);
+    child.args(["add", "--detach", "../feature"]);
+    // SAFETY: umask is async-signal-safe, affects only this forked child, and captures nothing.
+    unsafe {
+        child.pre_exec(|| {
+            libc_umask_077();
+            Ok(())
+        });
+    }
+    checked(child.output()?)?;
+    assert_eq!(
+        fs::metadata(f.destination().join("hello.txt"))?
+            .permissions()
+            .mode()
+            & 0o777,
+        0o600
+    );
+    clean(&f.destination())
+}
+
+#[cfg(unix)]
+fn libc_umask_077() {
+    unsafe extern "C" {
+        fn umask(mask: u32) -> u32;
+    }
+    // SAFETY: 077 is a valid file creation mask; this helper runs only in pre_exec.
+    unsafe {
+        umask(0o077);
+    }
+}
+
 #[test]
 fn line_ending_conversions_delegate() -> Result<()> {
     let f = Fixture::new()?;
@@ -330,6 +369,28 @@ fn relative_destination_from_subdirectory_is_resolved_correctly() -> Result<()> 
     )?)?;
     native(&output);
     clean(&f.destination())
+}
+
+#[test]
+fn sixteen_independent_creators_register_safely() -> Result<()> {
+    let f = Fixture::new()?;
+    let handles: Vec<_> = (0..16)
+        .map(|index| {
+            let source = f.source.clone();
+            std::thread::spawn(move || {
+                twig(
+                    &source,
+                    &["add", "--detach", &format!("../parallel-{index}")],
+                )
+            })
+        })
+        .collect();
+    for (index, handle) in handles.into_iter().enumerate() {
+        let output = checked(handle.join().unwrap()?)?;
+        native(&output);
+        clean(&f.root.join(format!("parallel-{index}")))?;
+    }
+    Ok(())
 }
 
 #[test]
