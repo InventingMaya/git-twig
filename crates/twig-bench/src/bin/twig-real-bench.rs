@@ -157,6 +157,7 @@ fn main() -> Result<()> {
     let mut concurrency = 100;
     let mut repeats = 3;
     let mut output = None;
+    let mut candidate_path = cwd.join("target/release/git-twig");
     let mut filesystem = Filesystem::IsolatedImage;
     let mut image_size_gib: u64 = 8;
     let mut warmup = true;
@@ -226,6 +227,7 @@ fn main() -> Result<()> {
             "--concurrency" => concurrency = value.parse()?,
             "--repeats" => repeats = value.parse()?,
             "--output" => output = Some(PathBuf::from(value)),
+            "--candidate" => candidate_path = PathBuf::from(value),
             _ => anyhow::bail!("unknown option: {arg}"),
         }
     }
@@ -246,7 +248,7 @@ fn main() -> Result<()> {
     ));
     fs::create_dir_all(&root)?;
     let root = fs::canonicalize(root)?;
-    let candidate = fs::canonicalize(cwd.join("target/release/git-twig"))?;
+    let candidate = fs::canonicalize(candidate_path)?;
     let digest = capture(
         &cwd,
         "shasum",
