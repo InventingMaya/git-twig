@@ -28,6 +28,16 @@ byte/symlink/executable verification happen after all create workers join.
 Per-operation first-status latency is recorded separately; the aggregate
 status-and-verification time includes verification and is not pure status time.
 
+## Direct host timing
+
+Use `--filesystem host` to measure normal host-APFS creation without the disk-image
+layer. It retains all owned fixture directories (including warmups), never deletes
+them, never forces sync, and reports space as unmeasured. Use `--revision label=OID`
+after `--repo` to match the exact pinned commits from an earlier image run.
+Compare both backends under the same mode; do not present host timings and image
+space as if they came from one cohort. Schema v2 records the mode; the report also
+supports v1 image results.
+
 ## Space method
 
 Sum neither logical sizes nor st_blocks. After sync, sample statvfs allocation on

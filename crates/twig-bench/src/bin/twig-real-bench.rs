@@ -1,5 +1,5 @@
-//! Real-repository cohort benchmark on disposable, isolated APFS images.
-//! Only image-owned paths are written or removed. Original repositories are read-only inputs.
+//! Real-repository cohorts: isolated images for allocation, host APFS for representative timing.
+//! Only image-owned paths are removed. Original repositories are read-only inputs.
 use anyhow::{Context, Result, ensure};
 use serde::Serialize;
 use std::{
@@ -14,6 +14,22 @@ use std::{
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
+#[derive(Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+enum Filesystem {
+    IsolatedImage,
+    Host,
+}
+
+impl Filesystem {
+    fn snapshot(self, path: &Path) -> Result<Option<Space>> {
+        match self {
+            Self::IsolatedImage => Ok(Some(settled_space(path)?)),
+            Self::Host => Ok(None),
+        }
+    }
+}
+
 #[derive(Clone)]
 struct Repository {
     label: String,
@@ -24,6 +40,7 @@ struct Repository {
 #[serde(rename_all = "camelCase")]
 struct Suite {
     schema_version: u32,
+    filesystem: Filesystem,
     suite: String,
     generated_at_unix_ms: u128,
     commit: String,
@@ -55,13 +72,13 @@ struct Cohort {
     failed: usize,
     verified_files: usize,
     source_unchanged: bool,
-    before: Space,
-    after_create: Space,
-    after_status: Space,
-    after_private_writes: Space,
-    growth_after_create_bytes: i128,
-    growth_after_status_bytes: i128,
-    private_write_growth_bytes: i128,
+    before: Option<Space>,
+    after_create: Option<Space>,
+    after_status: Option<Space>,
+    after_private_writes: Option<Space>,
+    growth_after_create_bytes: Option<i128>,
+    growth_after_status_bytes: Option<i128>,
+    private_write_growth_bytes: Option<i128>,
     operations: Vec<Operation>,
 }
 #[derive(Serialize, Clone)]
@@ -98,7 +115,7 @@ struct Image {
 fn main() -> Result<()> {
     if env::args().any(|arg| arg == "--help") {
         println!(
-            "twig-real-bench --repo label=/absolute/repo [--repo ...] --concurrency 100 --repeats 3 --output target/real-results/run.json\nmacOS only. Creates, mounts, detaches and deletes disposable 8-GiB sparse APFS images.\nOriginal repositories are read-only inputs. Results default to target/ (not published)."
+            "twig-real-bench --repo label=/absolute/repo [--repo ...] --concurrency 100 --repeats 3 --output target/real-results/run.json\nOptional: --filesystem host (retains fixtures, does not measure allocation), --revision label=COMMIT (after --repo).\nmacOS only. Creates, mounts, detaches and deletes disposable 8-GiB sparse APFS images.\nOriginal repositories are read-only inputs. Results default to target/ (not published)."
         );
         return Ok(());
     }
@@ -111,6 +128,7 @@ fn main() -> Result<()> {
     let mut concurrency = 100;
     let mut repeats = 3;
     let mut output = None;
+    let mut filesystem = Filesystem::IsolatedImage;
     let mut args = env::args().skip(1);
     while let Some(arg) = args.next() {
         let value = args.next().context("option requires a value")?;
@@ -135,6 +153,31 @@ fn main() -> Result<()> {
                     path,
                     commit,
                 });
+            }
+            "--revision" => {
+                let (label, commit) = value
+                    .split_once('=')
+                    .context("revision must be label=COMMIT")?;
+                ensure!(
+                    (commit.len() == 40 || commit.len() == 64)
+                        && commit.bytes().all(|b| b.is_ascii_hexdigit()),
+                    "revision must be a full commit OID"
+                );
+                let repository = repositories
+                    .iter_mut()
+                    .find(|r| r.label == label)
+                    .context("declare --repo before --revision")?;
+                repository.commit = git_text(
+                    &repository.path,
+                    &["rev-parse", "--verify", &format!("{commit}^{{commit}}")],
+                )?;
+            }
+            "--filesystem" => {
+                filesystem = match value.as_str() {
+                    "host" => Filesystem::Host,
+                    "isolated-image" => Filesystem::IsolatedImage,
+                    _ => anyhow::bail!("filesystem must be host or isolated-image"),
+                }
             }
             "--concurrency" => concurrency = value.parse()?,
             "--repeats" => repeats = value.parse()?,
@@ -167,7 +210,7 @@ fn main() -> Result<()> {
         ],
     )?;
     let mut suite = Suite {
-        schema_version: 1, suite: "real-apfs-cohort".into(), generated_at_unix_ms: timestamp,
+        schema_version: 2, filesystem, suite: "real-apfs-cohort".into(), generated_at_unix_ms: timestamp,
         commit: git_text(&cwd, &["rev-parse", "HEAD"])?, dirty: !git_text(&cwd, &["status", "--porcelain"])?.is_empty(),
         candidate_sha256: digest.split_whitespace().next().context("missing candidate hash")?.into(),
         git_version: capture(&cwd, "git", &["--version".into()])?,
@@ -183,6 +226,9 @@ fn main() -> Result<()> {
             "Local warm-cache results. An 8-GiB virtual disk is a controlled filesystem, not a claim about native host-volume maximum throughput. Report failures alongside latency and allocation; do not compare unequal successful counts as identical capacity.".into(),
         ], cohorts: vec![], failures: vec![],
     };
+    if filesystem == Filesystem::Host {
+        suite.notes.push("Filesystem=host overrides image setup/cleanup notes: fresh cohort directories and warmup worktrees are retained, no allocation snapshots/deltas are reported, no sync is forced. Use isolated-image runs for space comparisons. Input revisions can be pinned to match earlier image runs.".into());
+    }
     save(&output, &suite)?;
     for repository in &repositories {
         for repeat in 0..repeats {
@@ -199,7 +245,11 @@ fn main() -> Result<()> {
                 );
                 let stem = root.join(format!("{}-{backend}-{repeat}", repository.label));
                 let mut image = Image::new(&stem);
-                let result = image.attach().and_then(|()| {
+                let prepare = match filesystem {
+                    Filesystem::IsolatedImage => image.attach(),
+                    Filesystem::Host => fs::create_dir(&image.mount).map_err(Into::into),
+                };
+                let result = prepare.and_then(|()| {
                     cohort(
                         repository,
                         backend,
@@ -207,16 +257,20 @@ fn main() -> Result<()> {
                         concurrency,
                         &candidate,
                         &image.mount,
+                        filesystem,
                     )
                 });
                 match result {
                     Ok(point) => {
                         eprintln!(
-                            "  {:.2}s creates; {} ok / {} failed; {:.2} MiB allocated after status",
+                            "  {:.2}s creates; {} ok / {} failed; allocation after status: {}",
                             point.create_wall_ms / 1000.0,
                             point.succeeded,
                             point.failed,
-                            point.growth_after_status_bytes as f64 / 1048576.0
+                            point
+                                .growth_after_status_bytes
+                                .map(|bytes| format!("{:.2} MiB", bytes as f64 / 1048576.0))
+                                .unwrap_or_else(|| "unmeasured on shared host filesystem".into())
                         );
                         suite.cohorts.push(point);
                     }
@@ -226,7 +280,11 @@ fn main() -> Result<()> {
                     )),
                 }
                 save(&output, &suite)?;
-                image.cleanup()?;
+                if filesystem == Filesystem::IsolatedImage {
+                    image.cleanup()?;
+                } else {
+                    eprintln!("  host fixtures retained at {}", image.mount.display());
+                }
                 ensure!(
                     suite.failures.is_empty(),
                     "setup/measurement failure saved to {}",
@@ -316,6 +374,7 @@ fn cohort(
     concurrency: usize,
     candidate: &Path,
     mount: &Path,
+    filesystem: Filesystem,
 ) -> Result<Cohort> {
     let seed = mount.join("seed");
     checked(
@@ -352,24 +411,26 @@ fn cohort(
         "warmup did not use expected backend: {:?}",
         warmup.error
     );
-    checked(
-        command("git", &seed)
-            .args(["worktree", "remove", "--force"])
-            .arg(mount.join("warmup"))
-            .output()?,
-    )?;
-    // Only benchmark-owned warmup staging paths on this disposable image are removed.
-    for entry in fs::read_dir(mount)? {
-        let entry = entry?;
-        if entry
-            .file_name()
-            .to_string_lossy()
-            .starts_with(".git-twig-stage-")
-        {
-            fs::remove_dir_all(entry.path())?;
+    if filesystem == Filesystem::IsolatedImage {
+        checked(
+            command("git", &seed)
+                .args(["worktree", "remove", "--force"])
+                .arg(mount.join("warmup"))
+                .output()?,
+        )?;
+        // Only benchmark-owned warmup staging paths on this disposable image are removed.
+        for entry in fs::read_dir(mount)? {
+            let entry = entry?;
+            if entry
+                .file_name()
+                .to_string_lossy()
+                .starts_with(".git-twig-stage-")
+            {
+                fs::remove_dir_all(entry.path())?;
+            }
         }
     }
-    let before = settled_space(mount)?;
+    let before = filesystem.snapshot(mount)?;
     let barrier = Arc::new(Barrier::new(concurrency));
     let start = Instant::now();
     let handles = (0..concurrency)
@@ -396,7 +457,7 @@ fn cohort(
         .map(|h| h.join().expect("CLI worker panicked"))
         .collect::<Vec<_>>();
     let create_wall_ms = ms(start);
-    let after_create = settled_space(mount)?;
+    let after_create = filesystem.snapshot(mount)?;
     let status_start = Instant::now();
     let mut verified_files = 0;
     for operation in &mut operations {
@@ -429,7 +490,7 @@ fn cohort(
         }
     }
     let status_and_verification_wall_ms = ms(status_start);
-    let after_status = settled_space(mount)?;
+    let after_status = filesystem.snapshot(mount)?;
     let first = expected
         .iter()
         .find(|entry| !entry.symlink && !entry.data.is_empty())
@@ -453,7 +514,7 @@ fn cohort(
             operation.verified = false;
         }
     }
-    let after_private_writes = settled_space(mount)?;
+    let after_private_writes = filesystem.snapshot(mount)?;
     let source_unchanged = fs::read(seed.join(&first.path))? == first.data;
     ensure!(source_unchanged, "seed changed after private writes");
     for operation in &mut operations {
@@ -482,18 +543,22 @@ fn cohort(
         failed: concurrency - succeeded,
         verified_files,
         source_unchanged,
-        growth_after_create_bytes: after_create.allocated_bytes as i128
-            - before.allocated_bytes as i128,
-        growth_after_status_bytes: after_status.allocated_bytes as i128
-            - before.allocated_bytes as i128,
-        private_write_growth_bytes: after_private_writes.allocated_bytes as i128
-            - after_status.allocated_bytes as i128,
+        growth_after_create_bytes: allocation_delta(&after_create, &before),
+        growth_after_status_bytes: allocation_delta(&after_status, &before),
+        private_write_growth_bytes: allocation_delta(&after_private_writes, &after_status),
         before,
         after_create,
         after_status,
         after_private_writes,
         operations,
     })
+}
+
+fn allocation_delta(after: &Option<Space>, before: &Option<Space>) -> Option<i128> {
+    after
+        .as_ref()
+        .zip(before.as_ref())
+        .map(|(after, before)| after.allocated_bytes as i128 - before.allocated_bytes as i128)
 }
 
 fn create(
@@ -684,4 +749,31 @@ fn save(path: &Path, suite: &Suite) -> Result<()> {
     fs::write(&temporary, serde_json::to_vec_pretty(suite)?)?;
     fs::rename(temporary, path)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn host_mode_has_no_allocation_measurement() {
+        assert!(
+            Filesystem::Host
+                .snapshot(Path::new("/not-a-benchmark-path"))
+                .unwrap()
+                .is_none()
+        );
+        assert_eq!(allocation_delta(&None, &None), None);
+    }
+    #[test]
+    fn preserves_negative_allocator_deltas() {
+        let snapshot = |bytes| {
+            Some(Space {
+                allocated_bytes: bytes,
+                total_bytes: 100,
+                stable: true,
+                observed_allocated_bytes: vec![bytes],
+            })
+        };
+        assert_eq!(allocation_delta(&snapshot(20), &snapshot(24)), Some(-4));
+    }
 }
