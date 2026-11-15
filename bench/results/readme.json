@@ -19,30 +19,20 @@
       "allocation": "bench/results/2026-11-15-real/images.json"
     },
     {
-      "name": "Linux kernel (1)",
+      "name": "Linux kernel (10 sequential)",
       "repository": "linux",
-      "timing": "bench/results/2026-11-15-real/kernel-n1.json",
-      "allocation": "bench/results/2026-11-15-real/kernel-n1.json",
-      "input": "bench/results/2026-11-15-real/kernel-input.json",
-      "incomplete": true
-    },
-    {
-      "name": "Linux kernel (100, prior attempt)",
-      "repository": "linux",
-      "timing": "bench/results/2026-11-15-real/kernel-n100-git.json",
-      "allocation": "bench/results/2026-11-15-real/kernel-n100-git.json",
-      "input": "bench/results/2026-11-15-real/kernel-input.json",
-      "incomplete": true
+      "timing": "bench/results/2026-11-15-real/kernel-sequential10.json",
+      "allocation": "bench/results/2026-11-15-real/kernel-sequential10.json",
+      "input": "bench/results/2026-11-15-real/kernel-input.json"
     }
   ],
   "notes": [
     "These are local, warm-cache results on a shared Mac, not universal speed guarantees. Input commits and hardware are recorded in each raw run.",
     "Only tracked committed files are copied. Ignored dependencies and build artifacts are excluded.",
-    "Host-APFS creation timings and isolated-image allocation are separate measurements of the same pinned trees and candidate binary. Round counts are shown; budget-stopped suites retain their stop events.",
+    "For host-APFS rows, allocation was measured separately on isolated images using the same pinned trees and candidate binary. The kernel row uses matched case-sensitive APFS images for both timing and allocation. Round counts are shown.",
     "Plain Git's nonzero failure count is an observed concurrent commondir-registration race. Failed attempts remain in the timing samples; a fast failed batch is not a complete successful cohort.",
-    "Earlier kernel attempts were budget-stopped. The subsequent regular-Git run was user-interrupted, and the subsequent parallel Twig-only run was also user-interrupted; unfinished measurements are never filled in with projections.",
-    "**Linux kernel (prior attempts):** both 100-worker cohorts were launched but budget-stopped before completion; no completed kernel timing/space comparison is claimed. See [pinned input](bench/results/2026-11-15-real/kernel-input.json), [Git attempt](bench/results/2026-11-15-real/kernel-n100-git-event.json), and [Twig attempt](bench/results/2026-11-15-real/kernel-n100-twig-event.json). The exploratory single-worktree run was also incomplete as a paired comparison.",
     "The new-repo fixture contains zero tracked files and one empty initial commit, not an unborn HEAD. Its private-write probe is not applicable and allocation was not measured on the shared host filesystem.",
-    "The long regular-Git kernel run was [user-interrupted](bench/results/2026-11-15-real/kernel-git-user-interrupted.json) before any verified cohort completed. Its elapsed suite time includes setup/warmup and is not a completed create-time measurement. The parallel Twig-only run was also [user-interrupted](bench/results/2026-11-15-real/kernel-twig-user-interrupted.json). A fresh ten-worktree sequential comparison is being prepared; no speedup is inferred from unfinished runs."
+    "The Linux kernel row is one paired round of ten sequential creates per backend (maximum one in flight), not a hundred-way result. Its case-sensitive APFS image environment differs from the host-APFS timing rows; do not compare absolute times across workloads as if environments were identical.",
+    "Earlier kernel parallel attempts were [budget-stopped](bench/results/2026-11-15-real/kernel-n100-git-event.json) or user-interrupted ([Git](bench/results/2026-11-15-real/kernel-git-user-interrupted.json), [Twig](bench/results/2026-11-15-real/kernel-twig-user-interrupted.json)). Those artifacts are retained but their cutoff times are not completed timings or speedup baselines."
   ]
 }

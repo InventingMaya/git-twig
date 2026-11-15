@@ -75,8 +75,9 @@ fn main() -> Result<()> {
             .fold(1.0, f64::max)
             * 1.1;
         let mut svg = format!(
-            "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1100\" height=\"{height}\"><rect width=\"100%\" height=\"100%\" fill=\"#111827\"/><g fill=\"#e5e7eb\" font-family=\"system-ui,sans-serif\"><text x=\"20\" y=\"30\" font-size=\"20\">{} · {} simultaneous worktree creates</text><text x=\"200\" y=\"61\" font-size=\"14\">creation wall time (seconds)</text><text x=\"650\" y=\"61\" font-size=\"14\">allocated APFS growth (MiB)</text>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1100\" height=\"{height}\"><rect width=\"100%\" height=\"100%\" fill=\"#111827\"/><g fill=\"#e5e7eb\" font-family=\"system-ui,sans-serif\"><text x=\"20\" y=\"30\" font-size=\"20\">{} · {} worktrees · concurrency {}</text><text x=\"200\" y=\"61\" font-size=\"14\">creation wall time (seconds)</text><text x=\"650\" y=\"61\" font-size=\"14\">allocated APFS growth (MiB)</text>",
             escape(label),
+            run.get("worktreesPerCohort").unwrap_or(&run["concurrency"]),
             run["concurrency"]
         );
         for (index, cohort) in rows.iter().enumerate() {

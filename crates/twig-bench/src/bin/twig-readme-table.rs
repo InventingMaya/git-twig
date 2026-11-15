@@ -16,6 +16,8 @@ const METRICS: &[&str] = &[
     "timing filesystem",
     "Git create",
     "Twig create",
+    "Git first status (median)",
+    "Twig first status (median)",
     "Git allocation",
     "Twig allocation",
     "paired timing rounds",
@@ -56,7 +58,7 @@ fn main() -> Result<()> {
         "\n\n<!-- Generated from bench/results/readme.json by twig-readme-table. Do not edit numbers. -->\n\n",
     );
     block.push_str(&render_table(METRICS, &columns)?);
-    block.push_str("\nCreation is wall time for the entire concurrent cohort, excluding first status. Values are medians of the recorded timing rounds; one round is an observation, not a stable estimate. Allocation is additional **filesystem-allocated MiB after first status**, including indexes, retained staging and APFS metadata, measured separately on isolated images. Ranges retain observed allocator variation; they are not confidence intervals. Missing measurements are not zeros. Never infer exclusive APFS allocation from logical size or `du`.\n\n");
+    block.push_str("\nCreation is wall time for the entire batch at the recorded concurrency, excluding first status. Values are medians of the recorded timing rounds; one round is an observation, not a stable estimate. Allocation is additional **filesystem-allocated MiB after first status**, including indexes, retained staging and APFS metadata, measured separately on isolated images. Ranges retain observed allocator variation; they are not confidence intervals. Missing measurements are not zeros. Never infer exclusive APFS allocation from logical size or `du`.\n\n");
     for note in &manifest.notes {
         block.push_str(&format!("- {note}\n"));
     }
@@ -191,6 +193,8 @@ fn column(entry: &Entry) -> Result<Column> {
             filesystem.into(),
             wall_cell(&gt, missing)?,
             wall_cell(&tt, missing)?,
+            first_status_cell(&gt)?,
+            first_status_cell(&tt)?,
             allocation_cell(
                 &ga,
                 if allocation.is_some() {
@@ -320,6 +324,23 @@ fn wall_cell(rows: &[&Value], missing: &str) -> Result<String> {
         .collect::<Result<_>>()?;
     Ok(format!("{:.2} s", median(values) / 1000.0))
 }
+fn first_status_cell(rows: &[&Value]) -> Result<String> {
+    let mut values = Vec::new();
+    for row in rows {
+        values.extend(
+            row["operations"]
+                .as_array()
+                .context("operations")?
+                .iter()
+                .filter_map(|operation| operation["firstStatusMs"].as_f64()),
+        );
+    }
+    if values.is_empty() {
+        return Ok("not measured".into());
+    }
+    Ok(format!("{:.2} s", median(values) / 1000.0))
+}
+
 fn failure_cell(rows: &[&Value]) -> Result<String> {
     if rows.is_empty() {
         return Ok("not measured".into());
@@ -406,5 +427,6 @@ mod tests {
             "not measured"
         );
         assert_eq!(failure_cell(&[]).unwrap(), "not measured");
+        assert_eq!(first_status_cell(&[]).unwrap(), "not measured");
     }
 }
