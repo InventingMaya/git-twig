@@ -1,0 +1,3946 @@
+{
+  "schemaVersion": 2,
+  "generatedAtUnixMs": 1794740984320,
+  "commit": "3ed60de9a23064d6c297baa23563abfd3ae0598c",
+  "dirty": false,
+  "gitVersion": "git version 2.56.0",
+  "rustVersion": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "platform": "macos aarch64 25.5.0",
+  "cpu": "Apple M1 Ultra",
+  "twigVersion": "git-twig 0.1.0",
+  "candidateSha256": "360c21cb9186645778b268d798e72c3d72b689c6a9d299caf997f8d46c036f1e",
+  "fixtureTree": "3ff6d874c0436d8bd1a9ff749633e267fa344100",
+  "config": {
+    "files": 64,
+    "bytes_per_file": 262144,
+    "samples": 5,
+    "concurrency": [
+      1,
+      2,
+      4,
+      8,
+      16
+    ],
+    "seed": 42
+  },
+  "notes": [
+    "Local real CLI benchmark, warm caches; no cold-cache claim. Baseline: installed git worktree add --detach; candidate: release git-twig add --detach.",
+    "One unmeasured warmup per backend. Backend order alternates per sample. Monotonic Instant measures CLI completion and first/warm/modified git status separately.",
+    "Full byte/mode-independent content verification after first/warm status. In-place write must leave source unchanged. Synthetic deterministic pseudo-random bytes; no compression/dedupe assumptions.",
+    "Every operation is retained on disk. Report exclusive physical storage as unmeasured. Logical fixture bytes are not APFS allocation.",
+    "All create/first-status/warm-status workers finish before any full-content verification or private-write check begins. Batch throughput excludes generator verification work, includes status calls.",
+    "Tail percentiles with few samples are descriptive only; errors or incorrect content block conclusions. No generator saturation claim at high concurrency."
+  ],
+  "points": [
+    {
+      "backend": "git",
+      "concurrency": 1,
+      "sample": 0,
+      "wallMs": 134.96408300000002,
+      "operationsPerSecond": 7.409378686327976,
+      "bytesPerSecond": 124308746.6463207,
+      "operations": [
+        {
+          "createMs": 58.270708,
+          "firstStatusMs": 59.660708,
+          "warmStatusMs": 16.931375,
+          "modifiedStatusMs": 22.613417000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 1,
+      "sample": 0,
+      "wallMs": 406.795542,
+      "operationsPerSecond": 2.4582373619030466,
+      "bytesPerSecond": 41242379.199917585,
+      "operations": [
+        {
+          "createMs": 331.896709,
+          "firstStatusMs": 58.683875,
+          "warmStatusMs": 16.133166,
+          "modifiedStatusMs": 16.1755,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 1,
+      "sample": 1,
+      "wallMs": 389.388584,
+      "operationsPerSecond": 2.5681287050778048,
+      "bytesPerSecond": 43086050.00089063,
+      "operations": [
+        {
+          "createMs": 314.706209,
+          "firstStatusMs": 57.2995,
+          "warmStatusMs": 17.291292,
+          "modifiedStatusMs": 18.417917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 1,
+      "sample": 1,
+      "wallMs": 171.357416,
+      "operationsPerSecond": 5.835755599862687,
+      "bytesPerSecond": 97907732.22210588,
+      "operations": [
+        {
+          "createMs": 55.356916999999996,
+          "firstStatusMs": 58.03875,
+          "warmStatusMs": 57.875875,
+          "modifiedStatusMs": 60.101791,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 1,
+      "sample": 2,
+      "wallMs": 173.410166,
+      "operationsPerSecond": 5.766674601995364,
+      "bytesPerSecond": 96748745.39939025,
+      "operations": [
+        {
+          "createMs": 56.164458,
+          "firstStatusMs": 58.175791999999994,
+          "warmStatusMs": 58.984625,
+          "modifiedStatusMs": 60.695458,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 1,
+      "sample": 2,
+      "wallMs": 391.399875,
+      "operationsPerSecond": 2.5549318328218678,
+      "bytesPerSecond": 42864643.224528365,
+      "operations": [
+        {
+          "createMs": 316.706042,
+          "firstStatusMs": 59.301333,
+          "warmStatusMs": 15.302291,
+          "modifiedStatusMs": 16.479917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 1,
+      "sample": 3,
+      "wallMs": 397.57466600000004,
+      "operationsPerSecond": 2.515250808259498,
+      "bytesPerSecond": 42198906.10434418,
+      "operations": [
+        {
+          "createMs": 319.42229100000003,
+          "firstStatusMs": 60.812334,
+          "warmStatusMs": 17.249208,
+          "modifiedStatusMs": 16.870541,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 1,
+      "sample": 3,
+      "wallMs": 172.96858400000002,
+      "operationsPerSecond": 5.781396695714407,
+      "bytesPerSecond": 96995741.14568688,
+      "operations": [
+        {
+          "createMs": 56.854709,
+          "firstStatusMs": 58.282624999999996,
+          "warmStatusMs": 57.745083,
+          "modifiedStatusMs": 59.358333,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 1,
+      "sample": 4,
+      "wallMs": 173.40249999999997,
+      "operationsPerSecond": 5.766929542538315,
+      "bytesPerSecond": 96753022.5919465,
+      "operations": [
+        {
+          "createMs": 56.755291,
+          "firstStatusMs": 58.446667,
+          "warmStatusMs": 58.110709,
+          "modifiedStatusMs": 59.797999999999995,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 1,
+      "sample": 4,
+      "wallMs": 393.57387500000004,
+      "operationsPerSecond": 2.54081905207758,
+      "bytesPerSecond": 42627870.05362081,
+      "operations": [
+        {
+          "createMs": 318.69004099999995,
+          "firstStatusMs": 58.264833,
+          "warmStatusMs": 16.538458,
+          "modifiedStatusMs": 17.459,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 2,
+      "sample": 0,
+      "wallMs": 190.401917,
+      "operationsPerSecond": 10.504095922521621,
+      "bytesPerSecond": 176229486.1768645,
+      "operations": [
+        {
+          "createMs": 72.32712500000001,
+          "firstStatusMs": 57.922666,
+          "warmStatusMs": 58.627542,
+          "modifiedStatusMs": 59.403791999999996,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 75.896167,
+          "firstStatusMs": 57.738459,
+          "warmStatusMs": 56.651624999999996,
+          "modifiedStatusMs": 60.387707999999996,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 2,
+      "sample": 0,
+      "wallMs": 497.665583,
+      "operationsPerSecond": 4.018762937038384,
+      "bytesPerSecond": 67423653.84748738,
+      "operations": [
+        {
+          "createMs": 368.685542,
+          "firstStatusMs": 61.199166999999996,
+          "warmStatusMs": 15.172334000000001,
+          "modifiedStatusMs": 39.225500000000004,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 420.21308400000004,
+          "firstStatusMs": 61.083709,
+          "warmStatusMs": 16.270584,
+          "modifiedStatusMs": 17.355209,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 2,
+      "sample": 1,
+      "wallMs": 485.262625,
+      "operationsPerSecond": 4.121479580258216,
+      "bytesPerSecond": 69146953.15758142,
+      "operations": [
+        {
+          "createMs": 359.57241600000003,
+          "firstStatusMs": 59.457333,
+          "warmStatusMs": 16.140709,
+          "modifiedStatusMs": 16.92725,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 408.75975,
+          "firstStatusMs": 59.757958,
+          "warmStatusMs": 16.603832999999998,
+          "modifiedStatusMs": 17.736708,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 2,
+      "sample": 1,
+      "wallMs": 198.605791,
+      "operationsPerSecond": 10.070199816076864,
+      "bytesPerSecond": 168949917.4774818,
+      "operations": [
+        {
+          "createMs": 75.347292,
+          "firstStatusMs": 59.306334,
+          "warmStatusMs": 60.489834,
+          "modifiedStatusMs": 61.027125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 80.328542,
+          "firstStatusMs": 59.008041999999996,
+          "warmStatusMs": 59.16225,
+          "modifiedStatusMs": 62.865624999999994,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 2,
+      "sample": 2,
+      "wallMs": 198.66820800000002,
+      "operationsPerSecond": 10.067035989975809,
+      "bytesPerSecond": 168896837.28359798,
+      "operations": [
+        {
+          "createMs": 76.362125,
+          "firstStatusMs": 61.115792,
+          "warmStatusMs": 61.103584000000005,
+          "modifiedStatusMs": 60.846666,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 75.36662500000001,
+          "firstStatusMs": 60.689667,
+          "warmStatusMs": 62.150458,
+          "modifiedStatusMs": 61.626374999999996,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 2,
+      "sample": 2,
+      "wallMs": 512.828292,
+      "operationsPerSecond": 3.899940840237418,
+      "bytesPerSecond": 65430149.86388465,
+      "operations": [
+        {
+          "createMs": 383.354917,
+          "firstStatusMs": 61.498459,
+          "warmStatusMs": 15.241375,
+          "modifiedStatusMs": 16.993208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 436.177708,
+          "firstStatusMs": 59.562,
+          "warmStatusMs": 16.989167,
+          "modifiedStatusMs": 19.234083,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 2,
+      "sample": 3,
+      "wallMs": 521.911083,
+      "operationsPerSecond": 3.832070375865155,
+      "bytesPerSecond": 64291472.42309089,
+      "operations": [
+        {
+          "createMs": 388.43625,
+          "firstStatusMs": 60.371208,
+          "warmStatusMs": 21.464750000000002,
+          "modifiedStatusMs": 16.539667,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 441.03220799999997,
+          "firstStatusMs": 65.94345899999999,
+          "warmStatusMs": 14.832292,
+          "modifiedStatusMs": 16.535792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 2,
+      "sample": 3,
+      "wallMs": 200.700417,
+      "operationsPerSecond": 9.965101367975734,
+      "bytesPerSecond": 167186658.11242437,
+      "operations": [
+        {
+          "createMs": 79.267584,
+          "firstStatusMs": 60.93,
+          "warmStatusMs": 58.551583,
+          "modifiedStatusMs": 60.857208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 83.788416,
+          "firstStatusMs": 60.535790999999996,
+          "warmStatusMs": 56.268542,
+          "modifiedStatusMs": 60.259792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 2,
+      "sample": 4,
+      "wallMs": 192.964375,
+      "operationsPerSecond": 10.364607456687278,
+      "bytesPerSecond": 173889258.0560531,
+      "operations": [
+        {
+          "createMs": 73.766708,
+          "firstStatusMs": 59.326333000000005,
+          "warmStatusMs": 57.267167,
+          "modifiedStatusMs": 60.390708000000004,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 78.40633299999999,
+          "firstStatusMs": 58.211917,
+          "warmStatusMs": 56.253792,
+          "modifiedStatusMs": 61.423375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 2,
+      "sample": 4,
+      "wallMs": 493.848083,
+      "operationsPerSecond": 4.04982841656591,
+      "bytesPerSecond": 67944846.10766426,
+      "operations": [
+        {
+          "createMs": 419.40604199999996,
+          "firstStatusMs": 59.737,
+          "warmStatusMs": 14.605291,
+          "modifiedStatusMs": 16.091624999999997,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 359.451833,
+          "firstStatusMs": 67.992666,
+          "warmStatusMs": 15.826166999999998,
+          "modifiedStatusMs": 16.263917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 4,
+      "sample": 0,
+      "wallMs": 230.769958,
+      "operationsPerSecond": 17.333278710394357,
+      "bytesPerSecond": 290804160.91248757,
+      "operations": [
+        {
+          "createMs": 109.670375,
+          "firstStatusMs": 58.280249999999995,
+          "warmStatusMs": 60.133582999999994,
+          "modifiedStatusMs": 59.747167,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 111.81,
+          "firstStatusMs": 59.417583,
+          "warmStatusMs": 59.434291,
+          "modifiedStatusMs": 59.619166,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 111.62512500000001,
+          "firstStatusMs": 59.156082999999995,
+          "warmStatusMs": 57.898416000000005,
+          "modifiedStatusMs": 59.880083,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 115.40837499999999,
+          "firstStatusMs": 56.202459000000005,
+          "warmStatusMs": 58.92525,
+          "modifiedStatusMs": 58.533083,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 4,
+      "sample": 0,
+      "wallMs": 629.665916,
+      "operationsPerSecond": 6.352575069348362,
+      "bytesPerSecond": 106578524.09467244,
+      "operations": [
+        {
+          "createMs": 452.815375,
+          "firstStatusMs": 59.626625000000004,
+          "warmStatusMs": 16.639333,
+          "modifiedStatusMs": 15.936291000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 401.001917,
+          "firstStatusMs": 58.265708,
+          "warmStatusMs": 14.156625,
+          "modifiedStatusMs": 15.734792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 554.686459,
+          "firstStatusMs": 59.211416,
+          "warmStatusMs": 15.644167000000001,
+          "modifiedStatusMs": 14.595459,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 503.81725,
+          "firstStatusMs": 60.112417,
+          "warmStatusMs": 13.893167,
+          "modifiedStatusMs": 16.458958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 4,
+      "sample": 1,
+      "wallMs": 634.919209,
+      "operationsPerSecond": 6.300014148729275,
+      "bytesPerSecond": 105696698.17628717,
+      "operations": [
+        {
+          "createMs": 406.64162500000003,
+          "firstStatusMs": 59.769833,
+          "warmStatusMs": 16.232291999999998,
+          "modifiedStatusMs": 14.785082999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 510.52175,
+          "firstStatusMs": 58.453208,
+          "warmStatusMs": 14.9145,
+          "modifiedStatusMs": 15.59575,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 457.828666,
+          "firstStatusMs": 59.946875,
+          "warmStatusMs": 14.7095,
+          "modifiedStatusMs": 15.793541000000001,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 559.8465,
+          "firstStatusMs": 59.564625,
+          "warmStatusMs": 15.378459000000001,
+          "modifiedStatusMs": 15.065958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 4,
+      "sample": 1,
+      "wallMs": 249.75325,
+      "operationsPerSecond": 16.015807602103276,
+      "bytesPerSecond": 268700663.5549287,
+      "operations": [
+        {
+          "createMs": 127.1215,
+          "firstStatusMs": 59.482082999999996,
+          "warmStatusMs": 62.671333,
+          "modifiedStatusMs": 15.401375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 125.071875,
+          "firstStatusMs": 60.578417,
+          "warmStatusMs": 63.985709,
+          "modifiedStatusMs": 27.074875000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 123.91616699999999,
+          "firstStatusMs": 62.632124999999995,
+          "warmStatusMs": 62.064,
+          "modifiedStatusMs": 15.4285,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 128.51720799999998,
+          "firstStatusMs": 58.281417000000005,
+          "warmStatusMs": 61.580917,
+          "modifiedStatusMs": 16.121707999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 4,
+      "sample": 2,
+      "wallMs": 246.2355,
+      "operationsPerSecond": 16.244611357826145,
+      "bytesPerSecond": 272539353.5863025,
+      "operations": [
+        {
+          "createMs": 118.474334,
+          "firstStatusMs": 62.4095,
+          "warmStatusMs": 64.86966600000001,
+          "modifiedStatusMs": 60.097666000000004,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 117.380042,
+          "firstStatusMs": 62.810709,
+          "warmStatusMs": 64.685584,
+          "modifiedStatusMs": 60.463167,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 121.356417,
+          "firstStatusMs": 60.619,
+          "warmStatusMs": 64.156542,
+          "modifiedStatusMs": 61.113791,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 116.32675,
+          "firstStatusMs": 65.319125,
+          "warmStatusMs": 63.204833,
+          "modifiedStatusMs": 60.54725,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 4,
+      "sample": 2,
+      "wallMs": 667.624417,
+      "operationsPerSecond": 5.9913926125922385,
+      "bytesPerSecond": 100518888.0022643,
+      "operations": [
+        {
+          "createMs": 476.789584,
+          "firstStatusMs": 59.654416000000005,
+          "warmStatusMs": 14.702,
+          "modifiedStatusMs": 18.649417,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 589.681833,
+          "firstStatusMs": 61.908833,
+          "warmStatusMs": 15.883250000000002,
+          "modifiedStatusMs": 16.975167,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 422.20875,
+          "firstStatusMs": 60.293458,
+          "warmStatusMs": 13.966208,
+          "modifiedStatusMs": 17.738,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 533.881666,
+          "firstStatusMs": 61.413000000000004,
+          "warmStatusMs": 16.359709,
+          "modifiedStatusMs": 16.520542,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 4,
+      "sample": 3,
+      "wallMs": 640.6101669999999,
+      "operationsPerSecond": 6.2440470133843515,
+      "bytesPerSecond": 104757725.45770416,
+      "operations": [
+        {
+          "createMs": 511.709792,
+          "firstStatusMs": 58.517458000000005,
+          "warmStatusMs": 13.652541000000001,
+          "modifiedStatusMs": 16.29075,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 453.792792,
+          "firstStatusMs": 61.652041,
+          "warmStatusMs": 14.153875,
+          "modifiedStatusMs": 16.484792000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 564.359041,
+          "firstStatusMs": 62.213833,
+          "warmStatusMs": 13.918334,
+          "modifiedStatusMs": 15.936792000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 397.283458,
+          "firstStatusMs": 59.051874999999995,
+          "warmStatusMs": 14.447750000000001,
+          "modifiedStatusMs": 15.507458,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 4,
+      "sample": 3,
+      "wallMs": 253.93824999999998,
+      "operationsPerSecond": 15.751860934695738,
+      "bytesPerSecond": 264272373.3033523,
+      "operations": [
+        {
+          "createMs": 123.422167,
+          "firstStatusMs": 61.848042,
+          "warmStatusMs": 68.583792,
+          "modifiedStatusMs": 59.587083,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 124.22337499999999,
+          "firstStatusMs": 62.42466700000001,
+          "warmStatusMs": 67.173,
+          "modifiedStatusMs": 57.998833,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 124.861,
+          "firstStatusMs": 60.927375,
+          "warmStatusMs": 66.568208,
+          "modifiedStatusMs": 56.528917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 129.249209,
+          "firstStatusMs": 56.564333000000005,
+          "warmStatusMs": 67.974875,
+          "modifiedStatusMs": 56.569042,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 4,
+      "sample": 4,
+      "wallMs": 272.996917,
+      "operationsPerSecond": 14.652180119675124,
+      "bytesPerSecond": 245822790.7386954,
+      "operations": [
+        {
+          "createMs": 147.70508299999997,
+          "firstStatusMs": 57.217583000000005,
+          "warmStatusMs": 57.330082999999995,
+          "modifiedStatusMs": 60.412124999999996,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 154.66537499999998,
+          "firstStatusMs": 59.549166,
+          "warmStatusMs": 58.665333,
+          "modifiedStatusMs": 59.8915,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 136.496,
+          "firstStatusMs": 62.214833,
+          "warmStatusMs": 61.767583,
+          "modifiedStatusMs": 59.7575,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 136.423292,
+          "firstStatusMs": 62.201625,
+          "warmStatusMs": 60.807708000000005,
+          "modifiedStatusMs": 59.970917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 4,
+      "sample": 4,
+      "wallMs": 637.109625,
+      "operationsPerSecond": 6.278354372687431,
+      "bytesPerSecond": 105333307.43512154,
+      "operations": [
+        {
+          "createMs": 502.773375,
+          "firstStatusMs": 61.71625,
+          "warmStatusMs": 14.866834,
+          "modifiedStatusMs": 16.604333,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 388.972417,
+          "firstStatusMs": 60.756541999999996,
+          "warmStatusMs": 14.696833,
+          "modifiedStatusMs": 15.627084,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 562.664625,
+          "firstStatusMs": 59.879333,
+          "warmStatusMs": 14.446625,
+          "modifiedStatusMs": 16.790625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 445.849708,
+          "firstStatusMs": 60.481417,
+          "warmStatusMs": 17.453833,
+          "modifiedStatusMs": 16.970875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 8,
+      "sample": 0,
+      "wallMs": 449.992458,
+      "operationsPerSecond": 17.778075738327153,
+      "bytesPerSecond": 298266616.72627413,
+      "operations": [
+        {
+          "createMs": 320.313291,
+          "firstStatusMs": 54.586999999999996,
+          "warmStatusMs": 51.727292,
+          "modifiedStatusMs": 46.419000000000004,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 332.562583,
+          "firstStatusMs": 57.779042000000004,
+          "warmStatusMs": 59.384291,
+          "modifiedStatusMs": 55.8615,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 333.16983300000004,
+          "firstStatusMs": 57.689125000000004,
+          "warmStatusMs": 59.018083,
+          "modifiedStatusMs": 50.838041000000004,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 326.67054099999996,
+          "firstStatusMs": 50.377790999999995,
+          "warmStatusMs": 51.858042,
+          "modifiedStatusMs": 48.857042,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 332.523125,
+          "firstStatusMs": 56.881708,
+          "warmStatusMs": 57.988125000000004,
+          "modifiedStatusMs": 50.707334,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 320.802584,
+          "firstStatusMs": 54.033625,
+          "warmStatusMs": 52.187958,
+          "modifiedStatusMs": 44.491749999999996,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 336.18929199999997,
+          "firstStatusMs": 54.618917,
+          "warmStatusMs": 59.020792,
+          "modifiedStatusMs": 57.017333,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 332.326,
+          "firstStatusMs": 58.305125,
+          "warmStatusMs": 59.196042,
+          "modifiedStatusMs": 51.388125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 8,
+      "sample": 0,
+      "wallMs": 934.85175,
+      "operationsPerSecond": 8.557506577914626,
+      "bytesPerSecond": 143571136.27909452,
+      "operations": [
+        {
+          "createMs": 460.526583,
+          "firstStatusMs": 71.16529100000001,
+          "warmStatusMs": 14.153041,
+          "modifiedStatusMs": 14.700916,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 803.193583,
+          "firstStatusMs": 57.705290999999995,
+          "warmStatusMs": 16.783666,
+          "modifiedStatusMs": 15.632832999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 522.0310000000001,
+          "firstStatusMs": 58.155125000000005,
+          "warmStatusMs": 14.82225,
+          "modifiedStatusMs": 15.330333,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 575.815666,
+          "firstStatusMs": 57.770833,
+          "warmStatusMs": 13.076958,
+          "modifiedStatusMs": 15.720749999999999,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 630.1796670000001,
+          "firstStatusMs": 59.195667,
+          "warmStatusMs": 14.65475,
+          "modifiedStatusMs": 16.510625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 687.626042,
+          "firstStatusMs": 59.23783400000001,
+          "warmStatusMs": 16.313417,
+          "modifiedStatusMs": 15.838874999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 859.353459,
+          "firstStatusMs": 61.062375,
+          "warmStatusMs": 14.280917,
+          "modifiedStatusMs": 15.409125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 746.172917,
+          "firstStatusMs": 60.641417000000004,
+          "warmStatusMs": 13.38625,
+          "modifiedStatusMs": 14.59725,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 8,
+      "sample": 1,
+      "wallMs": 927.4913750000001,
+      "operationsPerSecond": 8.625417136628359,
+      "bytesPerSecond": 144710486.3913155,
+      "operations": [
+        {
+          "createMs": 601.535916,
+          "firstStatusMs": 58.20175,
+          "warmStatusMs": 15.365125,
+          "modifiedStatusMs": 14.618791000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 665.731542,
+          "firstStatusMs": 60.329208,
+          "warmStatusMs": 17.03625,
+          "modifiedStatusMs": 15.608167,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 540.4415409999999,
+          "firstStatusMs": 58.677834,
+          "warmStatusMs": 15.667250000000001,
+          "modifiedStatusMs": 16.310624999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 856.57675,
+          "firstStatusMs": 56.711209,
+          "warmStatusMs": 14.088333,
+          "modifiedStatusMs": 20.7685,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 731.882209,
+          "firstStatusMs": 59.705209,
+          "warmStatusMs": 15.978584,
+          "modifiedStatusMs": 17.196666,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 795.708959,
+          "firstStatusMs": 59.146333000000006,
+          "warmStatusMs": 16.306874999999998,
+          "modifiedStatusMs": 16.731625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 477.595125,
+          "firstStatusMs": 60.817,
+          "warmStatusMs": 14.265625,
+          "modifiedStatusMs": 15.731499999999999,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 418.558042,
+          "firstStatusMs": 60.611,
+          "warmStatusMs": 15.427417,
+          "modifiedStatusMs": 15.478333000000001,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 8,
+      "sample": 1,
+      "wallMs": 431.813333,
+      "operationsPerSecond": 18.526523820884428,
+      "bytesPerSecond": 310823491.87212336,
+      "operations": [
+        {
+          "createMs": 373.282459,
+          "firstStatusMs": 28.749166,
+          "warmStatusMs": 29.490958000000003,
+          "modifiedStatusMs": 28.158917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 363.29733400000003,
+          "firstStatusMs": 33.831042,
+          "warmStatusMs": 32.801084,
+          "modifiedStatusMs": 24.543291,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 363.022583,
+          "firstStatusMs": 34.082415999999995,
+          "warmStatusMs": 32.756708,
+          "modifiedStatusMs": 25.962417000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 361.687625,
+          "firstStatusMs": 32.592667,
+          "warmStatusMs": 31.772541,
+          "modifiedStatusMs": 26.938958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 357.761334,
+          "firstStatusMs": 38.288708,
+          "warmStatusMs": 29.984959,
+          "modifiedStatusMs": 25.314208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 357.41137499999996,
+          "firstStatusMs": 35.09475,
+          "warmStatusMs": 27.664667,
+          "modifiedStatusMs": 24.94575,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 372.210834,
+          "firstStatusMs": 29.010291000000002,
+          "warmStatusMs": 30.385083,
+          "modifiedStatusMs": 24.75825,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 358.431125,
+          "firstStatusMs": 37.904042,
+          "warmStatusMs": 33.4495,
+          "modifiedStatusMs": 26.15675,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 8,
+      "sample": 2,
+      "wallMs": 468.092583,
+      "operationsPerSecond": 17.090636106062803,
+      "bytesPerSecond": 286733293.52881455,
+      "operations": [
+        {
+          "createMs": 404.149209,
+          "firstStatusMs": 28.698541000000002,
+          "warmStatusMs": 22.037000000000003,
+          "modifiedStatusMs": 28.348708000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 384.87541699999997,
+          "firstStatusMs": 66.310917,
+          "warmStatusMs": 16.767542,
+          "modifiedStatusMs": 18.318042,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 395.314709,
+          "firstStatusMs": 21.897166,
+          "warmStatusMs": 23.242458,
+          "modifiedStatusMs": 20.695583,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 399.723792,
+          "firstStatusMs": 24.818707999999997,
+          "warmStatusMs": 26.436208,
+          "modifiedStatusMs": 27.199458,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 391.81175,
+          "firstStatusMs": 19.303583999999997,
+          "warmStatusMs": 18.328583,
+          "modifiedStatusMs": 20.664292,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 393.697083,
+          "firstStatusMs": 21.546417,
+          "warmStatusMs": 22.100125000000002,
+          "modifiedStatusMs": 20.185583,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 398.099875,
+          "firstStatusMs": 23.137542,
+          "warmStatusMs": 27.821042000000002,
+          "modifiedStatusMs": 23.86525,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 405.22162499999996,
+          "firstStatusMs": 22.008875,
+          "warmStatusMs": 17.800041,
+          "modifiedStatusMs": 22.710834,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 8,
+      "sample": 2,
+      "wallMs": 1032.96875,
+      "operationsPerSecond": 7.744667977613069,
+      "bytesPerSecond": 129933967.50869763,
+      "operations": [
+        {
+          "createMs": 864.246917,
+          "firstStatusMs": 61.881458,
+          "warmStatusMs": 17.772750000000002,
+          "modifiedStatusMs": 17.302875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 602.7391250000001,
+          "firstStatusMs": 59.614083,
+          "warmStatusMs": 17.060833000000002,
+          "modifiedStatusMs": 18.626291,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 462.89216700000003,
+          "firstStatusMs": 63.91820800000001,
+          "warmStatusMs": 17.344749999999998,
+          "modifiedStatusMs": 17.810083000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 941.789,
+          "firstStatusMs": 68.7995,
+          "warmStatusMs": 22.220125,
+          "modifiedStatusMs": 18.811,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 941.752584,
+          "firstStatusMs": 68.779667,
+          "warmStatusMs": 22.24775,
+          "modifiedStatusMs": 19.959,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 941.767625,
+          "firstStatusMs": 69.216,
+          "warmStatusMs": 20.732792,
+          "modifiedStatusMs": 18.677583000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 534.070084,
+          "firstStatusMs": 59.676916000000006,
+          "warmStatusMs": 15.908333,
+          "modifiedStatusMs": 17.677333,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 666.3183329999999,
+          "firstStatusMs": 58.489332999999995,
+          "warmStatusMs": 17.101541,
+          "modifiedStatusMs": 16.590417,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 8,
+      "sample": 3,
+      "wallMs": 1105.5467919999999,
+      "operationsPerSecond": 7.236238264983362,
+      "bytesPerSecond": 121403932.3990911,
+      "operations": [
+        {
+          "createMs": 655.4445,
+          "firstStatusMs": 61.168042,
+          "warmStatusMs": 16.77375,
+          "modifiedStatusMs": 18.623292,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 725.1966669999999,
+          "firstStatusMs": 61.290625,
+          "warmStatusMs": 17.112125,
+          "modifiedStatusMs": 18.757083,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 949.06425,
+          "firstStatusMs": 64.57895900000001,
+          "warmStatusMs": 16.554959,
+          "modifiedStatusMs": 17.629292,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 571.1385829999999,
+          "firstStatusMs": 66.798167,
+          "warmStatusMs": 19.498292,
+          "modifiedStatusMs": 17.549916,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1024.2235,
+          "firstStatusMs": 63.291042000000004,
+          "warmStatusMs": 17.791583,
+          "modifiedStatusMs": 20.157625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 497.29675000000003,
+          "firstStatusMs": 63.196000000000005,
+          "warmStatusMs": 15.707959,
+          "modifiedStatusMs": 17.747166,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 798.207583,
+          "firstStatusMs": 61.937375,
+          "warmStatusMs": 17.042,
+          "modifiedStatusMs": 17.658834000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 872.6828340000001,
+          "firstStatusMs": 62.861125,
+          "warmStatusMs": 17.071959,
+          "modifiedStatusMs": 18.210792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 8,
+      "sample": 3,
+      "wallMs": 498.841625,
+      "operationsPerSecond": 16.03715407670721,
+      "bytesPerSecond": 269058797.97019744,
+      "operations": [
+        {
+          "createMs": 422.518667,
+          "firstStatusMs": 35.645125,
+          "warmStatusMs": 38.783249999999995,
+          "modifiedStatusMs": 31.88875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 415.592625,
+          "firstStatusMs": 40.496333,
+          "warmStatusMs": 36.100166,
+          "modifiedStatusMs": 31.081208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 422.471583,
+          "firstStatusMs": 35.753833,
+          "warmStatusMs": 40.470958,
+          "modifiedStatusMs": 31.164084000000003,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 416.91375000000005,
+          "firstStatusMs": 39.084165999999996,
+          "warmStatusMs": 36.344291,
+          "modifiedStatusMs": 30.639458,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 416.391333,
+          "firstStatusMs": 39.527542,
+          "warmStatusMs": 41.234458000000004,
+          "modifiedStatusMs": 31.151374999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 416.363542,
+          "firstStatusMs": 39.663291,
+          "warmStatusMs": 42.613208,
+          "modifiedStatusMs": 30.827,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 430.599167,
+          "firstStatusMs": 31.311,
+          "warmStatusMs": 36.739374999999995,
+          "modifiedStatusMs": 30.514333,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 404.177583,
+          "firstStatusMs": 30.78675,
+          "warmStatusMs": 27.843084,
+          "modifiedStatusMs": 28.308,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 8,
+      "sample": 4,
+      "wallMs": 441.511292,
+      "operationsPerSecond": 18.119581865643426,
+      "bytesPerSecond": 303996138.7895827,
+      "operations": [
+        {
+          "createMs": 368.829,
+          "firstStatusMs": 36.069333,
+          "warmStatusMs": 35.532000000000004,
+          "modifiedStatusMs": 35.373334,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 365.12512499999997,
+          "firstStatusMs": 36.724042,
+          "warmStatusMs": 37.345957999999996,
+          "modifiedStatusMs": 35.471292,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 324.196792,
+          "firstStatusMs": 68.911791,
+          "warmStatusMs": 16.514666000000002,
+          "modifiedStatusMs": 16.595708000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 363.038916,
+          "firstStatusMs": 36.260374999999996,
+          "warmStatusMs": 35.653791,
+          "modifiedStatusMs": 37.284,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 361.101292,
+          "firstStatusMs": 36.727792,
+          "warmStatusMs": 36.27825,
+          "modifiedStatusMs": 34.250457999999995,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 364.618458,
+          "firstStatusMs": 36.949625,
+          "warmStatusMs": 36.438292,
+          "modifiedStatusMs": 34.557708,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 325.66137499999996,
+          "firstStatusMs": 24.304709,
+          "warmStatusMs": 20.852334,
+          "modifiedStatusMs": 16.190125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 370.346375,
+          "firstStatusMs": 35.951457999999995,
+          "warmStatusMs": 35.031208,
+          "modifiedStatusMs": 36.632958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 8,
+      "sample": 4,
+      "wallMs": 993.3087499999999,
+      "operationsPerSecond": 8.053890595446784,
+      "bytesPerSecond": 135121862.16017932,
+      "operations": [
+        {
+          "createMs": 852.836083,
+          "firstStatusMs": 58.695542,
+          "warmStatusMs": 13.482583,
+          "modifiedStatusMs": 15.236125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 569.5383750000001,
+          "firstStatusMs": 58.970833,
+          "warmStatusMs": 14.416416,
+          "modifiedStatusMs": 16.464,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 705.3607920000001,
+          "firstStatusMs": 62.700624999999995,
+          "warmStatusMs": 16.094125000000002,
+          "modifiedStatusMs": 16.445292000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 919.659042,
+          "firstStatusMs": 58.436917,
+          "warmStatusMs": 14.988833999999999,
+          "modifiedStatusMs": 15.31325,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 778.260625,
+          "firstStatusMs": 58.739083,
+          "warmStatusMs": 17.135166,
+          "modifiedStatusMs": 15.987000000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 501.268542,
+          "firstStatusMs": 59.471875,
+          "warmStatusMs": 13.793792,
+          "modifiedStatusMs": 15.847792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 432.32425,
+          "firstStatusMs": 59.874625,
+          "warmStatusMs": 14.79675,
+          "modifiedStatusMs": 15.427958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 705.380083,
+          "firstStatusMs": 63.774,
+          "warmStatusMs": 15.107667,
+          "modifiedStatusMs": 16.036708,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 16,
+      "sample": 0,
+      "wallMs": 1800.536541,
+      "operationsPerSecond": 8.886240093252292,
+      "bytesPerSecond": 149086369.47235385,
+      "operations": [
+        {
+          "createMs": 1604.738167,
+          "firstStatusMs": 69.93475000000001,
+          "warmStatusMs": 78.40575,
+          "modifiedStatusMs": 70.393334,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1611.0242079999998,
+          "firstStatusMs": 64.069833,
+          "warmStatusMs": 79.198083,
+          "modifiedStatusMs": 57.970208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1547.826708,
+          "firstStatusMs": 73.226959,
+          "warmStatusMs": 73.18691700000001,
+          "modifiedStatusMs": 54.787667,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1646.5784999999998,
+          "firstStatusMs": 73.930166,
+          "warmStatusMs": 79.76720800000001,
+          "modifiedStatusMs": 59.724,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1593.060708,
+          "firstStatusMs": 77.573584,
+          "warmStatusMs": 78.542209,
+          "modifiedStatusMs": 56.350625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1625.2474160000002,
+          "firstStatusMs": 82.789958,
+          "warmStatusMs": 67.77154200000001,
+          "modifiedStatusMs": 62.064375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1627.977,
+          "firstStatusMs": 86.619208,
+          "warmStatusMs": 85.597709,
+          "modifiedStatusMs": 59.552167000000004,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1632.7724580000001,
+          "firstStatusMs": 81.212292,
+          "warmStatusMs": 86.1545,
+          "modifiedStatusMs": 59.882916,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1411.926875,
+          "firstStatusMs": 68.91137499999999,
+          "warmStatusMs": 75.00625,
+          "modifiedStatusMs": 47.838291999999996,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1617.5586250000001,
+          "firstStatusMs": 76.56120800000001,
+          "warmStatusMs": 73.225083,
+          "modifiedStatusMs": 61.752333,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1622.406209,
+          "firstStatusMs": 83.002375,
+          "warmStatusMs": 66.918416,
+          "modifiedStatusMs": 62.536625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1619.525667,
+          "firstStatusMs": 70.966166,
+          "warmStatusMs": 76.54720800000001,
+          "modifiedStatusMs": 60.309208000000005,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1626.2077499999998,
+          "firstStatusMs": 81.71662500000001,
+          "warmStatusMs": 89.83962500000001,
+          "modifiedStatusMs": 60.441042,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1620.24,
+          "firstStatusMs": 85.759666,
+          "warmStatusMs": 68.569542,
+          "modifiedStatusMs": 64.559834,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1625.51925,
+          "firstStatusMs": 78.612167,
+          "warmStatusMs": 93.518292,
+          "modifiedStatusMs": 61.147875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1614.960958,
+          "firstStatusMs": 66.88654199999999,
+          "warmStatusMs": 73.230917,
+          "modifiedStatusMs": 60.706,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 16,
+      "sample": 0,
+      "wallMs": 1930.657167,
+      "operationsPerSecond": 8.28733359473759,
+      "bytesPerSecond": 139038385.782969,
+      "operations": [
+        {
+          "createMs": 994.917083,
+          "firstStatusMs": 61.832208,
+          "warmStatusMs": 20.28875,
+          "modifiedStatusMs": 16.500875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 913.0503749999999,
+          "firstStatusMs": 62.934458,
+          "warmStatusMs": 16.178084,
+          "modifiedStatusMs": 16.226917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 674.673667,
+          "firstStatusMs": 63.34008300000001,
+          "warmStatusMs": 19.271957999999998,
+          "modifiedStatusMs": 16.617208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1376.6832920000002,
+          "firstStatusMs": 60.411166,
+          "warmStatusMs": 18.699958,
+          "modifiedStatusMs": 17.818167,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1533.125292,
+          "firstStatusMs": 62.86987500000001,
+          "warmStatusMs": 17.346,
+          "modifiedStatusMs": 16.225832999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1854.76525,
+          "firstStatusMs": 59.971792,
+          "warmStatusMs": 15.698791,
+          "modifiedStatusMs": 16.182083,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1075.2331669999999,
+          "firstStatusMs": 61.620374999999996,
+          "warmStatusMs": 16.203833,
+          "modifiedStatusMs": 15.862666,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1613.3252499999999,
+          "firstStatusMs": 60.674042,
+          "warmStatusMs": 19.34475,
+          "modifiedStatusMs": 17.539666999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1773.4805840000001,
+          "firstStatusMs": 61.969083,
+          "warmStatusMs": 20.964457999999997,
+          "modifiedStatusMs": 15.701375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1302.540542,
+          "firstStatusMs": 58.784125,
+          "warmStatusMs": 14.695625,
+          "modifiedStatusMs": 17.052208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 835.26575,
+          "firstStatusMs": 60.622958,
+          "warmStatusMs": 18.880000000000003,
+          "modifiedStatusMs": 17.976166,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1454.0022079999999,
+          "firstStatusMs": 62.512209,
+          "warmStatusMs": 18.700292,
+          "modifiedStatusMs": 15.910667,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1153.385042,
+          "firstStatusMs": 59.330459000000005,
+          "warmStatusMs": 21.498,
+          "modifiedStatusMs": 16.296417,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1691.1107909999998,
+          "firstStatusMs": 63.82133399999999,
+          "warmStatusMs": 17.618084,
+          "modifiedStatusMs": 15.758417,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1691.087833,
+          "firstStatusMs": 63.886374999999994,
+          "warmStatusMs": 18.723582999999998,
+          "modifiedStatusMs": 17.101916000000003,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 754.543209,
+          "firstStatusMs": 59.020458,
+          "warmStatusMs": 23.912875,
+          "modifiedStatusMs": 17.151584,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 16,
+      "sample": 1,
+      "wallMs": 1974.356542,
+      "operationsPerSecond": 8.103906087697913,
+      "bytesPerSecond": 135960982.87702283,
+      "operations": [
+        {
+          "createMs": 1809.201125,
+          "firstStatusMs": 63.662,
+          "warmStatusMs": 17.058708,
+          "modifiedStatusMs": 16.480291,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1059.332167,
+          "firstStatusMs": 65.268375,
+          "warmStatusMs": 17.347417,
+          "modifiedStatusMs": 18.014792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1387.955333,
+          "firstStatusMs": 60.099792,
+          "warmStatusMs": 17.351416,
+          "modifiedStatusMs": 16.926208000000003,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1893.1053749999999,
+          "firstStatusMs": 62.59587499999999,
+          "warmStatusMs": 18.462916999999997,
+          "modifiedStatusMs": 16.146207999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 972.7618329999999,
+          "firstStatusMs": 63.358042000000005,
+          "warmStatusMs": 16.908165999999998,
+          "modifiedStatusMs": 16.420833,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1144.928833,
+          "firstStatusMs": 61.584542,
+          "warmStatusMs": 17.110166,
+          "modifiedStatusMs": 19.004416,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 877.5867920000001,
+          "firstStatusMs": 66.83787500000001,
+          "warmStatusMs": 18.751416,
+          "modifiedStatusMs": 17.8775,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1637.2205410000001,
+          "firstStatusMs": 65.0325,
+          "warmStatusMs": 20.899458,
+          "modifiedStatusMs": 16.266584,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1637.228709,
+          "firstStatusMs": 64.94645799999999,
+          "warmStatusMs": 20.922041,
+          "modifiedStatusMs": 15.83625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 784.595,
+          "firstStatusMs": 62.184875,
+          "warmStatusMs": 16.126375,
+          "modifiedStatusMs": 17.965292,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1306.79575,
+          "firstStatusMs": 62.68925,
+          "warmStatusMs": 14.774916000000001,
+          "modifiedStatusMs": 20.480249999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1721.4393750000002,
+          "firstStatusMs": 62.063624999999995,
+          "warmStatusMs": 16.910708,
+          "modifiedStatusMs": 17.390833,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 696.954916,
+          "firstStatusMs": 68.713666,
+          "warmStatusMs": 15.530833000000001,
+          "modifiedStatusMs": 17.928416,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 696.8901669999999,
+          "firstStatusMs": 65.22825,
+          "warmStatusMs": 17.415958,
+          "modifiedStatusMs": 15.712333,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1467.245583,
+          "firstStatusMs": 60.951959,
+          "warmStatusMs": 16.709374999999998,
+          "modifiedStatusMs": 17.472291000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1224.5420410000002,
+          "firstStatusMs": 64.770916,
+          "warmStatusMs": 19.44125,
+          "modifiedStatusMs": 16.45175,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 16,
+      "sample": 1,
+      "wallMs": 2128.834416,
+      "operationsPerSecond": 7.515849931655746,
+      "bytesPerSecond": 126095037.72697368,
+      "operations": [
+        {
+          "createMs": 1959.1928329999998,
+          "firstStatusMs": 55.054292,
+          "warmStatusMs": 52.079459,
+          "modifiedStatusMs": 31.442875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1988.2397919999999,
+          "firstStatusMs": 65.580625,
+          "warmStatusMs": 47.438333,
+          "modifiedStatusMs": 29.183125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1879.069625,
+          "firstStatusMs": 40.989584,
+          "warmStatusMs": 55.933083,
+          "modifiedStatusMs": 19.080084,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2054.041667,
+          "firstStatusMs": 47.125708,
+          "warmStatusMs": 27.403334,
+          "modifiedStatusMs": 51.035208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2000.2464999999997,
+          "firstStatusMs": 53.9655,
+          "warmStatusMs": 46.995000000000005,
+          "modifiedStatusMs": 36.982792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2004.0055830000001,
+          "firstStatusMs": 63.41049999999999,
+          "warmStatusMs": 43.497333999999995,
+          "modifiedStatusMs": 28.698833,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1995.725875,
+          "firstStatusMs": 58.432458,
+          "warmStatusMs": 46.78225,
+          "modifiedStatusMs": 29.27375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2000.857625,
+          "firstStatusMs": 66.002917,
+          "warmStatusMs": 43.630625,
+          "modifiedStatusMs": 29.155958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1994.6638750000002,
+          "firstStatusMs": 60.127708,
+          "warmStatusMs": 46.393291000000005,
+          "modifiedStatusMs": 27.583125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1922.03875,
+          "firstStatusMs": 57.6535,
+          "warmStatusMs": 36.769125,
+          "modifiedStatusMs": 22.485249999999997,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2009.49075,
+          "firstStatusMs": 56.819250000000004,
+          "warmStatusMs": 43.680167,
+          "modifiedStatusMs": 29.215792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1997.790541,
+          "firstStatusMs": 56.988459,
+          "warmStatusMs": 46.330667,
+          "modifiedStatusMs": 32.365625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2004.754084,
+          "firstStatusMs": 62.411584,
+          "warmStatusMs": 42.738083,
+          "modifiedStatusMs": 26.465042,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2002.8138750000003,
+          "firstStatusMs": 64.434542,
+          "warmStatusMs": 37.691750000000006,
+          "modifiedStatusMs": 34.607208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1949.3077919999998,
+          "firstStatusMs": 50.765792,
+          "warmStatusMs": 60.570458,
+          "modifiedStatusMs": 26.373666,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1917.0904170000001,
+          "firstStatusMs": 59.830124999999995,
+          "warmStatusMs": 36.339499999999994,
+          "modifiedStatusMs": 28.812916,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 16,
+      "sample": 2,
+      "wallMs": 2375.960417,
+      "operationsPerSecond": 6.73411892114026,
+      "bytesPerSecond": 112979767.7096571,
+      "operations": [
+        {
+          "createMs": 2187.601458,
+          "firstStatusMs": 89.928042,
+          "warmStatusMs": 86.249291,
+          "modifiedStatusMs": 56.976625000000006,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2190.5787920000002,
+          "firstStatusMs": 88.076584,
+          "warmStatusMs": 84.974625,
+          "modifiedStatusMs": 51.915167,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2153.351875,
+          "firstStatusMs": 104.555625,
+          "warmStatusMs": 68.452084,
+          "modifiedStatusMs": 61.842875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2183.2735420000004,
+          "firstStatusMs": 98.578958,
+          "warmStatusMs": 91.40504200000001,
+          "modifiedStatusMs": 53.637958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2189.3615830000003,
+          "firstStatusMs": 96.794375,
+          "warmStatusMs": 89.59358300000001,
+          "modifiedStatusMs": 51.490666999999995,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 1961.837375,
+          "firstStatusMs": 71.027375,
+          "warmStatusMs": 66.951083,
+          "modifiedStatusMs": 36.388749999999995,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2179.022084,
+          "firstStatusMs": 90.812333,
+          "warmStatusMs": 93.273625,
+          "modifiedStatusMs": 52.828125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2097.3108749999997,
+          "firstStatusMs": 69.641791,
+          "warmStatusMs": 100.47041700000001,
+          "modifiedStatusMs": 43.059584,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2197.868791,
+          "firstStatusMs": 86.715917,
+          "warmStatusMs": 81.126875,
+          "modifiedStatusMs": 49.372083999999994,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2195.024291,
+          "firstStatusMs": 92.30358299999999,
+          "warmStatusMs": 86.183125,
+          "modifiedStatusMs": 48.810541,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2169.71875,
+          "firstStatusMs": 99.853125,
+          "warmStatusMs": 71.884291,
+          "modifiedStatusMs": 47.258250000000004,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2175.24025,
+          "firstStatusMs": 92.39450000000001,
+          "warmStatusMs": 83.760792,
+          "modifiedStatusMs": 48.284625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2166.445875,
+          "firstStatusMs": 101.09975,
+          "warmStatusMs": 77.965625,
+          "modifiedStatusMs": 45.298125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2180.857542,
+          "firstStatusMs": 88.759042,
+          "warmStatusMs": 76.694,
+          "modifiedStatusMs": 48.303125,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2178.888459,
+          "firstStatusMs": 90.13725000000001,
+          "warmStatusMs": 71.9765,
+          "modifiedStatusMs": 46.792459,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2193.307792,
+          "firstStatusMs": 83.030542,
+          "warmStatusMs": 94.61925000000001,
+          "modifiedStatusMs": 47.837041,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 16,
+      "sample": 2,
+      "wallMs": 2481.951375,
+      "operationsPerSecond": 6.446540476644108,
+      "bytesPerSecond": 108155002.02940115,
+      "operations": [
+        {
+          "createMs": 1840.4759159999999,
+          "firstStatusMs": 59.952458,
+          "warmStatusMs": 16.686084,
+          "modifiedStatusMs": 16.574166,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1040.3055000000002,
+          "firstStatusMs": 64.132291,
+          "warmStatusMs": 17.023041,
+          "modifiedStatusMs": 16.950666,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1751.5068330000001,
+          "firstStatusMs": 61.51475,
+          "warmStatusMs": 16.002459,
+          "modifiedStatusMs": 16.824625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1226.563666,
+          "firstStatusMs": 61.050541,
+          "warmStatusMs": 15.448333,
+          "modifiedStatusMs": 16.806458,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1574.010042,
+          "firstStatusMs": 60.063792,
+          "warmStatusMs": 15.417083,
+          "modifiedStatusMs": 17.514833,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 2220.431208,
+          "firstStatusMs": 63.068709,
+          "warmStatusMs": 14.517459,
+          "modifiedStatusMs": 16.499166,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 2310.014792,
+          "firstStatusMs": 67.896416,
+          "warmStatusMs": 21.055167,
+          "modifiedStatusMs": 16.301958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 2038.6845,
+          "firstStatusMs": 61.506458,
+          "warmStatusMs": 14.292416000000001,
+          "modifiedStatusMs": 16.481875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1398.73825,
+          "firstStatusMs": 60.024666999999994,
+          "warmStatusMs": 15.161166,
+          "modifiedStatusMs": 16.993375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 2406.960541,
+          "firstStatusMs": 59.625792,
+          "warmStatusMs": 15.114,
+          "modifiedStatusMs": 17.921791,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 2309.9611250000003,
+          "firstStatusMs": 67.61250000000001,
+          "warmStatusMs": 21.618583,
+          "modifiedStatusMs": 16.943625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 2309.932459,
+          "firstStatusMs": 67.91862499999999,
+          "warmStatusMs": 21.340625,
+          "modifiedStatusMs": 15.970125000000001,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1314.0185410000001,
+          "firstStatusMs": 62.097542,
+          "warmStatusMs": 16.831209,
+          "modifiedStatusMs": 16.921417,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1933.880833,
+          "firstStatusMs": 71.122333,
+          "warmStatusMs": 17.380917,
+          "modifiedStatusMs": 25.679707999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 2128.2707090000004,
+          "firstStatusMs": 61.576042,
+          "warmStatusMs": 14.8265,
+          "modifiedStatusMs": 18.044749999999997,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1133.7602499999998,
+          "firstStatusMs": 62.341916,
+          "warmStatusMs": 15.751583,
+          "modifiedStatusMs": 15.689959,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 16,
+      "sample": 3,
+      "wallMs": 2124.133542,
+      "operationsPerSecond": 7.532483096583011,
+      "bytesPerSecond": 126374095.92772204,
+      "operations": [
+        {
+          "createMs": 1477.9888329999999,
+          "firstStatusMs": 68.955375,
+          "warmStatusMs": 16.661749999999998,
+          "modifiedStatusMs": 17.937792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1938.4201669999998,
+          "firstStatusMs": 64.50979099999999,
+          "warmStatusMs": 19.424208,
+          "modifiedStatusMs": 19.015207999999998,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 647.346958,
+          "firstStatusMs": 62.225207999999995,
+          "warmStatusMs": 14.503458,
+          "modifiedStatusMs": 19.312084,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 838.198666,
+          "firstStatusMs": 62.428208999999995,
+          "warmStatusMs": 17.330583,
+          "modifiedStatusMs": 19.267792,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1209.046834,
+          "firstStatusMs": 61.406416,
+          "warmStatusMs": 14.765958,
+          "modifiedStatusMs": 17.099625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 2037.5232919999999,
+          "firstStatusMs": 65.99229199999999,
+          "warmStatusMs": 20.325,
+          "modifiedStatusMs": 15.932208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1387.197792,
+          "firstStatusMs": 61.192625,
+          "warmStatusMs": 15.170458,
+          "modifiedStatusMs": 17.947333,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 934.075208,
+          "firstStatusMs": 63.460958,
+          "warmStatusMs": 17.241125,
+          "modifiedStatusMs": 17.748083,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1578.016166,
+          "firstStatusMs": 60.492125,
+          "warmStatusMs": 13.753291,
+          "modifiedStatusMs": 17.952458,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1752.5427499999998,
+          "firstStatusMs": 61.93837499999999,
+          "warmStatusMs": 15.630166000000001,
+          "modifiedStatusMs": 17.488375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1119.9105410000002,
+          "firstStatusMs": 60.73625,
+          "warmStatusMs": 15.974874999999999,
+          "modifiedStatusMs": 18.334417,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 2037.492542,
+          "firstStatusMs": 65.957458,
+          "warmStatusMs": 20.113125,
+          "modifiedStatusMs": 17.703167,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 736.320792,
+          "firstStatusMs": 63.528292,
+          "warmStatusMs": 20.090207999999997,
+          "modifiedStatusMs": 16.580000000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1843.600084,
+          "firstStatusMs": 62.439542,
+          "warmStatusMs": 15.989208000000001,
+          "modifiedStatusMs": 16.976249999999997,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1032.460291,
+          "firstStatusMs": 63.169500000000006,
+          "warmStatusMs": 16.621625,
+          "modifiedStatusMs": 15.579084,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1665.7984999999999,
+          "firstStatusMs": 58.965208,
+          "warmStatusMs": 13.554375,
+          "modifiedStatusMs": 15.595625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 16,
+      "sample": 3,
+      "wallMs": 2361.9270420000003,
+      "operationsPerSecond": 6.774129647311942,
+      "bytesPerSecond": 113651036.30495627,
+      "operations": [
+        {
+          "createMs": 2182.756125,
+          "firstStatusMs": 74.966833,
+          "warmStatusMs": 69.595,
+          "modifiedStatusMs": 60.0755,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2143.484541,
+          "firstStatusMs": 77.199709,
+          "warmStatusMs": 70.390334,
+          "modifiedStatusMs": 58.452,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2164.563875,
+          "firstStatusMs": 74.754917,
+          "warmStatusMs": 67.646875,
+          "modifiedStatusMs": 58.901542,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2212.12525,
+          "firstStatusMs": 69.978125,
+          "warmStatusMs": 62.544833999999994,
+          "modifiedStatusMs": 58.048333,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2150.0195,
+          "firstStatusMs": 74.309084,
+          "warmStatusMs": 74.210083,
+          "modifiedStatusMs": 59.749375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2230.4734590000003,
+          "firstStatusMs": 72.219917,
+          "warmStatusMs": 58.990666,
+          "modifiedStatusMs": 59.188625,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2121.194125,
+          "firstStatusMs": 81.73025,
+          "warmStatusMs": 76.849416,
+          "modifiedStatusMs": 60.665083,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2217.6586669999997,
+          "firstStatusMs": 83.45325000000001,
+          "warmStatusMs": 60.069792,
+          "modifiedStatusMs": 58.142917000000004,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2218.423583,
+          "firstStatusMs": 74.53825,
+          "warmStatusMs": 61.572375,
+          "modifiedStatusMs": 57.568666,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2214.987875,
+          "firstStatusMs": 75.250916,
+          "warmStatusMs": 61.894083,
+          "modifiedStatusMs": 57.041916,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2216.841,
+          "firstStatusMs": 80.320625,
+          "warmStatusMs": 63.101333,
+          "modifiedStatusMs": 58.43595800000001,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2215.3815,
+          "firstStatusMs": 72.94924999999999,
+          "warmStatusMs": 63.255584000000006,
+          "modifiedStatusMs": 58.223417,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2203.67325,
+          "firstStatusMs": 73.476208,
+          "warmStatusMs": 65.396917,
+          "modifiedStatusMs": 58.773709000000004,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2210.7372920000003,
+          "firstStatusMs": 68.71962500000001,
+          "warmStatusMs": 64.079292,
+          "modifiedStatusMs": 57.885583,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2208.37975,
+          "firstStatusMs": 67.16533299999999,
+          "warmStatusMs": 64.704541,
+          "modifiedStatusMs": 58.652207999999995,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2229.394292,
+          "firstStatusMs": 69.195709,
+          "warmStatusMs": 61.553583,
+          "modifiedStatusMs": 60.350750000000005,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "git",
+      "concurrency": 16,
+      "sample": 4,
+      "wallMs": 2374.651375,
+      "operationsPerSecond": 6.737831147951139,
+      "bytesPerSecond": 113042048.54070422,
+      "operations": [
+        {
+          "createMs": 1327.142291,
+          "firstStatusMs": 153.076334,
+          "warmStatusMs": 110.345,
+          "modifiedStatusMs": 15.727333,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2226.278041,
+          "firstStatusMs": 71.713,
+          "warmStatusMs": 68.123125,
+          "modifiedStatusMs": 60.341291,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2194.651375,
+          "firstStatusMs": 82.93549999999999,
+          "warmStatusMs": 63.522,
+          "modifiedStatusMs": 58.621709,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2200.419792,
+          "firstStatusMs": 85.14308299999999,
+          "warmStatusMs": 70.195708,
+          "modifiedStatusMs": 59.54775,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2238.750584,
+          "firstStatusMs": 70.374958,
+          "warmStatusMs": 65.338959,
+          "modifiedStatusMs": 59.792291,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2054.440084,
+          "firstStatusMs": 80.60312499999999,
+          "warmStatusMs": 74.28316699999999,
+          "modifiedStatusMs": 57.804208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2239.272042,
+          "firstStatusMs": 69.80270800000001,
+          "warmStatusMs": 63.663875,
+          "modifiedStatusMs": 61.561417,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2210.6145,
+          "firstStatusMs": 73.287208,
+          "warmStatusMs": 70.83770799999999,
+          "modifiedStatusMs": 60.788458,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2205.807666,
+          "firstStatusMs": 77.605459,
+          "warmStatusMs": 70.162667,
+          "modifiedStatusMs": 60.368249999999996,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2225.1485,
+          "firstStatusMs": 69.235041,
+          "warmStatusMs": 66.081125,
+          "modifiedStatusMs": 57.823125000000005,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2221.707667,
+          "firstStatusMs": 63.675875000000005,
+          "warmStatusMs": 71.26837499999999,
+          "modifiedStatusMs": 59.752874999999996,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2040.710167,
+          "firstStatusMs": 81.794458,
+          "warmStatusMs": 77.954667,
+          "modifiedStatusMs": 60.145041000000006,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2239.147375,
+          "firstStatusMs": 72.23,
+          "warmStatusMs": 62.373417,
+          "modifiedStatusMs": 59.27675,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2223.866208,
+          "firstStatusMs": 70.99154200000001,
+          "warmStatusMs": 65.17883400000001,
+          "modifiedStatusMs": 60.930958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2225.8845420000002,
+          "firstStatusMs": 71.872958,
+          "warmStatusMs": 67.39795799999999,
+          "modifiedStatusMs": 59.774375,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        },
+        {
+          "createMs": 2218.4858329999997,
+          "firstStatusMs": 65.6595,
+          "warmStatusMs": 71.684792,
+          "modifiedStatusMs": 60.493875,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": false,
+          "error": null
+        }
+      ]
+    },
+    {
+      "backend": "twig",
+      "concurrency": 16,
+      "sample": 4,
+      "wallMs": 2256.1834169999997,
+      "operationsPerSecond": 7.0916220194876125,
+      "bytesPerSecond": 118977674.41129988,
+      "operations": [
+        {
+          "createMs": 678.506584,
+          "firstStatusMs": 60.173292000000004,
+          "warmStatusMs": 14.805541999999999,
+          "modifiedStatusMs": 16.180917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1060.2535420000002,
+          "firstStatusMs": 63.877041,
+          "warmStatusMs": 18.516292,
+          "modifiedStatusMs": 17.178208,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1060.2454160000002,
+          "firstStatusMs": 63.327333,
+          "warmStatusMs": 19.208416999999997,
+          "modifiedStatusMs": 18.791791,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1981.8875,
+          "firstStatusMs": 63.157542,
+          "warmStatusMs": 19.974292000000002,
+          "modifiedStatusMs": 15.432959,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 775.774375,
+          "firstStatusMs": 60.514166,
+          "warmStatusMs": 15.389084,
+          "modifiedStatusMs": 18.081958,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1981.912458,
+          "firstStatusMs": 62.56974999999999,
+          "warmStatusMs": 20.574708,
+          "modifiedStatusMs": 15.352417,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1163.418917,
+          "firstStatusMs": 60.615708999999995,
+          "warmStatusMs": 15.176749999999998,
+          "modifiedStatusMs": 16.696458,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1359.017958,
+          "firstStatusMs": 63.470917,
+          "warmStatusMs": 16.223292,
+          "modifiedStatusMs": 17.16575,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1670.516208,
+          "firstStatusMs": 62.298292,
+          "warmStatusMs": 15.303,
+          "modifiedStatusMs": 16.420875000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 965.48225,
+          "firstStatusMs": 58.995875000000005,
+          "warmStatusMs": 15.090208,
+          "modifiedStatusMs": 17.528,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1876.670959,
+          "firstStatusMs": 61.766042,
+          "warmStatusMs": 15.450000000000001,
+          "modifiedStatusMs": 17.476708000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1467.3425419999999,
+          "firstStatusMs": 62.483333,
+          "warmStatusMs": 14.990042,
+          "modifiedStatusMs": 17.590167,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1260.852458,
+          "firstStatusMs": 60.916125,
+          "warmStatusMs": 14.016125,
+          "modifiedStatusMs": 15.559417000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 2081.908541,
+          "firstStatusMs": 59.405583,
+          "warmStatusMs": 12.803875,
+          "modifiedStatusMs": 18.773667,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 2179.328166,
+          "firstStatusMs": 60.973375000000004,
+          "warmStatusMs": 15.236208,
+          "modifiedStatusMs": 17.370333000000002,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        },
+        {
+          "createMs": 1770.5455,
+          "firstStatusMs": 61.014584,
+          "warmStatusMs": 18.224917,
+          "modifiedStatusMs": 16.406917,
+          "verifiedFiles": 64,
+          "sourceUnchanged": true,
+          "correct": true,
+          "nativeCow": true,
+          "error": null
+        }
+      ]
+    }
+  ]
+}
