@@ -311,7 +311,7 @@ fn respects_restrictive_umask() -> Result<()> {
     // SAFETY: umask is async-signal-safe, affects only this forked child, and captures nothing.
     unsafe {
         child.pre_exec(|| {
-            libc_umask_077();
+            libc::umask(0o077);
             Ok(())
         });
     }
@@ -324,17 +324,6 @@ fn respects_restrictive_umask() -> Result<()> {
         0o600
     );
     clean(&f.destination())
-}
-
-#[cfg(unix)]
-fn libc_umask_077() {
-    unsafe extern "C" {
-        fn umask(mask: u32) -> u32;
-    }
-    // SAFETY: 077 is a valid file creation mask; this helper runs only in pre_exec.
-    unsafe {
-        umask(0o077);
-    }
 }
 
 #[test]

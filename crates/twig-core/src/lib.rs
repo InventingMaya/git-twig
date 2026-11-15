@@ -359,7 +359,9 @@ fn has_conversion_attributes(root: &Path, entries: &[Entry]) -> Result<bool> {
         .collect();
     ensure!(fields.len() % 3 == 0, "invalid Git attribute response");
     Ok(fields
-        .chunks_exact(3)
+        .as_chunks::<3>()
+        .0
+        .iter()
         .any(|row| row[2] != b"unspecified" && row[2] != b"unset"))
 }
 

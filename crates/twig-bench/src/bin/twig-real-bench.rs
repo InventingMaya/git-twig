@@ -1,0 +1,687 @@
+//! Real-repository cohort benchmark on disposable, isolated APFS images.
+//! Only image-owned paths are written or removed. Original repositories are read-only inputs.
+use anyhow::{Context, Result, ensure};
+use serde::Serialize;
+use std::{
+    env,
+    ffi::{CString, OsString},
+    fs::{self, OpenOptions},
+    io::Write,
+    path::{Path, PathBuf},
+    process::{Command, Output},
+    sync::{Arc, Barrier},
+    thread,
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
+};
+
+#[derive(Clone)]
+struct Repository {
+    label: String,
+    path: PathBuf,
+    commit: String,
+}
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct Suite {
+    schema_version: u32,
+    suite: String,
+    generated_at_unix_ms: u128,
+    commit: String,
+    dirty: bool,
+    candidate_sha256: String,
+    git_version: String,
+    platform: String,
+    cpu: String,
+    concurrency: usize,
+    repeats: usize,
+    notes: Vec<String>,
+    cohorts: Vec<Cohort>,
+    failures: Vec<String>,
+}
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct Cohort {
+    repository: String,
+    source_commit: String,
+    source_tree: String,
+    backend: String,
+    repeat: usize,
+    tracked_files: usize,
+    logical_bytes_per_worktree: u64,
+    create_wall_ms: f64,
+    creates_per_second: f64,
+    status_and_verification_wall_ms: f64,
+    succeeded: usize,
+    failed: usize,
+    verified_files: usize,
+    source_unchanged: bool,
+    before: Space,
+    after_create: Space,
+    after_status: Space,
+    after_private_writes: Space,
+    growth_after_create_bytes: i128,
+    growth_after_status_bytes: i128,
+    private_write_growth_bytes: i128,
+    operations: Vec<Operation>,
+}
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+struct Space {
+    allocated_bytes: u64,
+    total_bytes: u64,
+    stable: bool,
+    observed_allocated_bytes: Vec<u64>,
+}
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct Operation {
+    worker: usize,
+    create_ms: f64,
+    first_status_ms: Option<f64>,
+    exit_code: Option<i32>,
+    native_cow: bool,
+    verified: bool,
+    error: Option<String>,
+}
+struct Expected {
+    path: PathBuf,
+    data: Vec<u8>,
+    symlink: bool,
+    executable: bool,
+}
+struct Image {
+    path: PathBuf,
+    mount: PathBuf,
+    attached: bool,
+}
+
+fn main() -> Result<()> {
+    if env::args().any(|arg| arg == "--help") {
+        println!(
+            "twig-real-bench --repo label=/absolute/repo [--repo ...] --concurrency 100 --repeats 3 --output target/real-results/run.json\nmacOS only. Creates, mounts, detaches and deletes disposable 8-GiB sparse APFS images.\nOriginal repositories are read-only inputs. Results default to target/ (not published)."
+        );
+        return Ok(());
+    }
+    ensure!(
+        cfg!(target_os = "macos"),
+        "isolated APFS benchmarks require macOS"
+    );
+    let cwd = env::current_dir()?;
+    let mut repositories = Vec::new();
+    let mut concurrency = 100;
+    let mut repeats = 3;
+    let mut output = None;
+    let mut args = env::args().skip(1);
+    while let Some(arg) = args.next() {
+        let value = args.next().context("option requires a value")?;
+        match arg.as_str() {
+            "--repo" => {
+                let (label, path) = value.split_once('=').context("repo must be label=path")?;
+                ensure!(
+                    !label.is_empty()
+                        && label
+                            .bytes()
+                            .all(|b| b.is_ascii_alphanumeric() || b == b'-'),
+                    "label must use letters, digits or hyphens"
+                );
+                ensure!(
+                    !repositories.iter().any(|r: &Repository| r.label == label),
+                    "duplicate repository label"
+                );
+                let path = fs::canonicalize(path)?;
+                let commit = git_text(&path, &["rev-parse", "HEAD"])?;
+                repositories.push(Repository {
+                    label: label.into(),
+                    path,
+                    commit,
+                });
+            }
+            "--concurrency" => concurrency = value.parse()?,
+            "--repeats" => repeats = value.parse()?,
+            "--output" => output = Some(PathBuf::from(value)),
+            _ => anyhow::bail!("unknown option: {arg}"),
+        }
+    }
+    ensure!(
+        !repositories.is_empty() && (1..=128).contains(&concurrency) && repeats > 0,
+        "provide repositories, concurrency 1..128, positive repeats"
+    );
+    let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
+    let output =
+        output.unwrap_or_else(|| cwd.join(format!("target/real-results/{timestamp}.json")));
+    ensure!(!output.exists(), "refusing to overwrite an existing run");
+    let root = cwd.join(format!(
+        "target/real-images/{timestamp}-{}",
+        std::process::id()
+    ));
+    fs::create_dir_all(&root)?;
+    let root = fs::canonicalize(root)?;
+    let candidate = fs::canonicalize(cwd.join("target/release/git-twig"))?;
+    let digest = capture(
+        &cwd,
+        "shasum",
+        &[
+            OsString::from("-a"),
+            "256".into(),
+            candidate.as_os_str().into(),
+        ],
+    )?;
+    let mut suite = Suite {
+        schema_version: 1, suite: "real-apfs-cohort".into(), generated_at_unix_ms: timestamp,
+        commit: git_text(&cwd, &["rev-parse", "HEAD"])?, dirty: !git_text(&cwd, &["status", "--porcelain"])?.is_empty(),
+        candidate_sha256: digest.split_whitespace().next().context("missing candidate hash")?.into(),
+        git_version: capture(&cwd, "git", &["--version".into()])?,
+        platform: format!("{} {} {}", env::consts::OS, env::consts::ARCH, capture(&cwd, "uname", &["-r".into()])?),
+        cpu: capture(&cwd, "sysctl", &["-n".into(), "machdep.cpu.brand_string".into()])?, concurrency, repeats,
+        notes: vec![
+            "Each backend/repeat gets a fresh, isolated 8-GiB sparse APFS image. Seed uses git clone --shared --no-checkout plus explicit pinned-commit checkout. Original repositories and object stores are read-only inputs; seed history uses alternates outside image.".into(),
+            "One warmup per backend removed before baseline space snapshot. Global/system Git config and hooks disabled for fixture setup; no ignored/untracked dependencies or build output copied. Backend order alternates by repeat.".into(),
+            "A barrier releases all CLI workers simultaneously. Create wall time includes thread startup/barrier/join, per-operation latency starts at barrier release. No verification/generation competes with creates. No retries: failures are data.".into(),
+            "First git status is measured sequentially after all creates and the initial space snapshot. Full byte/symlink/executable verification follows each first status; its CPU is outside creation timing. A first-status sum is not a concurrent-status wall time.".into(),
+            "Allocated space is total minus free blocks from statvfs on the isolated APFS filesystem, sampled after sync until stable (or marked unstable). This includes working files, indexes, retained staging and filesystem metadata, not logical size/du/st_blocks. Host sparse-image allocation is not the metric.".into(),
+            "After initial verification/space measurement, one byte in one regular file per successful checkout is changed in place. Additional filesystem allocation is sampled; seed file must remain unchanged. Images are detached and deleted after saving each cohort; no benchmark input paths or source file contents are serialized.".into(),
+            "Local warm-cache results. An 8-GiB virtual disk is a controlled filesystem, not a claim about native host-volume maximum throughput. Report failures alongside latency and allocation; do not compare unequal successful counts as identical capacity.".into(),
+        ], cohorts: vec![], failures: vec![],
+    };
+    save(&output, &suite)?;
+    for repository in &repositories {
+        for repeat in 0..repeats {
+            let order = if repeat % 2 == 0 {
+                ["git", "twig"]
+            } else {
+                ["twig", "git"]
+            };
+            for backend in order {
+                eprintln!(
+                    "{}: {backend}, repeat {}/{repeats}, {concurrency} simultaneous creates",
+                    repository.label,
+                    repeat + 1
+                );
+                let stem = root.join(format!("{}-{backend}-{repeat}", repository.label));
+                let mut image = Image::new(&stem);
+                let result = image.attach().and_then(|()| {
+                    cohort(
+                        repository,
+                        backend,
+                        repeat,
+                        concurrency,
+                        &candidate,
+                        &image.mount,
+                    )
+                });
+                match result {
+                    Ok(point) => {
+                        eprintln!(
+                            "  {:.2}s creates; {} ok / {} failed; {:.2} MiB allocated after status",
+                            point.create_wall_ms / 1000.0,
+                            point.succeeded,
+                            point.failed,
+                            point.growth_after_status_bytes as f64 / 1048576.0
+                        );
+                        suite.cohorts.push(point);
+                    }
+                    Err(error) => suite.failures.push(format!(
+                        "{} / {backend} / repeat {repeat}: {error:#}",
+                        repository.label
+                    )),
+                }
+                save(&output, &suite)?;
+                image.cleanup()?;
+                ensure!(
+                    suite.failures.is_empty(),
+                    "setup/measurement failure saved to {}",
+                    output.display()
+                );
+            }
+        }
+    }
+    println!("{}", output.display());
+    Ok(())
+}
+
+impl Image {
+    fn new(stem: &Path) -> Self {
+        Self {
+            path: stem.with_extension("sparseimage"),
+            mount: stem.with_extension("mount"),
+            attached: false,
+        }
+    }
+    fn attach(&mut self) -> Result<()> {
+        checked(
+            Command::new("hdiutil")
+                .args([
+                    "create",
+                    "-quiet",
+                    "-size",
+                    "8g",
+                    "-type",
+                    "SPARSE",
+                    "-fs",
+                    "APFS",
+                    "-volname",
+                    "TwigBench",
+                ])
+                .arg(&self.path)
+                .output()?,
+        )?;
+        fs::create_dir(&self.mount)?;
+        checked(
+            Command::new("hdiutil")
+                .args([
+                    "attach",
+                    "-quiet",
+                    "-nobrowse",
+                    "-owners",
+                    "on",
+                    "-mountpoint",
+                ])
+                .arg(&self.mount)
+                .arg(&self.path)
+                .output()?,
+        )?;
+        self.attached = true;
+        fs::write(self.mount.join(".metadata_never_index"), [])?;
+        Ok(())
+    }
+    fn cleanup(&mut self) -> Result<()> {
+        if self.attached {
+            checked(
+                Command::new("hdiutil")
+                    .arg("detach")
+                    .arg(&self.mount)
+                    .output()?,
+            )
+            .with_context(|| {
+                format!(
+                    "image still mounted at {}; retained {}",
+                    self.mount.display(),
+                    self.path.display()
+                )
+            })?;
+            self.attached = false;
+        }
+        if self.path.exists() {
+            fs::remove_file(&self.path)?;
+        }
+        eprintln!("  disposable image detached and removed");
+        Ok(())
+    }
+}
+
+fn cohort(
+    repository: &Repository,
+    backend: &str,
+    repeat: usize,
+    concurrency: usize,
+    candidate: &Path,
+    mount: &Path,
+) -> Result<Cohort> {
+    let seed = mount.join("seed");
+    checked(
+        command("git", mount)
+            .args([
+                "-c",
+                "core.hooksPath=/dev/null",
+                "clone",
+                "--shared",
+                "--no-checkout",
+                "--",
+            ])
+            .arg(&repository.path)
+            .arg(&seed)
+            .output()?,
+    )?;
+    checked(
+        command("git", &seed)
+            .args([
+                "-c",
+                "core.hooksPath=/dev/null",
+                "checkout",
+                "--detach",
+                &repository.commit,
+            ])
+            .output()?,
+    )?;
+    let tree = git_text(&seed, &["rev-parse", "HEAD^{tree}"])?;
+    let expected = expected_files(&seed)?;
+    let logical_bytes = expected.iter().map(|entry| entry.data.len() as u64).sum();
+    let warmup = create(&seed, &mount.join("warmup"), candidate, backend, 0, None);
+    ensure!(
+        warmup.error.is_none() && (backend != "twig" || warmup.native_cow),
+        "warmup did not use expected backend: {:?}",
+        warmup.error
+    );
+    checked(
+        command("git", &seed)
+            .args(["worktree", "remove", "--force"])
+            .arg(mount.join("warmup"))
+            .output()?,
+    )?;
+    // Only benchmark-owned warmup staging paths on this disposable image are removed.
+    for entry in fs::read_dir(mount)? {
+        let entry = entry?;
+        if entry
+            .file_name()
+            .to_string_lossy()
+            .starts_with(".git-twig-stage-")
+        {
+            fs::remove_dir_all(entry.path())?;
+        }
+    }
+    let before = settled_space(mount)?;
+    let barrier = Arc::new(Barrier::new(concurrency));
+    let start = Instant::now();
+    let handles = (0..concurrency)
+        .map(|worker| {
+            let seed = seed.clone();
+            let destination = mount.join(format!("w-{worker}"));
+            let candidate = candidate.to_path_buf();
+            let backend = backend.to_owned();
+            let barrier = Arc::clone(&barrier);
+            thread::spawn(move || {
+                create(
+                    &seed,
+                    &destination,
+                    &candidate,
+                    &backend,
+                    worker,
+                    Some(barrier),
+                )
+            })
+        })
+        .collect::<Vec<_>>();
+    let mut operations = handles
+        .into_iter()
+        .map(|h| h.join().expect("CLI worker panicked"))
+        .collect::<Vec<_>>();
+    let create_wall_ms = ms(start);
+    let after_create = settled_space(mount)?;
+    let status_start = Instant::now();
+    let mut verified_files = 0;
+    for operation in &mut operations {
+        if operation.error.is_some() {
+            continue;
+        }
+        let destination = mount.join(format!("w-{}", operation.worker));
+        let verification = (|| -> Result<()> {
+            let start = Instant::now();
+            let status = checked(
+                command("git", &destination)
+                    .args(["status", "--porcelain", "--untracked-files=no"])
+                    .output()?,
+            )?;
+            operation.first_status_ms = Some(ms(start));
+            ensure!(status.stdout.is_empty(), "checkout is dirty");
+            for entry in &expected {
+                verify_file(&destination, entry)?;
+                verified_files += 1;
+            }
+            ensure!(
+                backend != "twig" || operation.native_cow,
+                "Twig delegated to Git rather than using CoW"
+            );
+            operation.verified = true;
+            Ok(())
+        })();
+        if let Err(error) = verification {
+            operation.error = Some(format!("{error:#}"));
+        }
+    }
+    let status_and_verification_wall_ms = ms(status_start);
+    let after_status = settled_space(mount)?;
+    let first = expected
+        .iter()
+        .find(|entry| !entry.symlink && !entry.data.is_empty())
+        .context("no nonempty regular file to test private writes")?;
+    for operation in &mut operations {
+        if !operation.verified {
+            continue;
+        }
+        let destination = mount
+            .join(format!("w-{}", operation.worker))
+            .join(&first.path);
+        let write = (|| -> Result<()> {
+            OpenOptions::new()
+                .write(true)
+                .open(destination)?
+                .write_all(&[first.data[0] ^ 0xff])?;
+            Ok(())
+        })();
+        if let Err(error) = write {
+            operation.error = Some(format!("private write: {error:#}"));
+            operation.verified = false;
+        }
+    }
+    let after_private_writes = settled_space(mount)?;
+    let source_unchanged = fs::read(seed.join(&first.path))? == first.data;
+    ensure!(source_unchanged, "seed changed after private writes");
+    for operation in &mut operations {
+        if let Some(error) = &mut operation.error {
+            *error = error
+                .replace(&mount.display().to_string(), "<image>")
+                .replace(&repository.path.display().to_string(), "<source>");
+        }
+    }
+    let succeeded = operations
+        .iter()
+        .filter(|op| op.verified && op.error.is_none())
+        .count();
+    Ok(Cohort {
+        repository: repository.label.clone(),
+        source_commit: repository.commit.clone(),
+        source_tree: tree,
+        backend: backend.into(),
+        repeat,
+        tracked_files: expected.len(),
+        logical_bytes_per_worktree: logical_bytes,
+        create_wall_ms,
+        creates_per_second: succeeded as f64 * 1000.0 / create_wall_ms,
+        status_and_verification_wall_ms,
+        succeeded,
+        failed: concurrency - succeeded,
+        verified_files,
+        source_unchanged,
+        growth_after_create_bytes: after_create.allocated_bytes as i128
+            - before.allocated_bytes as i128,
+        growth_after_status_bytes: after_status.allocated_bytes as i128
+            - before.allocated_bytes as i128,
+        private_write_growth_bytes: after_private_writes.allocated_bytes as i128
+            - after_status.allocated_bytes as i128,
+        before,
+        after_create,
+        after_status,
+        after_private_writes,
+        operations,
+    })
+}
+
+fn create(
+    seed: &Path,
+    destination: &Path,
+    candidate: &Path,
+    backend: &str,
+    worker: usize,
+    barrier: Option<Arc<Barrier>>,
+) -> Operation {
+    let mut command = if backend == "git" {
+        command("git", seed)
+    } else {
+        command(candidate, seed)
+    };
+    if backend == "git" {
+        command.arg("worktree");
+    }
+    command
+        .args(["add", "--detach"])
+        .arg(destination)
+        .arg("HEAD");
+    if let Some(barrier) = barrier {
+        barrier.wait();
+    }
+    let start = Instant::now();
+    let output = command.output();
+    let elapsed = ms(start);
+    match output {
+        Ok(output) => Operation {
+            worker,
+            create_ms: elapsed,
+            first_status_ms: None,
+            exit_code: output.status.code(),
+            native_cow: String::from_utf8_lossy(&output.stderr)
+                .contains("APFS CoW: verified tracked files"),
+            verified: false,
+            error: if output.status.success() {
+                None
+            } else {
+                Some(String::from_utf8_lossy(&output.stderr).into_owned())
+            },
+        },
+        Err(error) => Operation {
+            worker,
+            create_ms: elapsed,
+            first_status_ms: None,
+            exit_code: None,
+            native_cow: false,
+            verified: false,
+            error: Some(error.to_string()),
+        },
+    }
+}
+
+fn expected_files(seed: &Path) -> Result<Vec<Expected>> {
+    use std::os::unix::{ffi::OsStringExt, fs::PermissionsExt};
+    let paths = checked(command("git", seed).args(["ls-files", "-z"]).output()?)?.stdout;
+    paths
+        .split(|byte| *byte == 0)
+        .filter(|path| !path.is_empty())
+        .map(|path| {
+            let path = PathBuf::from(OsString::from_vec(path.to_vec()));
+            let absolute = seed.join(&path);
+            let metadata = fs::symlink_metadata(&absolute)?;
+            let symlink = metadata.file_type().is_symlink();
+            let data = if symlink {
+                use std::os::unix::ffi::OsStrExt;
+                fs::read_link(&absolute)?.as_os_str().as_bytes().to_vec()
+            } else {
+                ensure!(
+                    metadata.is_file(),
+                    "submodules/special files are not supported in this suite"
+                );
+                fs::read(&absolute)?
+            };
+            Ok(Expected {
+                path,
+                data,
+                symlink,
+                executable: metadata.permissions().mode() & 0o100 != 0,
+            })
+        })
+        .collect()
+}
+fn verify_file(root: &Path, entry: &Expected) -> Result<()> {
+    use std::os::unix::{ffi::OsStrExt, fs::PermissionsExt};
+    let absolute = root.join(&entry.path);
+    let metadata = fs::symlink_metadata(&absolute)?;
+    ensure!(
+        metadata.file_type().is_symlink() == entry.symlink,
+        "entry type differs"
+    );
+    if entry.symlink {
+        ensure!(
+            fs::read_link(absolute)?.as_os_str().as_bytes() == entry.data,
+            "symlink differs"
+        );
+    } else {
+        ensure!(fs::read(absolute)? == entry.data, "file bytes differ");
+        ensure!(
+            (metadata.permissions().mode() & 0o100 != 0) == entry.executable,
+            "executable bit differs"
+        );
+    }
+    Ok(())
+}
+fn settled_space(mount: &Path) -> Result<Space> {
+    checked(Command::new("sync").output()?)?;
+    let mut observations = vec![];
+    let mut snapshot = space(mount)?;
+    for _ in 0..12 {
+        thread::sleep(Duration::from_millis(250));
+        snapshot = space(mount)?;
+        observations.push(snapshot.allocated_bytes);
+        if observations.len() >= 3
+            && observations[observations.len() - 3..]
+                .iter()
+                .all(|n| *n == snapshot.allocated_bytes)
+        {
+            snapshot.stable = true;
+            break;
+        }
+    }
+    snapshot.observed_allocated_bytes = observations;
+    Ok(snapshot)
+}
+// libc block counters are u32 on Darwin and u64 on Linux.
+#[allow(clippy::unnecessary_cast)]
+fn space(mount: &Path) -> Result<Space> {
+    use std::os::unix::ffi::OsStrExt;
+    let path = CString::new(mount.as_os_str().as_bytes())?;
+    let mut stat = std::mem::MaybeUninit::<libc::statvfs>::uninit();
+    // SAFETY: path is a live C string; stat points to writable storage of the required size.
+    ensure!(
+        unsafe { libc::statvfs(path.as_ptr(), stat.as_mut_ptr()) } == 0,
+        "statvfs failed: {}",
+        std::io::Error::last_os_error()
+    );
+    // SAFETY: successful statvfs initialized the complete result.
+    let stat = unsafe { stat.assume_init() };
+    let block_size = stat.f_frsize;
+    Ok(Space {
+        allocated_bytes: (stat.f_blocks as u64 - stat.f_bfree as u64) * block_size,
+        total_bytes: stat.f_blocks as u64 * block_size,
+        stable: false,
+        observed_allocated_bytes: vec![],
+    })
+}
+fn command(program: impl AsRef<std::ffi::OsStr>, cwd: &Path) -> Command {
+    let mut command = Command::new(program);
+    command
+        .current_dir(cwd)
+        .env("GIT_CONFIG_NOSYSTEM", "1")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_TERMINAL_PROMPT", "0")
+        .env("TWIG_TRACE", "1");
+    command
+}
+fn checked(output: Output) -> Result<Output> {
+    ensure!(
+        output.status.success(),
+        "command failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    Ok(output)
+}
+fn git_text(cwd: &Path, args: &[&str]) -> Result<String> {
+    capture(
+        cwd,
+        "git",
+        &args.iter().map(OsString::from).collect::<Vec<_>>(),
+    )
+}
+fn capture(cwd: &Path, program: &str, args: &[OsString]) -> Result<String> {
+    Ok(
+        String::from_utf8(checked(command(program, cwd).args(args).output()?)?.stdout)?
+            .trim()
+            .to_owned(),
+    )
+}
+fn ms(start: Instant) -> f64 {
+    start.elapsed().as_secs_f64() * 1000.0
+}
+fn save(path: &Path, suite: &Suite) -> Result<()> {
+    fs::create_dir_all(path.parent().context("output needs a parent")?)?;
+    let temporary = path.with_extension("json.tmp");
+    fs::write(&temporary, serde_json::to_vec_pretty(suite)?)?;
+    fs::rename(temporary, path)?;
+    Ok(())
+}

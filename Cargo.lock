@@ -13,6 +13,7 @@ name = "git-twig"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "libc",
  "twig-core",
 ]
 
@@ -111,9 +112,9 @@ name = "twig-bench"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "libc",
  "serde",
  "serde_json",
- "twig-core",
 ]
 
 [[package]]

@@ -8,7 +8,7 @@ license.workspace = true
 publish = false
 
 [dependencies]
+libc.workspace = true
 anyhow.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-twig-core.workspace = true
