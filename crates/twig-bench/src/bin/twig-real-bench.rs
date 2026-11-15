@@ -9,7 +9,7 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
     process::{Command, Output},
-    sync::{Arc, Barrier},
+    sync::{Arc, Barrier, mpsc},
     thread,
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
@@ -78,6 +78,7 @@ struct Cohort {
     failed: usize,
     verified_files: usize,
     source_unchanged: bool,
+    private_write_tested: bool,
     before: Option<Space>,
     after_create: Option<Space>,
     after_status: Option<Space>,
@@ -106,6 +107,20 @@ struct Operation {
     verified: bool,
     error: Option<String>,
 }
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CreationProgress<'a> {
+    schema_version: u32,
+    phase: &'static str,
+    repository: &'a str,
+    source_commit: &'a str,
+    backend: &'a str,
+    repeat: usize,
+    expected_operations: usize,
+    elapsed_ms: f64,
+    operations: &'a [Operation],
+}
+
 struct Expected {
     path: PathBuf,
     data: Vec<u8>,
@@ -472,6 +487,8 @@ fn cohort(
     }
     let before = filesystem.snapshot(mount)?;
     let barrier = Arc::new(Barrier::new(concurrency));
+    let (sender, receiver) = mpsc::channel();
+    let checkpoint = mount.with_extension("creation.json");
     let start = Instant::now();
     let handles = (0..concurrency)
         .map(|worker| {
@@ -480,23 +497,55 @@ fn cohort(
             let candidate = candidate.to_path_buf();
             let backend = backend.to_owned();
             let barrier = Arc::clone(&barrier);
+            let sender = sender.clone();
             thread::spawn(move || {
-                create(
+                let outcome = create(
                     &seed,
                     &destination,
                     &candidate,
                     &backend,
                     worker,
                     Some(barrier),
-                )
+                );
+                let _ = sender.send(outcome);
             })
         })
         .collect::<Vec<_>>();
     eprintln!("cohort workers launched: {concurrency}");
-    let mut operations = handles
-        .into_iter()
-        .map(|h| h.join().expect("CLI worker panicked"))
-        .collect::<Vec<_>>();
+    drop(sender);
+    let mut operations = Vec::with_capacity(concurrency);
+    for mut operation in receiver {
+        if let Some(error) = &mut operation.error {
+            *error = error
+                .replace(&mount.display().to_string(), "<image>")
+                .replace(&repository.path.display().to_string(), "<source>");
+        }
+        operations.push(operation);
+        eprintln!(
+            "{backend}: CLI completed {}/{concurrency}; content verification pending",
+            operations.len()
+        );
+        let progress = CreationProgress {
+            schema_version: 1,
+            phase: "creation; verification pending",
+            repository: &repository.label,
+            source_commit: &repository.commit,
+            backend,
+            repeat,
+            expected_operations: concurrency,
+            elapsed_ms: ms(start),
+            operations: &operations,
+        };
+        save_creation_progress(&checkpoint, &progress)?;
+    }
+    for handle in handles {
+        handle.join().expect("CLI worker panicked");
+    }
+    ensure!(
+        operations.len() == concurrency,
+        "a CLI worker did not return an outcome"
+    );
+    operations.sort_by_key(|operation| operation.worker);
     let create_wall_ms = ms(start);
     let after_create = filesystem.snapshot(mount)?;
     let status_start = Instant::now();
@@ -532,31 +581,37 @@ fn cohort(
     }
     let status_and_verification_wall_ms = ms(status_start);
     let after_status = filesystem.snapshot(mount)?;
-    let first = expected
-        .iter()
-        .find(|entry| !entry.symlink && !entry.data.is_empty())
-        .context("no nonempty regular file to test private writes")?;
-    for operation in &mut operations {
-        if !operation.verified {
-            continue;
-        }
-        let destination = mount
-            .join(format!("w-{}", operation.worker))
-            .join(&first.path);
-        let write = (|| -> Result<()> {
-            OpenOptions::new()
-                .write(true)
-                .open(destination)?
-                .write_all(&[first.data[0] ^ 0xff])?;
-            Ok(())
-        })();
-        if let Err(error) = write {
-            operation.error = Some(format!("private write: {error:#}"));
-            operation.verified = false;
+    let first = expected.iter().find(|entry| !entry.symlink);
+    if let Some(first) = first {
+        for operation in &mut operations {
+            if !operation.verified {
+                continue;
+            }
+            let destination = mount
+                .join(format!("w-{}", operation.worker))
+                .join(&first.path);
+            let write = (|| -> Result<()> {
+                OpenOptions::new()
+                    .write(true)
+                    .open(destination)?
+                    .write_all(&[first.data.first().map_or(0x42, |byte| byte ^ 0xff)])?;
+                Ok(())
+            })();
+            if let Err(error) = write {
+                operation.error = Some(format!("private write: {error:#}"));
+                operation.verified = false;
+            }
         }
     }
-    let after_private_writes = filesystem.snapshot(mount)?;
-    let source_unchanged = fs::read(seed.join(&first.path))? == first.data;
+    let after_private_writes = if first.is_some() {
+        filesystem.snapshot(mount)?
+    } else {
+        None
+    };
+    let source_unchanged = match first {
+        Some(first) => fs::read(seed.join(&first.path))? == first.data,
+        None => git_text(&seed, &["status", "--porcelain"])?.is_empty(),
+    };
     ensure!(source_unchanged, "seed changed after private writes");
     for operation in &mut operations {
         if let Some(error) = &mut operation.error {
@@ -584,6 +639,7 @@ fn cohort(
         failed: concurrency - succeeded,
         verified_files,
         source_unchanged,
+        private_write_tested: first.is_some(),
         growth_after_create_bytes: allocation_delta(&after_create, &before),
         growth_after_status_bytes: allocation_delta(&after_status, &before),
         private_write_growth_bytes: allocation_delta(&after_private_writes, &after_status),
@@ -593,6 +649,13 @@ fn cohort(
         after_private_writes,
         operations,
     })
+}
+
+fn save_creation_progress(path: &Path, progress: &CreationProgress<'_>) -> Result<()> {
+    let temporary = path.with_extension("json.tmp");
+    fs::write(&temporary, serde_json::to_vec_pretty(progress)?)?;
+    fs::rename(temporary, path)?;
+    Ok(())
 }
 
 fn allocation_delta(after: &Option<Space>, before: &Option<Space>) -> Option<i128> {

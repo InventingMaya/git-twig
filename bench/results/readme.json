@@ -11,6 +11,22 @@
       "repository": "axo",
       "timing": "bench/results/2026-11-15-real/host.json",
       "allocation": "bench/results/2026-11-15-real/images.json"
+    },
+    {
+      "name": "Linux kernel (1)",
+      "repository": "linux",
+      "timing": "bench/results/2026-11-15-real/kernel-n1.json",
+      "allocation": "bench/results/2026-11-15-real/kernel-n1.json",
+      "input": "bench/results/2026-11-15-real/kernel-input.json",
+      "incomplete": true
+    },
+    {
+      "name": "Linux kernel (100, prior attempt)",
+      "repository": "linux",
+      "timing": "bench/results/2026-11-15-real/kernel-n100-git.json",
+      "allocation": "bench/results/2026-11-15-real/kernel-n100-git.json",
+      "input": "bench/results/2026-11-15-real/kernel-input.json",
+      "incomplete": true
     }
   ],
   "notes": [
@@ -18,7 +34,7 @@
     "Only tracked committed files are copied. Ignored dependencies and build artifacts are excluded.",
     "Host-APFS creation timings and isolated-image allocation are separate measurements of the same pinned trees and candidate binary. Round counts are shown; budget-stopped suites retain their stop events.",
     "Plain Git's nonzero failure count is an observed concurrent commondir-registration race. Failed attempts remain in the timing samples; a fast failed batch is not a complete successful cohort.",
-    "Kernel measurements are subject to a 30-minute experiment budget. Unfinished or unattempted cohort sizes will not be filled in with projections.",
-    "**Linux kernel:** both 100-worker cohorts were launched but budget-stopped before completion; no kernel timing/space comparison is claimed. See [pinned input](bench/results/2026-11-15-real/kernel-input.json), [Git attempt](bench/results/2026-11-15-real/kernel-n100-git-event.json), and [Twig attempt](bench/results/2026-11-15-real/kernel-n100-twig-event.json). The exploratory single-worktree run was also incomplete as a paired comparison."
+    "Earlier kernel attempts were budget-stopped. The unrestricted 100-way restart is being run separately; unfinished measurements are never filled in with projections.",
+    "**Linux kernel (prior attempts):** both 100-worker cohorts were launched but budget-stopped before completion; no completed kernel timing/space comparison is claimed. See [pinned input](bench/results/2026-11-15-real/kernel-input.json), [Git attempt](bench/results/2026-11-15-real/kernel-n100-git-event.json), and [Twig attempt](bench/results/2026-11-15-real/kernel-n100-twig-event.json). The exploratory single-worktree run was also incomplete as a paired comparison."
   ]
 }

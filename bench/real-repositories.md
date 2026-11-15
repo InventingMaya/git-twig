@@ -24,7 +24,11 @@ the image's APFS filesystem; history remains external and identical for both.
 No source hooks/global Git config are inherited. Ignored/untracked dependencies
 and build artifacts are not copied.
 
-A barrier starts all requested CLI workers together. The harness records cohort
+A barrier starts all requested CLI workers together. Atomic `.creation.json`
+checkpoints outside each image retain completed CLI outcomes with verification
+explicitly pending; only final cohort records prove completed verification.
+The person may request a completion-oriented run without a time cutoff; disk
+headroom and the approved scratch-space ceiling still apply. The harness records cohort
 wall time, per-attempt create latency, exit/error details and native-backend
 selection. It does not retry failed registrations. First status and full
 byte/symlink/executable verification happen after all create workers join.
@@ -71,5 +75,9 @@ bytes distinguish those cases.
 
 Backend order alternates by repeat. Caches remain warm; filesystem image layering
 is controlled but differs from the normal host APFS volume. Capture raw results
-before making claims. Private-repository results stay in target/ by default;
+before making claims. Empty fixtures use an empty initial commit, not an unborn HEAD. With no regular
+file, the private-write probe is not applicable and its allocation remains
+unmeasured; `privateWriteTested` records that distinction.
+
+Private-repository results stay in target/ by default;
 only publish with separate permission. Keep versioned private copies when needed.

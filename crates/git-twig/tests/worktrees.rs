@@ -327,6 +327,33 @@ fn respects_restrictive_umask() -> Result<()> {
 }
 
 #[test]
+fn empty_initial_commit_creates_a_clean_empty_worktree() -> Result<()> {
+    let f = Fixture::new()?;
+    let source = f.root.join("empty");
+    fs::create_dir(&source)?;
+    git(&source, &["init", "-b", "main"])?;
+    git(
+        &source,
+        &[
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "--allow-empty",
+            "-m",
+            "empty",
+        ],
+    )?;
+    let output = checked(twig(&source, &["add", "--detach", "../empty-worktree"])?)?;
+    native(&output);
+    let destination = f.root.join("empty-worktree");
+    clean(&destination)?;
+    assert!(git(&destination, &["ls-files"])?.stdout.is_empty());
+    Ok(())
+}
+
+#[test]
 fn line_ending_conversions_delegate() -> Result<()> {
     let f = Fixture::new()?;
     git(&f.source, &["config", "core.autocrlf", "true"])?;
