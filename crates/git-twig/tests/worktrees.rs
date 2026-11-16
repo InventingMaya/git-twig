@@ -57,6 +57,27 @@ impl Fixture {
     fn destination(&self) -> PathBuf {
         self.root.join("feature")
     }
+    fn staging_root(&self) -> PathBuf {
+        self.source.join(".git/twigs/staging")
+    }
+    fn stages(&self) -> Result<Vec<PathBuf>> {
+        match fs::read_dir(self.staging_root()) {
+            Ok(entries) => entries.map(|entry| Ok(entry?.path())).collect(),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(Vec::new()),
+            Err(error) => Err(error.into()),
+        }
+    }
+    fn assert_no_sibling_stages(&self) -> Result<()> {
+        for entry in fs::read_dir(&self.root)? {
+            assert!(
+                !entry?
+                    .file_name()
+                    .to_string_lossy()
+                    .starts_with(".git-twig-stage-")
+            );
+        }
+        Ok(())
+    }
 }
 fn command(program: impl AsRef<std::ffi::OsStr>, cwd: &Path) -> Command {
     let mut c = Command::new(program);
@@ -496,6 +517,134 @@ fn skill_rejects_extra_arguments_without_git() -> Result<()> {
 }
 
 #[test]
+fn git_c_main_layout_creates_a_sibling_from_head() -> Result<()> {
+    let f = Fixture::new()?;
+    let bin = Path::new(env!("CARGO_BIN_EXE_git-twig")).parent().unwrap();
+    let path = std::env::join_paths(std::iter::once(bin.to_path_buf()).chain(
+        std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default()),
+    ))?;
+    let output = checked(
+        command("git", &f.root)
+            .env("PATH", path)
+            .args([
+                "-C",
+                "source",
+                "twig",
+                "add",
+                "-b",
+                "feat/x",
+                "../feat-x",
+                "HEAD",
+            ])
+            .output()?,
+    )?;
+    native(&output);
+    assert_eq!(fs::read(f.root.join("feat-x/hello.txt"))?, b"hello\n");
+    assert_eq!(
+        git(&f.source, &["rev-parse", "HEAD"])?.stdout,
+        git(&f.root.join("feat-x"), &["rev-parse", "HEAD"])?.stdout
+    );
+    assert!(f.stages()?.is_empty());
+    f.assert_no_sibling_stages()?;
+    clean(&f.root.join("feat-x"))
+}
+
+#[test]
+fn linked_source_retains_failed_staging_in_the_common_git_directory() -> Result<()> {
+    let f = Fixture::new()?;
+    checked(f.add()?)?;
+    let output = twig(&f.destination(), &["add", "-b", "main", "../third", "HEAD"])?;
+    assert!(!output.status.success());
+    assert_eq!(f.stages()?.len(), 1);
+    assert!(f.destination().join(".git").is_file());
+    f.assert_no_sibling_stages()?;
+    clean(&f.source)?;
+    clean(&f.destination())
+}
+
+#[test]
+fn short_help_does_not_require_git_or_a_repository() -> Result<()> {
+    for args in [
+        vec!["-h"],
+        vec!["--help"],
+        vec!["add", "-h"],
+        vec!["add", "--help"],
+        vec!["add", "-b", "example", "--help"],
+        vec!["skill", "--help"],
+    ] {
+        let output = checked(
+            Command::new(env!("CARGO_BIN_EXE_git-twig"))
+                .args(&args)
+                .env("PATH", "")
+                .current_dir(std::env::temp_dir())
+                .output()?,
+        )?;
+        assert!(String::from_utf8(output.stdout)?.contains("Usage: git twig"));
+        assert!(output.stderr.is_empty());
+    }
+    Ok(())
+}
+
+#[test]
+fn git_dispatches_short_help_outside_a_repository() -> Result<()> {
+    let f = Fixture::new()?;
+    let outside = f.root.join("outside");
+    fs::create_dir(&outside)?;
+    let bin = Path::new(env!("CARGO_BIN_EXE_git-twig")).parent().unwrap();
+    let path = std::env::join_paths(std::iter::once(bin.to_path_buf()).chain(
+        std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default()),
+    ))?;
+    for args in [
+        vec!["twig", "-h"],
+        vec!["twig", "add", "--help"],
+        vec!["twig", "list", "-h"],
+        vec!["twig", "skill", "--help"],
+    ] {
+        let output = checked(
+            command("git", &outside)
+                .env("PATH", &path)
+                .args(&args)
+                .output()?,
+        )?;
+        assert!(String::from_utf8(output.stdout)?.contains("Usage: git twig"));
+        assert!(output.stderr.is_empty());
+    }
+    assert_eq!(fs::read_dir(&outside)?.count(), 0);
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn git_help_finds_the_bundled_manual_when_installed() -> Result<()> {
+    let f = Fixture::new()?;
+    if command("man", &f.root).arg("--version").output().is_err() {
+        return Ok(()); // Minimal Linux containers need not install a man viewer.
+    }
+    let manpath = f.root.join("manual");
+    fs::create_dir_all(manpath.join("man1"))?;
+    fs::copy(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("man/git-twig.1"),
+        manpath.join("man1/git-twig.1"),
+    )?;
+    let bin = Path::new(env!("CARGO_BIN_EXE_git-twig")).parent().unwrap();
+    let path = std::env::join_paths(std::iter::once(bin.to_path_buf()).chain(
+        std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default()),
+    ))?;
+    let output = checked(
+        command("git", &f.root)
+            .env("PATH", path)
+            .env("MANPATH", manpath)
+            .env("MANPAGER", "cat")
+            .env("PAGER", "cat")
+            .args(["twig", "--help"])
+            .output()?,
+    )?;
+    assert!(!output.stdout.is_empty());
+    assert!(!String::from_utf8_lossy(&output.stderr).contains("No manual entry"));
+    Ok(())
+}
+
+#[test]
 fn help_advertises_the_skill() -> Result<()> {
     let output = checked(
         Command::new(env!("CARGO_BIN_EXE_git-twig"))
@@ -504,6 +653,50 @@ fn help_advertises_the_skill() -> Result<()> {
     )?;
     assert!(String::from_utf8(output.stdout)?.contains("git twig skill"));
     Ok(())
+}
+
+#[test]
+fn successful_create_cleans_only_its_own_staging() -> Result<()> {
+    let f = Fixture::new()?;
+    let retained = f.staging_root().join("old-failed-attempt");
+    fs::create_dir_all(&retained)?;
+    fs::write(retained.join("keep"), "diagnostics")?;
+    let output = checked(f.add()?)?;
+    native(&output);
+    assert_eq!(f.stages()?, vec![retained.clone()]);
+    assert_eq!(fs::read_to_string(retained.join("keep"))?, "diagnostics");
+    f.assert_no_sibling_stages()?;
+    clean(&f.source)?;
+    clean(&f.destination())
+}
+
+#[test]
+fn successful_fallback_cleans_its_failed_native_attempt() -> Result<()> {
+    let f = Fixture::new()?;
+    fs::write(f.source.join("hello.txt"), "dirty source")?;
+    checked(f.add()?)?;
+    assert!(f.stages()?.is_empty());
+    f.assert_no_sibling_stages()?;
+    assert_eq!(fs::read(f.source.join("hello.txt"))?, b"dirty source");
+    assert_eq!(fs::read(f.destination().join("hello.txt"))?, b"hello\n");
+    clean(&f.destination())
+}
+
+#[cfg(unix)]
+#[test]
+fn failed_create_retains_private_staging_in_git_metadata() -> Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+    let f = Fixture::new()?;
+    let output = f.twig(&["add", "-b", "main", "../feature", "HEAD"])?;
+    assert!(!output.status.success());
+    let stages = f.stages()?;
+    assert_eq!(stages.len(), 1);
+    assert!(stages[0].starts_with(f.staging_root()));
+    assert_eq!(fs::metadata(&stages[0])?.permissions().mode() & 0o077, 0);
+    assert!(stages[0].join("checkout/data").is_dir());
+    assert!(!f.destination().exists());
+    f.assert_no_sibling_stages()?;
+    clean(&f.source)
 }
 
 #[test]
@@ -710,6 +903,14 @@ fn hooks_run_once_and_failure_retains_worktree() -> Result<()> {
         assert!(contents.ends_with(" 1\n"));
         assert!(f.destination().join(".git").is_file());
         assert!(!f.source.join("hook-output").exists());
+        f.assert_no_sibling_stages()?;
+        if failure {
+            let stages = f.stages()?;
+            assert_eq!(stages.len(), 1);
+            assert_eq!(fs::metadata(&stages[0])?.permissions().mode() & 0o077, 0);
+        } else {
+            assert!(f.stages()?.is_empty());
+        }
     }
     Ok(())
 }
@@ -889,16 +1090,8 @@ fn directory_clones_filter_extras_without_following_links() -> Result<()> {
     native(&output);
     if cfg!(target_os = "macos") {
         assert!(String::from_utf8_lossy(&output.stderr).contains("APFS directory clones: 1"));
-        let stage = fs::read_dir(&f.root)?
-            .filter_map(Result::ok)
-            .find(|entry| {
-                entry
-                    .file_name()
-                    .to_string_lossy()
-                    .starts_with(".git-twig-stage-")
-            })
-            .expect("private staging directory retained");
-        assert_eq!(fs::metadata(stage.path())?.permissions().mode() & 0o077, 0);
+        assert!(f.stages()?.is_empty());
+        f.assert_no_sibling_stages()?;
     }
     let destination = f.destination().join("tree");
     assert!(!destination.join("ignored").exists());

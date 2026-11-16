@@ -1,25 +1,32 @@
 //! Native CoW materialization with Git-owned linked-worktree bookkeeping.
 mod native;
 mod snapshot;
+mod staging;
 mod tree;
 
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result, ensure};
 use std::{
     env,
     ffi::OsString,
     fs,
     path::{Path, PathBuf},
     process::{Command, Output},
-    sync::atomic::{AtomicU64, Ordering},
 };
 use tree::{Entry, Kind};
 
-static NEXT_STAGE: AtomicU64 = AtomicU64::new(0);
-
 /// Execute supported creation requests natively; delegate everything else to Git.
 pub fn run(cwd: &Path, args: &[OsString]) -> Result<i32> {
+    let mut staging = staging::Staging::default();
+    let result = run_request(cwd, args, &mut staging);
+    if matches!(result, Ok(0)) {
+        staging.cleanup();
+    }
+    result
+}
+
+fn run_request(cwd: &Path, args: &[OsString], staging: &mut staging::Staging) -> Result<i32> {
     if let Some(request) = AddRequest::parse(args) {
-        match prepare(cwd, &request) {
+        match prepare(cwd, &request, staging) {
             Ok(Some(prepared)) => return install(cwd, args, prepared),
             Ok(None) => trace("stock Git: request is outside the CoW fast path"),
             Err(error) => trace(&format!("stock Git: {error:#}")),
@@ -89,7 +96,11 @@ struct Prepared {
     commit: String,
 }
 
-fn prepare(cwd: &Path, request: &AddRequest) -> Result<Option<Prepared>> {
+fn prepare(
+    cwd: &Path,
+    request: &AddRequest,
+    staging: &mut staging::Staging,
+) -> Result<Option<Prepared>> {
     if !cfg!(any(target_os = "macos", target_os = "linux")) {
         return Ok(None);
     }
@@ -175,8 +186,7 @@ fn prepare(cwd: &Path, request: &AddRequest) -> Result<Option<Prepared>> {
     if has_conversion_attributes(&root, &entries)? {
         return Ok(None);
     }
-    let stage = create_stage(&parent)?;
-    trace(&format!("staging retained at {}", stage.display()));
+    let stage = staging.create(&root, &parent)?;
     let data = stage.join("data");
     fs::create_dir(&data)?;
     let modes = native::FileModes::new(&stage)?;
@@ -272,13 +282,18 @@ fn install(cwd: &Path, args: &[OsString], prepared: Prepared) -> Result<i32> {
     Ok(code)
 }
 
-fn lock_registration(root: &Path) -> Result<fs::File> {
+fn state_directory(root: &Path) -> Result<PathBuf> {
     let common_dir = output_path(
         checked(git(root).args(["rev-parse", "--path-format=absolute", "--git-common-dir"]))?
             .stdout,
     )?;
     let state_dir = common_dir.join("twigs");
     fs::create_dir_all(&state_dir)?;
+    Ok(state_dir)
+}
+
+fn lock_registration(root: &Path) -> Result<fs::File> {
+    let state_dir = state_directory(root)?;
     let lock = fs::OpenOptions::new()
         .read(true)
         .write(true)
@@ -365,33 +380,6 @@ fn config_true(root: &Path, key: &str) -> bool {
         .args(["config", "--bool", "--get", key])
         .output()
         .is_ok_and(|result| result.stdout == b"true\n")
-}
-
-fn create_stage(parent: &Path) -> Result<PathBuf> {
-    for _ in 0..1000 {
-        let path = parent.join(format!(
-            ".git-twig-stage-{}-{}",
-            std::process::id(),
-            NEXT_STAGE.fetch_add(1, Ordering::Relaxed)
-        ));
-        let created = {
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::DirBuilderExt;
-                fs::DirBuilder::new().mode(0o700).create(&path)
-            }
-            #[cfg(not(unix))]
-            {
-                fs::create_dir(&path)
-            }
-        };
-        match created {
-            Ok(()) => return Ok(path),
-            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
-            Err(error) => return Err(error.into()),
-        }
-    }
-    bail!("unable to allocate staging directory")
 }
 
 fn git(cwd: &Path) -> Command {

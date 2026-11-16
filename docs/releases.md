@@ -13,8 +13,8 @@ Before publishing:
 6. Review GitHub Actions permissions and the generated formula.
 
 With owner approval, push a vVERSION tag matching Cargo.toml. The release workflow
-builds macOS arm64/x86_64 and Linux x86_64 archives, SHA256SUMS and a stable
-Homebrew formula. It creates a GitHub release and updates the same repository's
+builds macOS arm64/x86_64 and Linux x86_64 archives (including `git-twig.1`),
+SHA256SUMS and a stable Homebrew formula. It creates a GitHub release and updates the same repository's
 Formula/git-twig.rb. Native CoW supports macOS/APFS and Linux on Btrfs or
 reflink-enabled XFS; unsupported filesystems delegate to Git. macOS binaries are
 not signed/notarized yet.
@@ -27,7 +27,9 @@ brew tap leostera/git-twig https://github.com/leostera/git-twig
 brew install leostera/git-twig/git-twig
 ```
 
-Before the first release, use --HEAD instead.
+Before the first release, use --HEAD instead. Both source and stable Homebrew
+installs include the manual for `git twig --help`. Cargo does not install manuals;
+its users can use `git twig -h` or `git-twig --help`.
 
 Crates.io publishing is a separate owner-approved action:
 publish only `git-twig` with `cargo publish -p git-twig --locked`. Its library and

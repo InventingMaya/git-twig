@@ -17,10 +17,15 @@ cargo install --path crates/git-twig --locked
 
 ## Use
 
+With your source checkout in `main/`:
+
 ```sh
-git twig add -b my-feature ../my-feature
-git twig list
+git -C main twig add -b feat/x ../feat-x HEAD
+git -C main twig list
 ```
+
+Native CoW requires the source checkout\'s current `HEAD`; other revisions use Git.
+Short help works outside a checkout: `git twig -h` or `git twig add --help`.
 
 For coding agents: `git twig skill` prints the bundled skill.
 
@@ -29,10 +34,11 @@ Creates ordinary linked worktrees from committed files; local changes and ignore
 files aren't copied. Unsupported filesystems (including typical ext4), options and
 checkout semantics use `git worktree`. Set `TWIG_TRACE=1` to see backend selection.
 
-Source and destination must share a clone-capable filesystem. Twig verifies cloned
-files against the requested commit; writes are private, never hardlinked to source.
-Staging is retained beside destinations. Interrupted installation may leave a
-partial registered worktree; inspect it rather than retrying blindly.
+Source, destination and Git metadata must share a clone-capable filesystem for
+native CoW. Twig verifies cloned files against the requested commit; writes are
+private, never hardlinked to source. Staging lives under the common Git directory
+in `twigs/staging` and is removed after success. Failed/interrupted attempts retain
+staging and may leave a partial registered worktree; inspect before retrying.
 
 ## Benchmarks
 

@@ -26,7 +26,7 @@ jobs:
           cargo test --workspace --locked
           cargo build --release --locked -p git-twig --target ${{ matrix.target }}
           mkdir -p package dist
-          cp target/${{ matrix.target }}/release/git-twig LICENSE README.md package/
+          cp target/${{ matrix.target }}/release/git-twig LICENSE README.md crates/git-twig/man/git-twig.1 package/
           tar -czf dist/git-twig-${GITHUB_REF_NAME}-${{ matrix.target }}.tar.gz -C package .
       - uses: actions/upload-artifact@v4
         with:

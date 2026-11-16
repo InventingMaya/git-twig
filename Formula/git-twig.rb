@@ -10,6 +10,7 @@ class GitTwig < Formula
 
   def install
     system "cargo", "install", "--locked", "--path", "crates/git-twig", "--root", prefix
+    man1.install "crates/git-twig/man/git-twig.1"
   end
 
   test do

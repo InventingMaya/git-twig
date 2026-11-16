@@ -44,12 +44,15 @@ test("onboarding is plain text with real install and usage instructions", async 
   expect(text).toContain("## CLI reference");
   for (const command of [
     "add", "list", "remove", "move", "lock", "unlock", "prune", "repair",
-    "skill", "--help", "--version",
+    "skill", "-h", "--version",
   ]) {
     expect(text).toContain(`git twig ${command}`);
   }
   expect(text).toContain("It does not repair file contents or merge conflicts.");
   expect(text).toContain("It does not lock files");
+  expect(text).toContain("git -C main twig add -b feat/x ../feat-x HEAD");
+  expect(text).toContain("git twig add --help");
+  expect(text).toContain("twigs/staging");
   expect(text).not.toContain("git twig --skill");
   expect(text).toContain("Ask before removing");
   expect(text).not.toContain("/Users/");

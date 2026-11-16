@@ -153,7 +153,7 @@ fn normalize(
                         normalize(&child.path(), node, actual, modes)?;
                         remaining -= 1;
                     }
-                    None => remove_extra(&child.path(), actual)?,
+                    None => remove_private_tree(&child.path(), actual)?,
                 }
             }
             ensure!(remaining == 0, "tracked path missing from cloned directory");
@@ -167,9 +167,9 @@ fn normalize(
     Ok(())
 }
 
-fn remove_extra(path: &Path, kind: fs::FileType) -> Result<()> {
+pub(super) fn remove_private_tree(path: &Path, kind: fs::FileType) -> Result<()> {
     if kind.is_dir() {
-        // Only private cloned entries reach here. Never follow a symlink during pruning.
+        // Only owned staging/cloned entries reach here. Never follow a symlink.
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
@@ -177,7 +177,7 @@ fn remove_extra(path: &Path, kind: fs::FileType) -> Result<()> {
         }
         for child in fs::read_dir(path)? {
             let child = child?;
-            remove_extra(&child.path(), child.file_type()?)?;
+            remove_private_tree(&child.path(), child.file_type()?)?;
         }
         fs::remove_dir(path)?;
     } else {

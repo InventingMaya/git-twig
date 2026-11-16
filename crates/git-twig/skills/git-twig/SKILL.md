@@ -21,7 +21,7 @@ git twig prune [--dry-run] [--verbose] [--expire <time>]
 git twig repair [<path>...]
 
 git twig skill
-git twig --help
+git twig -h
 git twig --version
 ```
 
@@ -43,7 +43,10 @@ git twig --version
   were moved manually. It does not repair file contents or merge conflicts.
   Ask before changing registrations.
 - `skill`: print these bundled agent instructions, even outside a repository.
-- `--help` and `--version`: print usage or the installed version.
+- `-h` and `--version`: print usage or the installed version. Short command help
+  such as `git twig add --help` also works outside a repository. Git itself turns
+  top-level `git twig --help` into a manual lookup; Homebrew installs that manual,
+  while Cargo users can use `git twig -h` or `git-twig --help`.
 
 Standard Git worktree options are passed through. Use `git worktree <command> -h`
 for the full options of a delegated command. Do not invent additional Twig
@@ -51,12 +54,16 @@ commands or flags.
 
 ## Create a workspace
 
-From an existing checkout:
+From the directory containing a source checkout named `main/`:
 
 ```sh
-git twig add -b agent/my-task ../my-task HEAD
-cd ../my-task
+git -C main twig add -b feat/x ../feat-x HEAD
+cd feat-x
 ```
+
+`-C main` selects the source checkout; `../feat-x` is resolved relative to it.
+The fast copy only applies to that checkout\'s current `HEAD`, not an arbitrary
+older commit or another checkout\'s branch. Other revisions use stock Git.
 
 For a detached checkout:
 
@@ -74,8 +81,8 @@ parsing the output in a script.
 - Only committed tracked files are included. Local edits and untracked/ignored
   files are excluded; tracked secrets are copied like any other tracked file.
   Install dependencies when needed.
-- Native CoW needs macOS/APFS or Linux on Btrfs or reflink-enabled XFS. Source and
-  destination must share a clone-capable filesystem. Creating at the source\'s HEAD
+- Native CoW needs macOS/APFS or Linux on Btrfs or reflink-enabled XFS. Source,
+  destination and Git metadata must share a clone-capable filesystem. Creating at the source\'s HEAD
   is the optimized case. Other requests use stock Git.
 - CoW shares file data, not writes. It is not a sandbox and is not always faster.
 - To inspect backend selection, set `TWIG_TRACE=1` on the create command.
@@ -83,9 +90,11 @@ parsing the output in a script.
 ## Cleanup safely
 
 Ask before removing a worktree or discarding changes. Check `git status` first;
-never force removal, prune registrations or delete staging directories blindly.
+never force removal, prune registrations or delete retained staging blindly.
 After approval, use `git twig remove <path>`.
 
-This is a prototype. Staging directories are currently retained. On failure,
-inspect `git twig list` and the paths reported by `TWIG_TRACE`; a partial
+Staging lives under the common Git directory in `twigs/staging`. A successful
+create removes only its own staging. Failed/interrupted attempts retain diagnostic
+state; inspect `git twig list` and the reported staging paths, since a partial
 worktree may already be registered. Do not retry into it or delete it automatically.
+Older sibling staging folders are not swept or deleted by new commands.

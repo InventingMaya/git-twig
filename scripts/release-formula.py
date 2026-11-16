@@ -42,8 +42,10 @@ print(f'''class GitTwig < Formula
   def install
     if build.head?
       system "cargo", "install", "--locked", "--path", "crates/git-twig", "--root", prefix
+      man1.install "crates/git-twig/man/git-twig.1"
     else
       bin.install "git-twig"
+      man1.install "git-twig.1"
     end
   end
 
