@@ -341,6 +341,7 @@ fn copied_worktree_config_keeps_absolute_includes_but_delegates_relative_ones() 
         let output = compare_stock(&f, &["hello.txt", ".gitattributes"], !relative)?;
         if relative {
             let trace = String::from_utf8_lossy(&output.stderr);
+            #[cfg(any(target_os = "macos", target_os = "linux"))]
             assert!(
                 trace.contains("relative config.worktree includes require stock Git"),
                 "{trace}"
@@ -440,7 +441,10 @@ fn failing_filters_run_once_through_stock_git_and_retain_failure() -> Result<()>
     assert!(!String::from_utf8_lossy(&output.stderr).contains("CoW: verified"));
     assert_eq!(fs::read_to_string(marker)?, "call\n");
     assert_eq!(fs::read(f.source.join("hello.txt"))?, LF);
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     assert!(!f.stages()?.is_empty());
+    #[cfg(windows)]
+    assert!(!f.staging_root().exists());
     Ok(())
 }
 
