@@ -5,7 +5,9 @@ Version 0.3.0 is published on [crates.io](https://crates.io/crates/git-twig) and
 Crates.io publication is manual and requires owner approval.
 
 Before publishing:
-1. Run all local/CI checks and benchmark the intended commit.
+1. Run all local/CI checks and benchmark the intended commit. Add the next
+   [changelog](../CHANGELOG.md) entry for implemented and verified changes;
+   do not describe planned fixes as shipped.
 2. Confirm the git-twig crate name/version is available on crates.io.
 3. Review `cargo package -p git-twig --list`; include the license and bundled skill,
    never local fixtures. Run `cargo publish -p git-twig --dry-run --locked`.

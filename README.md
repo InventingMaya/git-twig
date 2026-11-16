@@ -75,6 +75,6 @@ requiring native CoW on both. Locally on a supported Linux filesystem, run
 fixtures under `target/`; disk use grows. See the
 [design contract](docs/rfds/RFD0001-verified-cow-worktrees.md),
 [Linux correctness boundaries](docs/rfds/RFD0012-linux-correctness-and-measurement.md),
-and [release operations](docs/releases.md).
+[changelog](CHANGELOG.md), and [release operations](docs/releases.md).
 
 [MIT](LICENSE)
