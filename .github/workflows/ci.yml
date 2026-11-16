@@ -49,6 +49,28 @@ jobs:
           TWIG_TEST_REQUIRE_NATIVE: '1'
         run: cargo test -p git-twig --locked
       - run: cargo build --workspace --release --locked
+  minimum-git:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: git/git
+          ref: v2.40.0
+          path: .git-minimum
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: Swatinem/rust-cache@v2
+      - name: Build minimum supported Git
+        run: |
+          make -C .git-minimum -j4 NO_GETTEXT=YesPlease NO_TCLTK=YesPlease \
+            NO_CURL=YesPlease NO_EXPAT=YesPlease NO_OPENSSL=YesPlease \
+            prefix="$RUNNER_TEMP/git-minimum" install
+          echo "$RUNNER_TEMP/git-minimum/bin" >> "$GITHUB_PATH"
+      - run: git --version
+      - run: cargo test --workspace --locked
   msrv:
     runs-on: ubuntu-latest
     steps:

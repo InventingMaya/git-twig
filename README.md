@@ -42,6 +42,14 @@ private, never hardlinked to source. Staging lives under the common Git director
 in `twigs/staging` and is removed after success. Failed/interrupted attempts retain
 staging and may leave a partial registered worktree; inspect before retrying.
 
+## Unreleased checkout improvements
+
+Development builds support common LF policies such as `text=auto eol=lf`.
+They compare private clones to raw target blobs and let Git write exceptional
+files, retaining sharing for the rest. External filters/encodings still delegate.
+These changes are not in the published v0.3.0 release; see the
+[changelog](CHANGELOG.md) for fixes and remaining boundaries.
+
 ## Benchmarks
 
 <!-- twig-bench:start -->

@@ -12,7 +12,7 @@ git-twig \- lightweight Git worktrees using native copy-on-write
 .br
 .B git twig --version
 .SH DESCRIPTION
-Twig creates ordinary linked Git worktrees. Supported add requests use native
+Twig creates ordinary linked Git worktrees. Supported creation requests use native
 copy-on-write on macOS/APFS or Linux reflink filesystems. Other requests use
 Git's worktree implementation, without inheriting local or ignored files.
 .SH COMMANDS
@@ -53,6 +53,14 @@ git -C main twig new -b feat/x ../feat-x HEAD
 .PP
 The destination is resolved relative to main, so it is a sibling named feat-x.
 HEAD must name the source checkout's current commit for native copying.
+.SH CHECKOUT COVERAGE
+Development builds support common LF policies such as text=auto eol=lf.
+Private candidate bytes are compared to raw target blobs. Git materializes
+files requiring conversion or whose bytes differ; other verified files retain
+sharing. These improvements are not in the published v0.3.0 release.
+External filters, ident expansion, working-tree encodings, conditional config
+includes and relative attribute-file configuration delegate to stock Git.
+Checkout configuration and external attributes must not change during creation.
 .SH STAGING
 Staging is stored under the common Git directory in twigs/staging. Successful
 operations remove their own staging. Failed/interrupted attempts retain diagnostic
@@ -73,7 +81,8 @@ See git-worktree(1) for the complete delegated Git option reference.
 .SH ENVIRONMENT
 .TP
 .B TWIG_TRACE=1
-Report native backend selection, staging and fallback reasons to standard error.
+Report native backend selection, verified file clone and Git-written counts,
+staging and fallback reasons to standard error.
 .SH SEE ALSO
 .BR git-worktree (1),
 .BR git (1)

@@ -7,6 +7,11 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
+#[path = "cases/checkout_policy.rs"]
+mod checkout_policy;
+#[path = "cases/checkout_races.rs"]
+mod checkout_races;
+
 static NEXT: AtomicU64 = AtomicU64::new(0);
 struct Fixture {
     root: PathBuf,
@@ -83,6 +88,7 @@ fn command(program: impl AsRef<std::ffi::OsStr>, cwd: &Path) -> Command {
     let mut c = Command::new(program);
     c.current_dir(cwd)
         .env("GIT_CONFIG_NOSYSTEM", "1")
+        .env("GIT_ATTR_NOSYSTEM", "1")
         .env("GIT_CONFIG_GLOBAL", "/dev/null")
         .env("XDG_CONFIG_HOME", "/nonexistent/twig-tests")
         .env("GIT_TERMINAL_PROMPT", "0")
@@ -231,7 +237,7 @@ fn legacy_crlf_attributes_cannot_hide_dirty_raw_bytes() -> Result<()> {
             fs::write(f.source.join(name), "hello\r\n")?;
         }
         let output = checked(f.add()?)?;
-        assert!(!String::from_utf8_lossy(&output.stderr).contains("CoW: verified"));
+        native(&output);
         for name in ["hello.txt", "tree/file.txt"] {
             assert_eq!(fs::read(f.destination().join(name))?, b"hello\n");
             assert_eq!(fs::read(f.source.join(name))?, b"hello\r\n");
@@ -725,7 +731,7 @@ fn successful_create_cleans_only_its_own_staging() -> Result<()> {
 }
 
 #[test]
-fn successful_fallback_cleans_its_failed_native_attempt() -> Result<()> {
+fn successful_dirty_source_repair_cleans_its_staging() -> Result<()> {
     let f = Fixture::new()?;
     fs::write(f.source.join("hello.txt"), "dirty source")?;
     checked(f.add()?)?;
@@ -1072,11 +1078,11 @@ fn empty_initial_commit_creates_a_clean_empty_worktree() -> Result<()> {
 }
 
 #[test]
-fn line_ending_conversions_delegate() -> Result<()> {
+fn line_ending_conversions_use_git_per_file() -> Result<()> {
     let f = Fixture::new()?;
     git(&f.source, &["config", "core.autocrlf", "true"])?;
     let output = checked(f.add()?)?;
-    assert!(!String::from_utf8_lossy(&output.stderr).contains("CoW:"));
+    native(&output);
     assert_eq!(fs::read(f.destination().join("hello.txt"))?, b"hello\r\n");
     clean(&f.destination())
 }

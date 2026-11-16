@@ -1,5 +1,7 @@
 //! Native CoW materialization with Git-owned linked-worktree bookkeeping.
+mod checkout;
 mod native;
+mod objects;
 mod snapshot;
 mod staging;
 mod tree;
@@ -17,7 +19,7 @@ use tree::{Entry, Kind};
 /// Execute supported creation requests natively; delegate everything else to Git.
 pub fn run(cwd: &Path, args: &[OsString]) -> Result<i32> {
     ensure!(
-        !args.first().is_some_and(|arg| arg == "add"),
+        args.first().is_none_or(|arg| arg != "add"),
         "\'add\' has been removed; use \'git twig new\'"
     );
     // Both native preparation and fallback consume Git worktree arguments.
@@ -104,6 +106,8 @@ struct Prepared {
     destination: PathBuf,
     stage: PathBuf,
     commit: String,
+    entries: Vec<Entry>,
+    policy: checkout::Policy,
 }
 
 fn prepare(
@@ -120,6 +124,8 @@ fn prepare(
         "GIT_INDEX_FILE",
         "GIT_OBJECT_DIRECTORY",
         "GIT_COMMON_DIR",
+        "GIT_ATTR_SOURCE",
+        "GIT_REPLACE_REF_BASE",
     ] {
         if env::var_os(key).is_some() {
             return Ok(None);
@@ -156,12 +162,7 @@ fn prepare(
     }
     let parent = fs::canonicalize(parent)?;
     let destination = parent.join(destination.file_name().context("destination has no name")?);
-    let autocrlf = git(&root)
-        .args(["config", "--get", "core.autocrlf"])
-        .output()?;
-    if autocrlf.status.success() && autocrlf.stdout != b"false\n" {
-        return Ok(None);
-    }
+    objects::ensure_literal_objects(&root)?;
     let entries =
         tree::parse(&checked(git(&root).args(["ls-tree", "-rz", "--full-tree", &commit]))?.stdout)?;
     if entries.iter().any(|entry| entry.kind == Kind::Submodule) {
@@ -193,60 +194,28 @@ fn prepare(
     {
         return Ok(None);
     }
-    if has_conversion_attributes(&root, &entries)? {
-        return Ok(None);
-    }
     let stage = staging.create(&root, &parent)?;
     let data = stage.join("data");
     fs::create_dir(&data)?;
+    let index = stage.join("index");
+    let checkout = checkout::Checkout::new(&root, &data, &index)?;
+    checkout.initialize(&commit)?;
+    let policy = checkout.policy(&entries)?;
     let modes = native::FileModes::new(&stage)?;
     let directories = snapshot::materialize(&root, &data, &entries, &modes)?;
     #[cfg(target_os = "macos")]
     trace(&format!("APFS directory clones: {directories}"));
     #[cfg(not(target_os = "macos"))]
     let _ = directories;
-    verify(&root, &data, &stage.join("index"), &commit)?;
+    checkout.repair(&root, &entries, &policy)?;
     Ok(Some(Prepared {
         root,
         destination,
         stage,
         commit,
+        entries,
+        policy,
     }))
-}
-
-fn verify(root: &Path, data: &Path, index: &Path, commit: &str) -> Result<()> {
-    let git_dir =
-        output_path(checked(git(root).args(["rev-parse", "--absolute-git-dir"]))?.stdout)?;
-    let staged_git = || {
-        let mut command = git(root);
-        command
-            .env("GIT_DIR", &git_dir)
-            .env("GIT_WORK_TREE", data)
-            .env("GIT_INDEX_FILE", index)
-            .args([
-                "-c",
-                "core.fsmonitor=false",
-                "-c",
-                "core.sparseCheckout=false",
-                "-c",
-                "core.filemode=true",
-                "-c",
-                "core.symlinks=true",
-            ]);
-        command
-    };
-    checked(staged_git().args(["read-tree", commit]))?;
-    // Refresh hashes files with empty stat caches; raw diff-files alone can report stat-only changes.
-    checked(staged_git().args(["update-index", "--really-refresh"]))
-        .context("cloned files do not match the requested commit")?;
-    checked(staged_git().args([
-        "diff-files",
-        "--quiet",
-        "--no-ext-diff",
-        "--ignore-submodules=none",
-    ]))
-    .context("cloned files do not match the requested commit")?;
-    Ok(())
 }
 
 fn install(cwd: &Path, args: &[OsString], prepared: Prepared) -> Result<i32> {
@@ -257,6 +226,11 @@ fn install(cwd: &Path, args: &[OsString], prepared: Prepared) -> Result<i32> {
     // Git enumerates peer worktree metadata while registering. Serialize Twig registrars
     // so none observes a peer between mkdir and writing commondir/HEAD.
     let registration_lock = lock_registration(&prepared.root)?;
+    let data = prepared.stage.join("data");
+    let index = prepared.stage.join("index");
+    prepared.policy.ensure_same(
+        &checkout::Checkout::new(&prepared.root, &data, &index)?.policy(&prepared.entries)?,
+    )?;
     // Preserve Git's branch validation and registration. No fallback after this mutation.
     let status = git(cwd)
         .args(["worktree", "add", "--no-checkout"])
@@ -322,7 +296,13 @@ fn finish_install(prepared: &Prepared) -> Result<()> {
         actual == prepared.commit,
         "destination HEAD moved during creation"
     );
-    for entry in fs::read_dir(prepared.stage.join("data"))? {
+    let data = prepared.stage.join("data");
+    let index = prepared.stage.join("index");
+    prepared.policy.ensure_same(
+        &checkout::Checkout::new(&prepared.destination, &data, &index)?
+            .policy(&prepared.entries)?,
+    )?;
+    for entry in fs::read_dir(&data)? {
         let entry = entry?;
         let target = prepared.destination.join(entry.file_name());
         ensure!(
@@ -334,48 +314,6 @@ fn finish_install(prepared: &Prepared) -> Result<()> {
     checked(git(&prepared.destination).args(["read-tree", &prepared.commit]))?;
     trace(&format!("shared repository: {}", prepared.root.display()));
     Ok(())
-}
-
-fn has_conversion_attributes(root: &Path, entries: &[Entry]) -> Result<bool> {
-    use std::io::Write;
-    use std::process::Stdio;
-    let mut command = git(root);
-    command
-        .args(["check-attr", "-z", "--stdin", "--all"])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
-    let mut child = command.spawn()?;
-    let input: Vec<u8> = entries
-        .iter()
-        .flat_map(|entry| {
-            let mut bytes = native::path_bytes(&entry.path);
-            bytes.push(0);
-            bytes
-        })
-        .collect();
-    // Drain stdout concurrently: attribute output can exceed pipe capacity before stdin is consumed.
-    let mut stdin = child.stdin.take().context("missing Git stdin")?;
-    let writer = std::thread::spawn(move || stdin.write_all(&input));
-    let result = child.wait_with_output()?;
-    writer
-        .join()
-        .map_err(|_| anyhow::anyhow!("attribute writer panicked"))??;
-    ensure!(result.status.success(), "git check-attr failed");
-    let fields: Vec<_> = result
-        .stdout
-        .split(|byte| *byte == 0)
-        .filter(|part| !part.is_empty())
-        .collect();
-    ensure!(fields.len() % 3 == 0, "invalid Git attribute response");
-    Ok(fields.as_chunks::<3>().0.iter().any(|row| {
-        // --all omits absent attributes. A literal filter named "unset" or
-        // "unspecified" is still present; never confuse its value with absence.
-        matches!(
-            row[1],
-            b"filter" | b"working-tree-encoding" | b"ident" | b"text" | b"eol" | b"crlf"
-        )
-    }))
 }
 
 fn config_true(root: &Path, key: &str) -> bool {

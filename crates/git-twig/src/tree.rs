@@ -12,6 +12,24 @@ pub enum Kind {
 pub struct Entry {
     pub path: PathBuf,
     pub kind: Kind,
+    pub object: ObjectId,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct ObjectId(String);
+
+impl ObjectId {
+    fn parse(value: &str) -> Result<Self> {
+        ensure!(
+            matches!(value.len(), 40 | 64) && value.bytes().all(|b| b.is_ascii_hexdigit()),
+            "invalid tree object ID"
+        );
+        Ok(Self(value.to_owned()))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
 }
 
 pub fn parse(bytes: &[u8]) -> Result<Vec<Entry>> {
@@ -28,7 +46,15 @@ pub fn parse(bytes: &[u8]) -> Result<Vec<Entry>> {
                 .position(|byte| *byte == b'\t')
                 .context("missing tree separator")?;
             let header = std::str::from_utf8(&record[..separator])?;
-            let mode = header.split(' ').next().context("missing tree mode")?;
+            let mut fields = header.split(' ');
+            let mode = fields.next().context("missing tree mode")?;
+            let object_type = fields.next().context("missing tree object type")?;
+            let object = ObjectId::parse(fields.next().context("missing tree object ID")?)?;
+            ensure!(fields.next().is_none(), "extra tree header fields");
+            ensure!(
+                object_type == if mode == "160000" { "commit" } else { "blob" },
+                "unexpected tree object type"
+            );
             let kind = match mode {
                 "100644" => Kind::File { executable: false },
                 "100755" => Kind::File { executable: true },
@@ -40,7 +66,7 @@ pub fn parse(bytes: &[u8]) -> Result<Vec<Entry>> {
             ensure!(!path.as_os_str().is_empty() && path.components().all(|part|
             matches!(part, Component::Normal(name) if !name.eq_ignore_ascii_case(".git"))),
             "unsafe tree path: {}", path.display());
-            Ok(Entry { path, kind })
+            Ok(Entry { path, kind, object })
         })
         .collect()
 }
@@ -50,19 +76,26 @@ mod tests {
     use super::*;
     #[test]
     fn preserves_tabs_and_newlines() {
-        let entries = parse(b"100644 blob abc\todd\tname\n.txt\0").unwrap();
+        let entries =
+            parse(b"100644 blob 0000000000000000000000000000000000000000\todd\tname\n.txt\0")
+                .unwrap();
         assert_eq!(entries[0].path, PathBuf::from("odd\tname\n.txt"));
     }
     #[test]
     fn refuses_unsafe_paths_and_modes() {
-        for input in [
-            b"100644 blob abc\t../escape\0".as_slice(),
-            b"100644 blob abc\t.git/config\0",
-            b"100644 blob abc\t/absolute\0",
-            b"999999 blob abc\tx\0",
-            b"100644 blob abc\tx",
-        ] {
-            assert!(parse(input).is_err());
+        let object = "0".repeat(40);
+        for path in ["../escape", ".git/config", "/absolute", "a/.Git/config"] {
+            assert!(parse(format!("100644 blob {object}\t{path}\0").as_bytes()).is_err());
         }
+        for header in [
+            format!("999999 blob {object}"),
+            format!("100644 commit {object}"),
+            format!("100644 blob {object} extra"),
+            "100644 blob abc".into(),
+        ] {
+            assert!(parse(format!("{header}\tx\0").as_bytes()).is_err());
+        }
+        assert!(parse(format!("100644 blob {object}\tx").as_bytes()).is_err());
+        assert!(parse(format!("100644 blob {}\tx\0", "0".repeat(64)).as_bytes()).is_ok());
     }
 }

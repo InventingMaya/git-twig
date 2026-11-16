@@ -4,6 +4,35 @@ This log starts with one consolidated entry for the feature set available in
 v0.3.0, including features introduced in earlier releases. Future entries will
 describe changes from this baseline after they are implemented and verified.
 
+## Unreleased
+
+### Fixed
+
+- Distinguish absent attributes from literal filter names such as `unset` and
+  `unspecified`; these filters can no longer bypass native eligibility checks.
+- Verify private clone bytes against raw target blobs rather than trusting a
+  normalized clean-filter/index comparison.
+- Resolve attributes from the target index, not dirty, staged or untracked
+  source attribute files. Recheck policy before registration and installation;
+  retain partial state on a post-registration policy change.
+
+### Added
+
+- Native coverage for supported identity-checkout policies, including
+  `text=auto eol=lf` and applicable `core.autocrlf=input` configurations.
+- Hybrid creation: Git writes files requiring line-ending conversion or whose
+  candidate bytes differ; other verified files retain copy-on-write sharing.
+- Trace counts for verified file clones and Git-written paths.
+- Differential and failure tests for line endings, literal attribute values,
+  attribute precedence, dirty policies, mapped donors, private writes, SHA-256
+  repositories, unusual paths and policy changes during creation.
+- CI coverage for the minimum supported Git 2.40 on macOS and Linux.
+
+External filters, ident expansion, working-tree encodings, conditional config
+includes and relative attribute-file configuration remain conservative
+whole-request fallbacks. Other-revision cloning, braiding and re-sharing are
+not included. No new version has been tagged or published.
+
 ## [0.3.0] — 2026-11-16
 
 ### Worktree creation
