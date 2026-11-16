@@ -30,7 +30,6 @@ or git-twig --help if no manual is installed.
 
 Native CoW requires the source checkout's HEAD and macOS/APFS or Linux reflinks.
 Other requests and unsupported worktree options use stock Git. Requires Git 2.40+.
-The v0.1 `add` spelling remains supported; prefer `new`.
 Set TWIG_TRACE=1 to report backend selection to stderr.
 ";
 
@@ -68,7 +67,7 @@ pub fn for_args(args: &[OsString]) -> Option<String> {
         return None;
     }
     let help = match command {
-        "new" | "add" => return Some(NEW.into()),
+        "new" => return Some(NEW.into()),
         "list" => {
             "list [--verbose] [--porcelain [-z]]\nList worktrees; --porcelain is Git's stable machine-readable format."
         }

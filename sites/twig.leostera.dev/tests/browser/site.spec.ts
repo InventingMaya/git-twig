@@ -9,6 +9,12 @@ test("onboards an agent and shows source-backed space savings", async ({
   await context.grantPermissions(["clipboard-read"]);
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("twig");
+  const github = page.getByRole("link", { name: "Twig on GitHub", exact: true });
+  await expect(github).toBeVisible();
+  await expect(github).toHaveAttribute("href", "https://github.com/leostera/git-twig");
+  const githubBounds = await github.boundingBox();
+  expect(githubBounds!.y).toBeLessThan(24);
+  expect(githubBounds!.x).toBeGreaterThan(page.viewportSize()!.width - 80);
   await expect(page.getByText("lightweight git-worktrees for agents", { exact: true })).toBeVisible();
   await expect(page.locator(".description")).toHaveText(
     "With twig, your agents can create cheap lightweight worktrees and use up to 97% less space on disk. Imagine all the worktrees you could now make!",

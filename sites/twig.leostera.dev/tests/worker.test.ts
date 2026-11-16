@@ -61,6 +61,7 @@ test("onboarding is plain text with real install and usage instructions", async 
   expect(text).toContain("git twig new --help");
   expect(text).toContain("twigs/staging");
   expect(text).not.toContain("git twig --skill");
+  expect(text).not.toContain("add spelling remains");
   expect(text).toContain("Ask before removing");
   expect(text).not.toContain("/Users/");
 });

@@ -306,7 +306,7 @@ fn reference_and_index_hooks_can_reenter_without_registrar_deadlock() -> Result<
             let script = hooks.join(event);
             fs::write(
                 &script,
-                "#!/bin/sh\nif [ \"$TWIG_HOOK_ACTIVE\" != 1 ] && [ ! -e \"$TWIG_HOOK_SOURCE/../hook-child/.git\" ]; then\n  (cd \"$TWIG_HOOK_SOURCE\" && TWIG_HOOK_ACTIVE=1 \"$TWIG_HOOK_BINARY\" add --detach ../hook-child HEAD) || exit $?\nfi\nexit 0\n",
+                "#!/bin/sh\nif [ \"$TWIG_HOOK_ACTIVE\" != 1 ] && [ ! -e \"$TWIG_HOOK_SOURCE/../hook-child/.git\" ]; then\n  (cd \"$TWIG_HOOK_SOURCE\" && TWIG_HOOK_ACTIVE=1 \"$TWIG_HOOK_BINARY\" new --detach ../hook-child HEAD) || exit $?\nfi\nexit 0\n",
             )?;
             fs::set_permissions(&script, fs::Permissions::from_mode(0o755))?;
             match style {
@@ -334,7 +334,7 @@ fn reference_and_index_hooks_can_reenter_without_registrar_deadlock() -> Result<
             }
             let mut child = command(env!("CARGO_BIN_EXE_git-twig"), &f.source);
             child
-                .args(["add", "-b", "feature", "../feature"])
+                .args(["new", "-b", "feature", "../feature"])
                 .env("TWIG_HOOK_BINARY", env!("CARGO_BIN_EXE_git-twig"))
                 .env("TWIG_HOOK_SOURCE", &f.source)
                 .env("TWIG_HOOK_SCRIPT", &script);
@@ -414,7 +414,7 @@ fn nested_tracked_fifo_falls_back_without_blocking_or_touching_source() -> Resul
     // SAFETY: fifo is a live C path and the permission mode is valid.
     assert_eq!(unsafe { libc::mkfifo(fifo.as_ptr(), 0o600) }, 0);
     let mut child = command(env!("CARGO_BIN_EXE_git-twig"), &f.source);
-    child.args(["add", "--detach", "../feature"]);
+    child.args(["new", "--detach", "../feature"]);
     let output = checked(bounded_output(child)?)?;
     assert!(!String::from_utf8_lossy(&output.stderr).contains("CoW: verified"));
     assert_eq!(fs::read(f.destination().join("tree/file"))?, b"committed");
@@ -471,7 +471,7 @@ fn cross_filesystem_reflink_failure_delegates_before_registration() -> Result<()
     let destination = parent.join("feature");
     let output = checked(
         command(env!("CARGO_BIN_EXE_git-twig"), &f.source)
-            .args(["add", "--detach"])
+            .args(["new", "--detach"])
             .arg(&destination)
             .output()?,
     )?;
@@ -553,7 +553,7 @@ fn git_c_main_layout_creates_a_sibling_from_head() -> Result<()> {
 fn linked_source_retains_failed_staging_in_the_common_git_directory() -> Result<()> {
     let f = Fixture::new()?;
     checked(f.add()?)?;
-    let output = twig(&f.destination(), &["add", "-b", "main", "../third", "HEAD"])?;
+    let output = twig(&f.destination(), &["new", "-b", "main", "../third", "HEAD"])?;
     assert!(!output.status.success());
     assert_eq!(f.stages()?.len(), 1);
     assert!(f.destination().join(".git").is_file());
@@ -569,9 +569,7 @@ fn short_help_does_not_require_git_or_a_repository() -> Result<()> {
         vec!["--help"],
         vec!["new", "-h"],
         vec!["new", "--help"],
-        vec!["add", "-h"],
-        vec!["add", "--help"],
-        vec!["add", "-b", "example", "--help"],
+        vec!["new", "-b", "example", "--help"],
         vec!["skill", "--help"],
     ] {
         let output = checked(
@@ -599,7 +597,6 @@ fn git_dispatches_short_help_outside_a_repository() -> Result<()> {
     for args in [
         vec!["twig", "-h"],
         vec!["twig", "new", "--help"],
-        vec!["twig", "add", "--help"],
         vec!["twig", "list", "-h"],
         vec!["twig", "skill", "--help"],
     ] {
@@ -669,13 +666,33 @@ fn new_delegates_revisions_and_checkout_options_to_git() -> Result<()> {
 }
 
 #[test]
-fn v01_add_spelling_remains_native_and_compatible() -> Result<()> {
+fn removed_add_is_rejected_without_creating_anything() -> Result<()> {
     let f = Fixture::new()?;
-    let output = checked(f.twig(&["add", "-b", "legacy", "../legacy", "HEAD"])?)?;
-    native(&output);
-    assert_eq!(fs::read(f.root.join("legacy/hello.txt"))?, b"hello\n");
-    assert!(f.stages()?.is_empty());
-    clean(&f.root.join("legacy"))
+    for args in [
+        vec!["add"],
+        vec!["add", "--help"],
+        vec!["add", "-b", "legacy", "../legacy", "HEAD"],
+    ] {
+        let output = f.twig(&args)?;
+        assert!(!output.status.success());
+        assert!(String::from_utf8(output.stderr)?.contains("'add' has been removed"));
+    }
+    assert!(!f.root.join("legacy").exists());
+    assert!(!f.staging_root().exists());
+    clean(&f.source)
+}
+
+#[test]
+fn removed_add_is_rejected_outside_a_repo_without_git() -> Result<()> {
+    let output = Command::new(env!("CARGO_BIN_EXE_git-twig"))
+        .args(["add", "--help"])
+        .env("PATH", "")
+        .current_dir(std::env::temp_dir())
+        .output()?;
+    assert!(!output.status.success());
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8(output.stderr)?.contains("'add' has been removed"));
+    Ok(())
 }
 
 #[test]
@@ -724,7 +741,7 @@ fn successful_fallback_cleans_its_failed_native_attempt() -> Result<()> {
 fn failed_create_retains_private_staging_in_git_metadata() -> Result<()> {
     use std::os::unix::fs::PermissionsExt;
     let f = Fixture::new()?;
-    let output = f.twig(&["add", "-b", "main", "../feature", "HEAD"])?;
+    let output = f.twig(&["new", "-b", "main", "../feature", "HEAD"])?;
     assert!(!output.status.success());
     let stages = f.stages()?;
     assert_eq!(stages.len(), 1);
@@ -823,7 +840,7 @@ fn different_commit_uses_git() -> Result<()> {
     let f = Fixture::new()?;
     fs::write(f.source.join("hello.txt"), "second\n")?;
     git(&f.source, &["commit", "-am", "second"])?;
-    checked(f.twig(&["add", "--detach", "../feature", "HEAD~1"])?)?;
+    checked(f.twig(&["new", "--detach", "../feature", "HEAD~1"])?)?;
     assert_eq!(fs::read(f.destination().join("hello.txt"))?, b"hello\n");
     clean(&f.destination())
 }
@@ -834,7 +851,7 @@ fn can_clone_a_linked_source() -> Result<()> {
     checked(f.add()?)?;
     let output = checked(twig(
         &f.destination(),
-        &["add", "-b", "second", "../second"],
+        &["new", "-b", "second", "../second"],
     )?)?;
     native(&output);
     clean(&f.root.join("second"))
@@ -843,7 +860,7 @@ fn can_clone_a_linked_source() -> Result<()> {
 #[test]
 fn detached_and_no_checkout_modes() -> Result<()> {
     let f = Fixture::new()?;
-    let output = checked(f.twig(&["add", "--detach", "../feature"])?)?;
+    let output = checked(f.twig(&["new", "--detach", "../feature"])?)?;
     native(&output);
     clean(&f.destination())?;
     assert!(
@@ -851,7 +868,7 @@ fn detached_and_no_checkout_modes() -> Result<()> {
             .stdout
             .is_empty()
     );
-    checked(f.twig(&["add", "--no-checkout", "--detach", "../empty"])?)?;
+    checked(f.twig(&["new", "--no-checkout", "--detach", "../empty"])?)?;
     assert!(!f.root.join("empty/hello.txt").exists());
     Ok(())
 }
@@ -976,7 +993,7 @@ fn respects_restrictive_umask() -> Result<()> {
     use std::os::unix::{fs::PermissionsExt, process::CommandExt};
     let f = Fixture::new()?;
     let mut child = command(env!("CARGO_BIN_EXE_git-twig"), &f.source);
-    child.args(["add", "--detach", "../feature"]);
+    child.args(["new", "--detach", "../feature"]);
     // SAFETY: umask is async-signal-safe, affects only this forked child, and captures nothing.
     unsafe {
         child.pre_exec(|| {
@@ -1014,7 +1031,7 @@ fn empty_initial_commit_creates_a_clean_empty_worktree() -> Result<()> {
             "empty",
         ],
     )?;
-    let output = checked(twig(&source, &["add", "--detach", "../empty-worktree"])?)?;
+    let output = checked(twig(&source, &["new", "--detach", "../empty-worktree"])?)?;
     native(&output);
     let destination = f.root.join("empty-worktree");
     clean(&destination)?;
@@ -1036,7 +1053,7 @@ fn line_ending_conversions_delegate() -> Result<()> {
 fn branch_already_in_use_is_rejected_without_source_changes() -> Result<()> {
     let f = Fixture::new()?;
     assert!(
-        !f.twig(&["add", "-b", "main", "../feature"])?
+        !f.twig(&["new", "-b", "main", "../feature"])?
             .status
             .success()
     );
@@ -1050,7 +1067,7 @@ fn relative_destination_from_subdirectory_is_resolved_correctly() -> Result<()> 
     fs::create_dir(f.source.join("nested"))?;
     let output = checked(twig(
         &f.source.join("nested"),
-        &["add", "--detach", "../../feature"],
+        &["new", "--detach", "../../feature"],
     )?)?;
     native(&output);
     clean(&f.destination())
@@ -1069,7 +1086,7 @@ fn sixteen_independent_native_creators_register_safely() -> Result<()> {
             std::thread::spawn(move || {
                 twig(
                     &source,
-                    &["add", "--detach", &format!("../parallel-{index}")],
+                    &["new", "--detach", &format!("../parallel-{index}")],
                 )
             })
         })
@@ -1093,8 +1110,8 @@ fn concurrent_creators_do_not_overwrite_each_other() -> Result<()> {
     }
     let a = f.source.clone();
     let b = a.clone();
-    let first = std::thread::spawn(move || twig(&a, &["add", "--detach", "../feature"]));
-    let second = std::thread::spawn(move || twig(&b, &["add", "--detach", "../feature"]));
+    let first = std::thread::spawn(move || twig(&a, &["new", "--detach", "../feature"]));
+    let second = std::thread::spawn(move || twig(&b, &["new", "--detach", "../feature"]));
     let a = first.join().unwrap()?;
     let b = second.join().unwrap()?;
     assert_ne!(a.status.success(), b.status.success());
@@ -1163,7 +1180,7 @@ fn directory_clone_permissions_follow_umask_not_source_modes() -> Result<()> {
     fs::set_permissions(tree.join("file"), fs::Permissions::from_mode(0o444))?;
     fs::set_permissions(&tree, fs::Permissions::from_mode(0o555))?;
     let mut child = command(env!("CARGO_BIN_EXE_git-twig"), &f.source);
-    child.args(["add", "--detach", "../feature"]);
+    child.args(["new", "--detach", "../feature"]);
     // SAFETY: async-signal-safe, changes only the forked child's umask.
     unsafe {
         child.pre_exec(|| {

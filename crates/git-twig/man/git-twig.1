@@ -15,7 +15,6 @@ git-twig \- lightweight Git worktrees using native copy-on-write
 Twig creates ordinary linked Git worktrees. Supported add requests use native
 copy-on-write on macOS/APFS or Linux reflink filesystems. Other requests use
 Git's worktree implementation, without inheriting local or ignored files.
-The v0.1 add spelling remains accepted; new is the canonical creation command.
 .SH COMMANDS
 .TP
 .B new [-b branch | --detach] path [commit]

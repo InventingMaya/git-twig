@@ -48,7 +48,6 @@ git twig --version
   top-level `git twig --help` into a manual lookup; Homebrew installs that manual,
   while Cargo users can use `git twig -h` or `git-twig --help`.
 
-The v0.1 `add` spelling remains supported for existing callers; prefer `new`.
 Standard Git worktree options are passed through. Use `git worktree <command> -h`
 for the full options of a delegated command (`new` uses Git\'s `add` options).
 Do not invent additional Twig

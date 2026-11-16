@@ -83,6 +83,20 @@ h1 {
   line-height: 1.5;
   color: #626c5b;
 }
+.github-link {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  color: #626c5b;
+}
+.github-link:hover {
+  color: #283b2b;
+}
 .onboard-action {
   position: relative;
   display: inline-block;
