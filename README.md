@@ -1,6 +1,6 @@
 # git twig 🌱
 
-Git worktrees that share file data on APFS or Linux reflink filesystems instead of copying it.
+With twig, your agents can create cheap lightweight worktrees and use up to 97% less space on disk. Imagine all the worktrees you could now make!
 
 ## Install
 
