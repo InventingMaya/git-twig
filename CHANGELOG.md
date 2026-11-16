@@ -26,6 +26,8 @@ describe changes from this baseline after they are implemented and verified.
 - Hybrid creation: Git writes files requiring line-ending conversion or whose
   candidate bytes differ; other verified files retain copy-on-write sharing.
 - Trace counts for verified file clones and Git-written paths.
+- Specific fallback reasons for unsupported requests, configuration, hooks and
+  destinations; attribute refusals name the escaped path, attribute and value.
 - Differential and failure tests for line endings, literal attribute values,
   attribute precedence, dirty policies, mapped donors, private writes, SHA-256
   repositories, unusual paths and policy changes during creation.

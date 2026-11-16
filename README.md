@@ -50,6 +50,12 @@ files, retaining sharing for the rest. External filters/encodings still delegate
 These changes are not in the published v0.3.0 release; see the
 [changelog](CHANGELOG.md) for fixes and remaining boundaries.
 
+With `TWIG_TRACE=1`, native creation reports verified-clone and Git-written path
+counts. Delegation reports its specific cause; an attribute refusal names the
+path, attribute, and value (for example `filter="unspecified" on "file.txt"`).
+Do not override repository attributes with `-text` just to force the fast path:
+that changes Git checkout semantics rather than proving the bytes are correct.
+
 ## Benchmarks
 
 <!-- twig-bench:start -->

@@ -222,7 +222,12 @@ fn parse_attributes(
             // --all reports explicitly present values, including literal sentinel names.
             // Conservative: even an explicit -filter/-ident requires stock Git for now.
             b"filter" | b"ident" | b"working-tree-encoding" => {
-                anyhow::bail!("external/expanded checkout attributes require stock Git")
+                anyhow::bail!(
+                    "checkout attribute {}={:?} on {:?} requires stock Git",
+                    String::from_utf8_lossy(row[1]),
+                    String::from_utf8_lossy(row[2]),
+                    native::os_string(row[0].to_vec())
+                )
             }
             b"text" => attribute.text = Some(row[2].to_vec()),
             b"eol" => attribute.eol = Some(row[2].to_vec()),

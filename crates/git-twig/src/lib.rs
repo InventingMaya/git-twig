@@ -39,10 +39,13 @@ pub fn run(cwd: &Path, args: &[OsString]) -> Result<i32> {
 fn run_request(cwd: &Path, args: &[OsString], staging: &mut staging::Staging) -> Result<i32> {
     if let Some(request) = AddRequest::parse(args) {
         match prepare(cwd, &request, staging) {
-            Ok(Some(prepared)) => return install(cwd, args, prepared),
-            Ok(None) => trace("stock Git: request is outside the CoW fast path"),
+            Ok(prepared) => return install(cwd, args, prepared),
             Err(error) => trace(&format!("stock Git: {error:#}")),
         }
+    } else if args.first().is_some_and(|arg| arg == "add") {
+        trace(
+            "stock Git: creation options require Git; native creation supports -b or --detach, a destination, and an optional same-HEAD revision",
+        );
     }
     Ok(git(cwd)
         .arg("worktree")
@@ -110,14 +113,11 @@ struct Prepared {
     policy: checkout::Policy,
 }
 
-fn prepare(
-    cwd: &Path,
-    request: &AddRequest,
-    staging: &mut staging::Staging,
-) -> Result<Option<Prepared>> {
-    if !cfg!(any(target_os = "macos", target_os = "linux")) {
-        return Ok(None);
-    }
+fn prepare(cwd: &Path, request: &AddRequest, staging: &mut staging::Staging) -> Result<Prepared> {
+    ensure!(
+        cfg!(any(target_os = "macos", target_os = "linux")),
+        "native CoW is supported only on macOS and Linux"
+    );
     for key in [
         "GIT_DIR",
         "GIT_WORK_TREE",
@@ -127,9 +127,10 @@ fn prepare(
         "GIT_ATTR_SOURCE",
         "GIT_REPLACE_REF_BASE",
     ] {
-        if env::var_os(key).is_some() {
-            return Ok(None);
-        }
+        ensure!(
+            env::var_os(key).is_none(),
+            "environment override {key} requires stock Git"
+        );
     }
     let root = output_path(checked(git(cwd).args(["rev-parse", "--show-toplevel"]))?.stdout)?;
     let commit = text(
@@ -142,33 +143,40 @@ fn prepare(
         .stdout,
     )?;
     let head = text(checked(git(&root).args(["rev-parse", "HEAD"]))?.stdout)?;
-    if commit != head {
-        return Ok(None);
-    }
-    if config_true(&root, "core.sparseCheckout") || config_true(&root, "core.sparseCheckoutCone") {
-        return Ok(None);
-    }
+    ensure!(
+        commit == head,
+        "requested revision differs from source HEAD"
+    );
+    ensure!(
+        !config_true(&root, "core.sparseCheckout")
+            && !config_true(&root, "core.sparseCheckoutCone"),
+        "sparse checkout requires stock Git"
+    );
     let destination = if request.destination.is_absolute() {
         request.destination.clone()
     } else {
         cwd.join(&request.destination)
     };
-    if destination.try_exists()? || fs::symlink_metadata(&destination).is_ok() {
-        return Ok(None);
-    }
+    ensure!(
+        !destination.try_exists()? && fs::symlink_metadata(&destination).is_err(),
+        "destination already exists: {:?}",
+        destination
+    );
     let parent = destination.parent().context("destination has no parent")?;
-    if !parent.is_dir() {
-        return Ok(None);
-    }
+    ensure!(
+        parent.is_dir(),
+        "destination parent does not exist: {parent:?}"
+    );
     let parent = fs::canonicalize(parent)?;
     let destination = parent.join(destination.file_name().context("destination has no name")?);
     objects::ensure_literal_objects(&root)?;
     checkout::ensure_relocatable_worktree_config(&root)?;
     let entries =
         tree::parse(&checked(git(&root).args(["ls-tree", "-rz", "--full-tree", &commit]))?.stdout)?;
-    if entries.iter().any(|entry| entry.kind == Kind::Submodule) {
-        return Ok(None);
-    }
+    ensure!(
+        !entries.iter().any(|entry| entry.kind == Kind::Submodule),
+        "submodules require stock Git"
+    );
     // These semantics are owned by Git, not by the CoW materializer.
     if git(&root)
         .args(["config", "--bool", "--get", "core.symlinks"])
@@ -176,7 +184,7 @@ fn prepare(
         .stdout
         == b"false\n"
     {
-        return Ok(None);
+        anyhow::bail!("core.symlinks=false requires stock Git");
     }
     // Reference/index hooks run while Git registers or initializes the worktree.
     // They may themselves call Twig: never hold our registrar lock across them.
@@ -185,15 +193,15 @@ fn prepare(
         .args(["config", "--get-regexp", r"^hook\..*\.event$"])
         .output()?;
     let hooks = root.join(hook);
-    if ["reference-transaction", "post-index-change"]
-        .iter()
-        .any(|event| fs::symlink_metadata(hooks.join(event)).is_ok())
-        || configured_hooks
+    for event in ["reference-transaction", "post-index-change"] {
+        let configured = configured_hooks
             .stdout
             .split(|byte| byte.is_ascii_whitespace())
-            .any(|word| word == b"reference-transaction" || word == b"post-index-change")
-    {
-        return Ok(None);
+            .any(|word| word == event.as_bytes());
+        ensure!(
+            !configured && fs::symlink_metadata(hooks.join(event)).is_err(),
+            "{event} hook requires stock Git to avoid reentrant registration locks"
+        );
     }
     let stage = staging.create(&root, &parent)?;
     let data = stage.join("data");
@@ -209,14 +217,14 @@ fn prepare(
     #[cfg(not(target_os = "macos"))]
     let _ = directories;
     checkout.repair(&root, &entries, &policy)?;
-    Ok(Some(Prepared {
+    Ok(Prepared {
         root,
         destination,
         stage,
         commit,
         entries,
         policy,
-    }))
+    })
 }
 
 fn install(cwd: &Path, args: &[OsString], prepared: Prepared) -> Result<i32> {

@@ -11,6 +11,8 @@ use std::{
 mod checkout_policy;
 #[path = "cases/checkout_races.rs"]
 mod checkout_races;
+#[path = "cases/fallback_diagnostics.rs"]
+mod fallback_diagnostics;
 
 static NEXT: AtomicU64 = AtomicU64::new(0);
 struct Fixture {
