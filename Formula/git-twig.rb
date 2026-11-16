@@ -1,7 +1,7 @@
 class GitTwig < Formula
   desc "Lightweight Git worktrees using native copy-on-write files"
   homepage "https://github.com/leostera/git-twig"
-  version "0.1.0"
+  version "0.2.0"
   license "MIT"
   head "https://github.com/leostera/git-twig.git", branch: "main"
 
@@ -10,19 +10,19 @@ class GitTwig < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/leostera/git-twig/releases/download/v0.1.0/git-twig-v0.1.0-aarch64-apple-darwin.tar.gz"
-      sha256 "02762f8bd511231179785d4e248bb85446b2bf39a92e3ff618ba363602db2799"
+      url "https://github.com/leostera/git-twig/releases/download/v0.2.0/git-twig-v0.2.0-aarch64-apple-darwin.tar.gz"
+      sha256 "d355bef7aa983f738b4e0b83e73e5786db4bc456279597128d4e21bfdef25b86"
     end
     on_intel do
-      url "https://github.com/leostera/git-twig/releases/download/v0.1.0/git-twig-v0.1.0-x86_64-apple-darwin.tar.gz"
-      sha256 "d70fd124a1510552c5450296c45bc643c5e71dc5b9b3c58f176be49b5beeafae"
+      url "https://github.com/leostera/git-twig/releases/download/v0.2.0/git-twig-v0.2.0-x86_64-apple-darwin.tar.gz"
+      sha256 "14dd30e3964e6b72053a57034c77d1b01964c57e3d3917c63485b89d94bd9908"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.com/leostera/git-twig/releases/download/v0.1.0/git-twig-v0.1.0-x86_64-unknown-linux-gnu.tar.gz"
-      sha256 "f707d894a70c64a4cb7f7e1d1cf5aab88db10c38730195710eed77e1c2b68260"
+      url "https://github.com/leostera/git-twig/releases/download/v0.2.0/git-twig-v0.2.0-x86_64-unknown-linux-gnu.tar.gz"
+      sha256 "0a90d39499d65e8274b44c519fbcaec9ee6a323ad0574ccdab02400715c04ddd"
     end
   end
 
