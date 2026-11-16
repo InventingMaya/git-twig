@@ -11,6 +11,30 @@ plugin({
   },
 });
 const { default: app } = await import("../src/worker");
+for (const protocol of ["http", "https"]) {
+  test(`${protocol} root serves the website without redirecting or returning agent instructions`, async () => {
+    const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+    const url = `${protocol}://twig.leostera.dev/`;
+    let assetUrl: string | undefined;
+    const response = await app.request(url, {}, {
+      ASSETS: {
+        fetch: async (request: Request) => {
+          assetUrl = request.url;
+          return new Response(html, { headers: { "Content-Type": "text/html" } });
+        },
+      },
+    });
+    expect(assetUrl).toBe(url);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Location")).toBeNull();
+    expect(response.headers.get("content-type")).toContain("text/html");
+    const body = await response.text();
+    expect(body).toContain('<div id="root"></div>');
+    expect(body).not.toContain('rel="alternate"');
+    expect(body).not.toContain('href="/llms.txt"');
+  });
+}
+
 test("onboarding is plain text with real install and usage instructions", async () => {
   const response = await app.request("/llms.txt");
   expect(response.status).toBe(200);
