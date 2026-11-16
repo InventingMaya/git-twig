@@ -15,9 +15,10 @@ git-twig \- lightweight Git worktrees using native copy-on-write
 Twig creates ordinary linked Git worktrees. Supported add requests use native
 copy-on-write on macOS/APFS or Linux reflink filesystems. Other requests use
 Git's worktree implementation, without inheriting local or ignored files.
+The v0.1 add spelling remains accepted; new is the canonical creation command.
 .SH COMMANDS
 .TP
-.B add [-b branch | --detach] path [commit]
+.B new [-b branch | --detach] path [commit]
 Create a worktree. Native copying requires the source checkout's current HEAD;
 other commits and unsupported options delegate to Git.
 .TP
@@ -48,7 +49,7 @@ Print the bundled agent instructions, including the command reference.
 From the directory containing the source checkout named main:
 .PP
 .nf
-git -C main twig add -b feat/x ../feat-x HEAD
+git -C main twig new -b feat/x ../feat-x HEAD
 .fi
 .PP
 The destination is resolved relative to main, so it is a sibling named feat-x.
@@ -64,7 +65,7 @@ Short help works outside repositories:
 .PP
 .nf
 git twig -h
-git twig add --help
+git twig new --help
 .fi
 .PP
 Git turns top-level git twig --help into this manual lookup. Homebrew installs

@@ -5,13 +5,13 @@ description: Create and manage ordinary linked Git worktrees with git twig, usin
 
 # git twig
 
-Use `git twig` in place of `git worktree`. The resulting checkout is a normal
-linked worktree: use ordinary Git commands inside it.
+Use `git twig new` in place of `git worktree add`. The resulting checkout is a
+normal linked worktree: use ordinary Git commands inside it.
 
 ## CLI reference
 
 ```text
-git twig add [<git-worktree options>] <path> [<commit>]
+git twig new [<git-worktree options>] <path> [<commit>]
 git twig list [--porcelain [-z]]
 git twig remove <path>
 git twig move <path> <new-path>
@@ -25,7 +25,7 @@ git twig -h
 git twig --version
 ```
 
-- `add`: create an ordinary linked worktree. Supported requests use native CoW;
+- `new`: create an ordinary linked worktree. Supported requests use native CoW;
   other requests use Git's normal checkout.
 - `list`: show worktrees in human-readable form. `--porcelain` is Git's stable
   machine-readable format; `-z` uses NUL separators for safe path parsing.
@@ -44,12 +44,14 @@ git twig --version
   Ask before changing registrations.
 - `skill`: print these bundled agent instructions, even outside a repository.
 - `-h` and `--version`: print usage or the installed version. Short command help
-  such as `git twig add --help` also works outside a repository. Git itself turns
+  such as `git twig new --help` also works outside a repository. Git itself turns
   top-level `git twig --help` into a manual lookup; Homebrew installs that manual,
   while Cargo users can use `git twig -h` or `git-twig --help`.
 
+The v0.1 `add` spelling remains supported for existing callers; prefer `new`.
 Standard Git worktree options are passed through. Use `git worktree <command> -h`
-for the full options of a delegated command. Do not invent additional Twig
+for the full options of a delegated command (`new` uses Git\'s `add` options).
+Do not invent additional Twig
 commands or flags.
 
 ## Create a workspace
@@ -57,7 +59,7 @@ commands or flags.
 From the directory containing a source checkout named `main/`:
 
 ```sh
-git -C main twig add -b feat/x ../feat-x HEAD
+git -C main twig new -b feat/x ../feat-x HEAD
 cd feat-x
 ```
 
@@ -68,7 +70,7 @@ older commit or another checkout\'s branch. Other revisions use stock Git.
 For a detached checkout:
 
 ```sh
-git twig add --detach ../experiment HEAD
+git twig new --detach ../experiment HEAD
 ```
 
 Use an explicit `-b` or `--detach` to enable the CoW path. Choose a new destination;

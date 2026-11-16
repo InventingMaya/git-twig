@@ -5,7 +5,7 @@ const ROOT: &str = "git twig — lightweight Git worktrees
 Usage: git twig <command> [options]
 
 Commands:
-  add       Create a linked worktree; use -b <branch> or --detach
+  new       Create a linked worktree; use -b <branch> or --detach
   list      List worktrees (--porcelain for machine-readable output)
   remove    Remove a worktree
   move      Move a worktree
@@ -16,7 +16,7 @@ Commands:
   skill     Print the bundled agent skill
 
 Examples:
-  git -C main twig add -b feat/x ../feat-x HEAD
+  git -C main twig new -b feat/x ../feat-x HEAD
   git twig list
   git twig skill
 
@@ -30,10 +30,11 @@ or git-twig --help if no manual is installed.
 
 Native CoW requires the source checkout's HEAD and macOS/APFS or Linux reflinks.
 Other requests and unsupported worktree options use stock Git. Requires Git 2.40+.
+The v0.1 `add` spelling remains supported; prefer `new`.
 Set TWIG_TRACE=1 to report backend selection to stderr.
 ";
 
-const ADD: &str = "Usage: git twig add [<git-worktree options>] <path> [<commit>]
+const NEW: &str = "Usage: git twig new [<git-worktree options>] <path> [<commit>]
 
   -b <branch>       Create a new branch
   -B <branch>       Create or reset a branch (delegates to Git)
@@ -47,7 +48,7 @@ Native CoW: use -b <branch> or --detach, with the source checkout's HEAD.
 Other options/revisions delegate to Git. Never overwrite an existing destination.
 
 From the directory containing main/:
-  git -C main twig add -b feat/x ../feat-x HEAD
+  git -C main twig new -b feat/x ../feat-x HEAD
 
 Source and destination must share a clone-capable filesystem. Git metadata must
 also be on that filesystem; otherwise creation delegates to Git.
@@ -67,7 +68,7 @@ pub fn for_args(args: &[OsString]) -> Option<String> {
         return None;
     }
     let help = match command {
-        "add" => return Some(ADD.into()),
+        "new" | "add" => return Some(NEW.into()),
         "list" => {
             "list [--verbose] [--porcelain [-z]]\nList worktrees; --porcelain is Git's stable machine-readable format."
         }

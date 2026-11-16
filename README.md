@@ -22,12 +22,12 @@ For local development: `cargo install --path crates/git-twig --locked`.
 With your source checkout in `main/`:
 
 ```sh
-git -C main twig add -b feat/x ../feat-x HEAD
+git -C main twig new -b feat/x ../feat-x HEAD
 git -C main twig list
 ```
 
 Native CoW requires the source checkout\'s current `HEAD`; other revisions use Git.
-Short help works outside a checkout: `git twig -h` or `git twig add --help`.
+Short help works outside a checkout: `git twig -h` or `git twig new --help`.
 
 For coding agents: `git twig skill` prints the bundled skill.
 

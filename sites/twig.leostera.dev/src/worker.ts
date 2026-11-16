@@ -9,7 +9,8 @@ This is a prototype, not a sandbox.
 
 ## Install
 
-Check whether git twig --version and git twig skill already work. Otherwise,
+Check whether git twig --version, git twig skill and git twig new --help work.
+The new command requires v0.2.0 or newer. Otherwise,
 choose one installation method. Git 2.40+ is required.
 
 With Rust 1.95+:
@@ -27,10 +28,14 @@ brew install leostera/git-twig/git-twig
 git twig --version
 \`\`\`
 
-Version 0.1.0 is published on crates.io and as GitHub release binaries. Use the
-published crate or Homebrew tap; do not invent a curl-to-shell installer. If an
-older development binary is already installed, update that installation rather
-than leaving multiple versions shadowing each other in PATH.
+Version 0.2.0 is published on crates.io and as GitHub release binaries. Use the
+published crate or Homebrew tap; do not invent a curl-to-shell installer.
+
+For an older release, upgrade with the same manager: cargo install git-twig --locked,
+or brew update followed by brew upgrade leostera/git-twig/git-twig. For an existing
+Homebrew HEAD install, use brew upgrade --fetch-HEAD leostera/git-twig/git-twig.
+Do not leave multiple versions shadowing each other in PATH. Verify that
+git twig --version reports at least 0.2.0 and git twig new --help works.
 
 ## Use
 

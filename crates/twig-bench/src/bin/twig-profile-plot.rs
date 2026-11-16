@@ -2,6 +2,10 @@
 use anyhow::{Context, Result, ensure};
 use serde_json::{Value, json};
 use std::{env, fs, path::PathBuf};
+fn is_twig_create(command: &str) -> bool {
+    command.contains("/bin/git-twig new ") || command.contains("/bin/git-twig add ")
+}
+
 fn number(value: &Value, key: &str) -> Result<f64> {
     value[key]
         .as_f64()
@@ -45,9 +49,9 @@ fn main() -> Result<()> {
             let matched = processes
                 .iter()
                 .filter(|p| {
-                    p["command"].as_str().is_some_and(|cmd| {
-                        cmd.contains("/bin/git-twig add ") && cmd.contains(&suffix)
-                    })
+                    p["command"]
+                        .as_str()
+                        .is_some_and(|cmd| is_twig_create(cmd) && cmd.contains(&suffix))
                 })
                 .collect::<Vec<_>>();
             ensure!(matched.len() == 1, "ambiguous native PID");
@@ -137,4 +141,22 @@ fn main() -> Result<()> {
     fs::write(input.with_extension("svg"), svg)?;
     fs::write(input.with_extension("summary.md"), summary)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn recognizes_current_and_archived_create_commands() {
+        assert!(is_twig_create(
+            "/capture/bin/git-twig new --detach /worktree"
+        ));
+        assert!(is_twig_create(
+            "/capture/bin/git-twig add --detach /worktree"
+        ));
+        assert!(!is_twig_create(
+            "/usr/bin/git worktree add --detach /worktree"
+        ));
+        assert!(!is_twig_create("/capture/bin/git-twig list"));
+    }
 }

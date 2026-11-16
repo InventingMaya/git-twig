@@ -145,7 +145,7 @@ fn main() -> Result<()> {
         candidate_sha256: capture(&repository, "shasum", &["-a", "256", fixture.twig.to_str().context("binary path")?])?.split_whitespace().next().context("missing binary digest")?.into(),
         fixture_tree: String::new(),
         config: config.clone(), points: vec![], notes: vec![
-            "Local real CLI benchmark, warm caches; no cold-cache claim. Baseline: installed git worktree add --detach; candidate: release git-twig add --detach.".into(),
+            "Local real CLI benchmark, warm caches; no cold-cache claim. Baseline: installed git worktree add --detach; candidate: release git-twig new --detach.".into(),
             "One unmeasured warmup per backend. Backend order alternates per sample. Monotonic Instant measures CLI completion and first/warm/modified git status separately.".into(),
             "Full byte/mode-independent content verification after first/warm status. In-place write must leave source unchanged. Synthetic deterministic pseudo-random bytes; no compression/dedupe assumptions.".into(),
             "Every operation is retained on disk. Report exclusive physical storage as unmeasured. Logical fixture bytes are not APFS allocation.".into(),
@@ -303,7 +303,7 @@ fn measure(fixture: &Fixture, backend: &str, name: &str, result: &mut Operation)
         command.arg("worktree");
     }
     command.args([
-        OsString::from("add"),
+        OsString::from(if backend == "git" { "add" } else { "new" }),
         OsString::from("--detach"),
         destination.as_os_str().into(),
         OsString::from("HEAD"),

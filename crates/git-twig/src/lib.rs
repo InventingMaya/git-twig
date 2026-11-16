@@ -16,6 +16,13 @@ use tree::{Entry, Kind};
 
 /// Execute supported creation requests natively; delegate everything else to Git.
 pub fn run(cwd: &Path, args: &[OsString]) -> Result<i32> {
+    // Both native preparation and fallback consume Git worktree arguments.
+    // Keep v0.1 callers using `add` working; `new` is the public creation verb.
+    let mut git_args = args.to_vec();
+    if git_args.first().is_some_and(|arg| arg == "new") {
+        git_args[0] = "add".into();
+    }
+    let args = &git_args;
     let mut staging = staging::Staging::default();
     let result = run_request(cwd, args, &mut staging);
     if matches!(result, Ok(0)) {

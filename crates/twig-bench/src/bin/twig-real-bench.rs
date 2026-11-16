@@ -936,7 +936,7 @@ fn create(
         command.arg("worktree");
     }
     command
-        .args(["add", "--detach"])
+        .args([if backend == "git" { "add" } else { "new" }, "--detach"])
         .arg(destination)
         .arg("HEAD");
     let start = Instant::now();

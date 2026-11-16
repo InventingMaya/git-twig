@@ -1,7 +1,7 @@
 # Releases
 
-Version 0.1.0 is published on [crates.io](https://crates.io/crates/git-twig) and
-[GitHub](https://github.com/leostera/git-twig/releases/tag/v0.1.0).
+Version 0.2.0 is published on [crates.io](https://crates.io/crates/git-twig) and
+[GitHub](https://github.com/leostera/git-twig/releases/tag/v0.2.0).
 Crates.io publication is manual and requires owner approval.
 
 Before publishing:

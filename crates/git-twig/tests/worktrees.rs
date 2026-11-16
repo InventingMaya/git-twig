@@ -52,7 +52,7 @@ impl Fixture {
         twig(&self.source, args)
     }
     fn add(&self) -> Result<Output> {
-        self.twig(&["add", "-b", "feature", "../feature", "HEAD"])
+        self.twig(&["new", "-b", "feature", "../feature", "HEAD"])
     }
     fn destination(&self) -> PathBuf {
         self.root.join("feature")
@@ -530,7 +530,7 @@ fn git_c_main_layout_creates_a_sibling_from_head() -> Result<()> {
                 "-C",
                 "source",
                 "twig",
-                "add",
+                "new",
                 "-b",
                 "feat/x",
                 "../feat-x",
@@ -567,6 +567,8 @@ fn short_help_does_not_require_git_or_a_repository() -> Result<()> {
     for args in [
         vec!["-h"],
         vec!["--help"],
+        vec!["new", "-h"],
+        vec!["new", "--help"],
         vec!["add", "-h"],
         vec!["add", "--help"],
         vec!["add", "-b", "example", "--help"],
@@ -596,6 +598,7 @@ fn git_dispatches_short_help_outside_a_repository() -> Result<()> {
     ))?;
     for args in [
         vec!["twig", "-h"],
+        vec!["twig", "new", "--help"],
         vec!["twig", "add", "--help"],
         vec!["twig", "list", "-h"],
         vec!["twig", "skill", "--help"],
@@ -645,13 +648,47 @@ fn git_help_finds_the_bundled_manual_when_installed() -> Result<()> {
 }
 
 #[test]
+fn new_delegates_revisions_and_checkout_options_to_git() -> Result<()> {
+    let f = Fixture::new()?;
+    fs::write(f.source.join("hello.txt"), "newer\n")?;
+    git(&f.source, &["add", "."])?;
+    git(&f.source, &["commit", "-m", "newer"])?;
+    checked(f.twig(&["new", "--detach", "../older", "HEAD~1"])?)?;
+    assert_eq!(fs::read(f.root.join("older/hello.txt"))?, b"hello\n");
+    checked(f.twig(&["new", "--no-checkout", "--detach", "../empty"])?)?;
+    assert!(!f.root.join("empty/hello.txt").exists());
+    checked(f.twig(&["new", "../inferred"])?)?;
+    assert_eq!(
+        git(&f.root.join("inferred"), &["branch", "--show-current"])?.stdout,
+        b"inferred\n"
+    );
+    assert!(f.stages()?.is_empty());
+    clean(&f.root.join("older"))?;
+    clean(&f.root.join("inferred"))?;
+    clean(&f.source)
+}
+
+#[test]
+fn v01_add_spelling_remains_native_and_compatible() -> Result<()> {
+    let f = Fixture::new()?;
+    let output = checked(f.twig(&["add", "-b", "legacy", "../legacy", "HEAD"])?)?;
+    native(&output);
+    assert_eq!(fs::read(f.root.join("legacy/hello.txt"))?, b"hello\n");
+    assert!(f.stages()?.is_empty());
+    clean(&f.root.join("legacy"))
+}
+
+#[test]
 fn help_advertises_the_skill() -> Result<()> {
     let output = checked(
         Command::new(env!("CARGO_BIN_EXE_git-twig"))
             .arg("--help")
             .output()?,
     )?;
-    assert!(String::from_utf8(output.stdout)?.contains("git twig skill"));
+    let text = String::from_utf8(output.stdout)?;
+    assert!(text.contains("git twig skill"));
+    assert!(text.contains("git -C main twig new"));
+    assert!(!text.contains("  add       Create"));
     Ok(())
 }
 

@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { plugin } from "bun";
 import { readFile } from "node:fs/promises";
+import { z } from "zod";
 plugin({
   name: "raw markdown",
   setup(build) {
@@ -40,20 +41,24 @@ test("onboarding is plain text with real install and usage instructions", async 
   expect(response.status).toBe(200);
   expect(response.headers.get("content-type")).toContain("text/plain");
   const text = await response.text();
+  const manifest = z.object({
+    workspace: z.object({ package: z.object({ version: z.string() }) }),
+  }).parse(Bun.TOML.parse(await readFile(new URL("../../../Cargo.toml", import.meta.url), "utf8")));
+  expect(text).toContain(`Version ${manifest.workspace.package.version} is published`);
   expect(text).toContain("brew install leostera/git-twig/git-twig");
   expect(text).toContain("cargo install git-twig --locked");
   expect(text).not.toContain("no tagged binary release");
   expect(text).toContain("## CLI reference");
   for (const command of [
-    "add", "list", "remove", "move", "lock", "unlock", "prune", "repair",
+    "new", "list", "remove", "move", "lock", "unlock", "prune", "repair",
     "skill", "-h", "--version",
   ]) {
     expect(text).toContain(`git twig ${command}`);
   }
   expect(text).toContain("It does not repair file contents or merge conflicts.");
   expect(text).toContain("It does not lock files");
-  expect(text).toContain("git -C main twig add -b feat/x ../feat-x HEAD");
-  expect(text).toContain("git twig add --help");
+  expect(text).toContain("git -C main twig new -b feat/x ../feat-x HEAD");
+  expect(text).toContain("git twig new --help");
   expect(text).toContain("twigs/staging");
   expect(text).not.toContain("git twig --skill");
   expect(text).toContain("Ask before removing");
