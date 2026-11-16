@@ -1,6 +1,7 @@
 # git-twig
 
-Rust workspace. Keep the CLI thin; materialization belongs in twig-core.
+One publishable package, git-twig, with a thin CLI and materialization in its library.
+The workspace also contains twig-bench, which is unpublished development tooling.
 Integration: direct to main, after local tests. Do not publish or tag releases without confirmation.
 Never claim full Git worktree compatibility; unsupported operations are delegated.
 Run cargo fmt --all --check, cargo clippy --workspace --all-targets -- -D warnings,

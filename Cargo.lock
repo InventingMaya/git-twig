@@ -14,7 +14,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "libc",
- "twig-core",
 ]
 
 [[package]]
@@ -115,14 +114,6 @@ dependencies = [
  "libc",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "twig-core"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "libc",
 ]
 
 [[package]]

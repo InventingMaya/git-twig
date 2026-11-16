@@ -13,7 +13,6 @@ use std::{
     sync::atomic::{AtomicU64, Ordering},
 };
 use tree::{Entry, Kind};
-pub type Error = anyhow::Error;
 
 static NEXT_STAGE: AtomicU64 = AtomicU64::new(0);
 

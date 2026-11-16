@@ -17,8 +17,8 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
     match env::current_dir()
-        .map_err(anyhow_io)
-        .and_then(|cwd| twig_core::run(&cwd, &args))
+        .map_err(anyhow::Error::from)
+        .and_then(|cwd| git_twig::run(&cwd, &args))
     {
         Ok(code) => ExitCode::from(code as u8),
         Err(error) => {
@@ -26,8 +26,4 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
-}
-
-fn anyhow_io(error: std::io::Error) -> twig_core::Error {
-    error.into()
 }
