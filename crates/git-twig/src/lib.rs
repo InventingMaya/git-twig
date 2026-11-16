@@ -341,17 +341,7 @@ fn has_conversion_attributes(root: &Path, entries: &[Entry]) -> Result<bool> {
     use std::process::Stdio;
     let mut command = git(root);
     command
-        .args([
-            "check-attr",
-            "-z",
-            "--stdin",
-            "filter",
-            "working-tree-encoding",
-            "ident",
-            "text",
-            "eol",
-            "crlf",
-        ])
+        .args(["check-attr", "-z", "--stdin", "--all"])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
@@ -378,11 +368,14 @@ fn has_conversion_attributes(root: &Path, entries: &[Entry]) -> Result<bool> {
         .filter(|part| !part.is_empty())
         .collect();
     ensure!(fields.len() % 3 == 0, "invalid Git attribute response");
-    Ok(fields
-        .as_chunks::<3>()
-        .0
-        .iter()
-        .any(|row| row[2] != b"unspecified" && row[2] != b"unset"))
+    Ok(fields.as_chunks::<3>().0.iter().any(|row| {
+        // --all omits absent attributes. A literal filter named "unset" or
+        // "unspecified" is still present; never confuse its value with absence.
+        matches!(
+            row[1],
+            b"filter" | b"working-tree-encoding" | b"ident" | b"text" | b"eol" | b"crlf"
+        )
+    }))
 }
 
 fn config_true(root: &Path, key: &str) -> bool {

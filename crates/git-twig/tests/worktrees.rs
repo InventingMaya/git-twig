@@ -970,6 +970,38 @@ fn hooks_run_once_and_failure_retains_worktree() -> Result<()> {
 }
 
 #[test]
+fn literal_attribute_state_names_cannot_hide_filters() -> Result<()> {
+    for name in ["unset", "unspecified", "set", "upper"] {
+        let f = Fixture::new()?;
+        fs::write(
+            f.source.join(".gitattributes"),
+            format!("*.txt filter={name}\n"),
+        )?;
+        git(
+            &f.source,
+            &["config", &format!("filter.{name}.clean"), "tr 'A-Z' 'a-z'"],
+        )?;
+        git(
+            &f.source,
+            &["config", &format!("filter.{name}.smudge"), "tr 'a-z' 'A-Z'"],
+        )?;
+        git(&f.source, &["add", "."])?;
+        git(&f.source, &["commit", "-m", "custom filter"])?;
+        git(&f.source, &["worktree", "add", "--detach", "../stock"])?;
+        let output = checked(f.add()?)?;
+        assert!(!String::from_utf8_lossy(&output.stderr).contains("CoW: verified"));
+        assert_eq!(fs::read(f.destination().join("hello.txt"))?, b"HELLO\n");
+        assert_eq!(
+            fs::read(f.destination().join("hello.txt"))?,
+            fs::read(f.root.join("stock/hello.txt"))?
+        );
+        assert_eq!(fs::read(f.source.join("hello.txt"))?, b"hello\n");
+        clean(&f.destination())?;
+    }
+    Ok(())
+}
+
+#[test]
 fn filters_and_sparse_checkouts_delegate() -> Result<()> {
     for sparse in [false, true] {
         let f = Fixture::new()?;
