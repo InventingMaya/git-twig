@@ -6,14 +6,16 @@ Git worktrees that share file data on APFS or Linux reflink filesystems instead 
 
 ```sh
 brew tap leostera/git-twig https://github.com/leostera/git-twig
-brew install --HEAD leostera/git-twig/git-twig
+brew install leostera/git-twig/git-twig
 ```
 
-Or build locally with Rust 1.95+ and Git 2.40+:
+Or install from crates.io with Rust 1.95+ and Git 2.40+:
 
 ```sh
-cargo install --path crates/git-twig --locked
+cargo install git-twig --locked
 ```
+
+For local development: `cargo install --path crates/git-twig --locked`.
 
 ## Use
 

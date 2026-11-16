@@ -66,7 +66,9 @@ test("onboards an agent and shows source-backed space savings", async ({
   ).toBe(true);
   const instructions = await request.get("/llms.txt");
   expect(instructions.headers()["content-type"]).toContain("text/plain");
-  expect(await instructions.text()).toContain("brew install --HEAD");
+  const installInstructions = await instructions.text();
+  expect(installInstructions).toContain("brew install leostera/git-twig/git-twig");
+  expect(installInstructions).toContain("cargo install git-twig --locked");
   await expect(page.getByRole("status")).toHaveText("", { timeout: 5000 });
 });
 test("copies the real prompt even when the async Clipboard API is denied", async ({ page, context }) => {

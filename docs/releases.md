@@ -1,6 +1,8 @@
 # Releases
 
-Nothing is automatically published to crates.io. No release has been made yet.
+Version 0.1.0 is published on [crates.io](https://crates.io/crates/git-twig) and
+[GitHub](https://github.com/leostera/git-twig/releases/tag/v0.1.0).
+Crates.io publication is manual and requires owner approval.
 
 Before publishing:
 1. Run all local/CI checks and benchmark the intended commit.
@@ -27,8 +29,8 @@ brew tap leostera/git-twig https://github.com/leostera/git-twig
 brew install leostera/git-twig/git-twig
 ```
 
-Before the first release, use --HEAD instead. Both source and stable Homebrew
-installs include the manual for `git twig --help`. Cargo does not install manuals;
+Use --HEAD only when intentionally installing development source. Both source
+and stable Homebrew installs include the manual for `git twig --help`. Cargo does not install manuals;
 its users can use `git twig -h` or `git-twig --help`.
 
 Crates.io publishing is a separate owner-approved action:

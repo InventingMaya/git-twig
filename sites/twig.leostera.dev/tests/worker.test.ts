@@ -40,7 +40,9 @@ test("onboarding is plain text with real install and usage instructions", async 
   expect(response.status).toBe(200);
   expect(response.headers.get("content-type")).toContain("text/plain");
   const text = await response.text();
-  expect(text).toContain("brew install --HEAD leostera/git-twig/git-twig");
+  expect(text).toContain("brew install leostera/git-twig/git-twig");
+  expect(text).toContain("cargo install git-twig --locked");
+  expect(text).not.toContain("no tagged binary release");
   expect(text).toContain("## CLI reference");
   for (const command of [
     "add", "list", "remove", "move", "lock", "unlock", "prune", "repair",
