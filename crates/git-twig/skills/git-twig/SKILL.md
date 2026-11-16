@@ -1,12 +1,53 @@
 ---
 name: git-twig
-description: Create and manage ordinary linked Git worktrees with git twig, using APFS copy-on-write to reduce disk use. Use when a task needs an isolated checkout or branch.
+description: Create and manage ordinary linked Git worktrees with git twig, using native copy-on-write to reduce disk use. Use when a task needs an isolated checkout or branch.
 ---
 
 # git twig
 
 Use `git twig` in place of `git worktree`. The resulting checkout is a normal
 linked worktree: use ordinary Git commands inside it.
+
+## CLI reference
+
+```text
+git twig add [<git-worktree options>] <path> [<commit>]
+git twig list [--porcelain [-z]]
+git twig remove <path>
+git twig move <path> <new-path>
+git twig lock [--reason <text>] <path>
+git twig unlock <path>
+git twig prune [--dry-run] [--verbose] [--expire <time>]
+git twig repair [<path>...]
+
+git twig skill
+git twig --help
+git twig --version
+```
+
+- `add`: create an ordinary linked worktree. Supported requests use native CoW;
+  other requests use Git's normal checkout.
+- `list`: show worktrees in human-readable form. `--porcelain` is Git's stable
+  machine-readable format; `-z` uses NUL separators for safe path parsing.
+- `remove`: remove a worktree and its registration. Check for changes and ask
+  before removing it; do not force removal.
+- `move`: move a worktree and update its registration. Ask before moving it.
+- `lock`: protect a worktree's registration from pruning, moving or removal,
+  for example while an external drive is disconnected. It does not lock files
+  or prevent concurrent agent edits.
+- `unlock`: remove that protection. Ask before changing a user's lock.
+- `prune`: remove stale registrations for worktrees whose directories no longer
+  exist, not the working directories themselves. Preview with `--dry-run` and
+  ask before pruning.
+- `repair`: repair links between the repository and worktrees after directories
+  were moved manually. It does not repair file contents or merge conflicts.
+  Ask before changing registrations.
+- `skill`: print these bundled agent instructions, even outside a repository.
+- `--help` and `--version`: print usage or the installed version.
+
+Standard Git worktree options are passed through. Use `git worktree <command> -h`
+for the full options of a delegated command. Do not invent additional Twig
+commands or flags.
 
 ## Create a workspace
 
@@ -25,15 +66,17 @@ git twig add --detach ../experiment HEAD
 
 Use an explicit `-b` or `--detach` to enable the CoW path. Choose a new destination;
 never overwrite an existing directory. Run tests and make commits in the new
-worktree as usual. `git twig list --porcelain` lists worktrees.
+worktree as usual. `git twig list` lists worktrees. Add `--porcelain` only when
+parsing the output in a script.
 
 ## Know what is copied
 
 - Only committed tracked files are included. Local edits and untracked/ignored
   files are excluded; tracked secrets are copied like any other tracked file.
   Install dependencies when needed.
-- Native CoW needs macOS/APFS and the same clone-capable filesystem. Creating at
-  the source's HEAD is the optimized case. Other requests use stock Git.
+- Native CoW needs macOS/APFS or Linux on Btrfs or reflink-enabled XFS. Source and
+  destination must share a clone-capable filesystem. Creating at the source\'s HEAD
+  is the optimized case. Other requests use stock Git.
 - CoW shares file data, not writes. It is not a sandbox and is not always faster.
 - To inspect backend selection, set `TWIG_TRACE=1` on the create command.
 
@@ -44,5 +87,5 @@ never force removal, prune registrations or delete staging directories blindly.
 After approval, use `git twig remove <path>`.
 
 This is a prototype. Staging directories are currently retained. On failure,
-inspect `git twig list --porcelain` and the paths reported by `TWIG_TRACE`; a partial
+inspect `git twig list` and the paths reported by `TWIG_TRACE`; a partial
 worktree may already be registered. Do not retry into it or delete it automatically.

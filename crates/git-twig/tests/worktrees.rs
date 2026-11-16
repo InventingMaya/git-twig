@@ -472,7 +472,7 @@ fn cross_filesystem_reflink_failure_delegates_before_registration() -> Result<()
 fn skill_is_embedded_and_does_not_require_git() -> Result<()> {
     let output = checked(
         Command::new(env!("CARGO_BIN_EXE_git-twig"))
-            .arg("--skill")
+            .arg("skill")
             .env("PATH", "")
             .current_dir(std::env::temp_dir())
             .output()?,
@@ -483,13 +483,26 @@ fn skill_is_embedded_and_does_not_require_git() -> Result<()> {
 }
 
 #[test]
+fn skill_rejects_extra_arguments_without_git() -> Result<()> {
+    let output = Command::new(env!("CARGO_BIN_EXE_git-twig"))
+        .args(["skill", "extra"])
+        .env("PATH", "")
+        .current_dir(std::env::temp_dir())
+        .output()?;
+    assert!(!output.status.success());
+    assert!(output.stdout.is_empty());
+    assert_eq!(output.stderr, b"Usage: git twig skill\n");
+    Ok(())
+}
+
+#[test]
 fn help_advertises_the_skill() -> Result<()> {
     let output = checked(
         Command::new(env!("CARGO_BIN_EXE_git-twig"))
             .arg("--help")
             .output()?,
     )?;
-    assert!(String::from_utf8(output.stdout)?.contains("git twig --skill"));
+    assert!(String::from_utf8(output.stdout)?.contains("git twig skill"));
     Ok(())
 }
 
@@ -617,10 +630,14 @@ fn detached_and_no_checkout_modes() -> Result<()> {
 fn passthrough_matches_git() -> Result<()> {
     let f = Fixture::new()?;
     checked(f.add()?)?;
-    assert_eq!(
-        checked(f.twig(&["list", "--porcelain"])?)?.stdout,
-        git(&f.source, &["worktree", "list", "--porcelain"])?.stdout
-    );
+    for args in [vec!["list"], vec!["list", "--porcelain"]] {
+        let mut stock_args = vec!["worktree"];
+        stock_args.extend_from_slice(&args);
+        assert_eq!(
+            checked(f.twig(&args)?)?.stdout,
+            git(&f.source, &stock_args)?.stdout
+        );
+    }
     let twig = f.twig(&["not-a-command"])?;
     let stock = command("git", &f.source)
         .args(["worktree", "not-a-command"])

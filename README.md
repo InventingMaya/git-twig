@@ -22,7 +22,7 @@ git twig add -b my-feature ../my-feature
 git twig list
 ```
 
-For coding agents: `git twig --skill` prints the bundled skill.
+For coding agents: `git twig skill` prints the bundled skill.
 
 Native CoW supports macOS/APFS and Linux on Btrfs or reflink-enabled XFS.
 Creates ordinary linked worktrees from committed files; local changes and ignored

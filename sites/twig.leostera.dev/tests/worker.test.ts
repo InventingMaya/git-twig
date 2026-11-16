@@ -41,7 +41,16 @@ test("onboarding is plain text with real install and usage instructions", async 
   expect(response.headers.get("content-type")).toContain("text/plain");
   const text = await response.text();
   expect(text).toContain("brew install --HEAD leostera/git-twig/git-twig");
-  expect(text).toContain("git twig --skill");
+  expect(text).toContain("## CLI reference");
+  for (const command of [
+    "add", "list", "remove", "move", "lock", "unlock", "prune", "repair",
+    "skill", "--help", "--version",
+  ]) {
+    expect(text).toContain(`git twig ${command}`);
+  }
+  expect(text).toContain("It does not repair file contents or merge conflicts.");
+  expect(text).toContain("It does not lock files");
+  expect(text).not.toContain("git twig --skill");
   expect(text).toContain("Ask before removing");
   expect(text).not.toContain("/Users/");
 });
