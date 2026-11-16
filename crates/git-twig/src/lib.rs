@@ -163,6 +163,7 @@ fn prepare(
     let parent = fs::canonicalize(parent)?;
     let destination = parent.join(destination.file_name().context("destination has no name")?);
     objects::ensure_literal_objects(&root)?;
+    checkout::ensure_relocatable_worktree_config(&root)?;
     let entries =
         tree::parse(&checked(git(&root).args(["ls-tree", "-rz", "--full-tree", &commit]))?.stdout)?;
     if entries.iter().any(|entry| entry.kind == Kind::Submodule) {

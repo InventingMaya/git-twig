@@ -13,6 +13,49 @@ use std::{
     process::{Command, Output, Stdio},
 };
 
+/// Git copies config.worktree into a new Git directory, but not sibling include
+/// files. Relative includes there can therefore change policy after registration.
+pub fn ensure_relocatable_worktree_config(root: &Path) -> Result<()> {
+    let enabled = git(root)
+        .args(["config", "--bool", "--get", "extensions.worktreeConfig"])
+        .output()?;
+    if enabled.status.code() == Some(1) {
+        return Ok(());
+    }
+    let enabled = checked_output(enabled)?;
+    if enabled.stdout != b"true\n" {
+        return Ok(());
+    }
+    let includes = git(root)
+        .args([
+            "config",
+            "--worktree",
+            "--no-includes",
+            "--path",
+            "--null",
+            "--get-all",
+            "include.path",
+        ])
+        .output()?;
+    if includes.status.code() == Some(1) {
+        return Ok(());
+    }
+    let includes = checked_output(includes)?.stdout;
+    ensure!(
+        includes.last() == Some(&0),
+        "unterminated worktree config includes"
+    );
+    for path in includes[..includes.len() - 1].split(|b| *b == 0) {
+        // --path expands ~/ and %(prefix)/, but leaves ordinary relative paths
+        // relative. Absolute includes keep their own nested-include anchoring.
+        ensure!(
+            PathBuf::from(native::os_string(path.to_vec())).is_absolute(),
+            "relative config.worktree includes require stock Git"
+        );
+    }
+    Ok(())
+}
+
 pub struct Checkout<'a> {
     git_dir: PathBuf,
     data: &'a Path,

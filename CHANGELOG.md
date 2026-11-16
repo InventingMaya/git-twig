@@ -15,6 +15,9 @@ describe changes from this baseline after they are implemented and verified.
 - Resolve attributes from the target index, not dirty, staged or untracked
   source attribute files. Recheck policy before registration and installation;
   retain partial state on a post-registration policy change.
+- Delegate before staging when copied worktree configuration contains relative
+  includes whose resolution would change in the new worktree; keep consistent
+  ordinary worktree overrides and absolute includes eligible.
 
 ### Added
 

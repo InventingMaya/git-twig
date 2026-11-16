@@ -313,6 +313,50 @@ fn nested_info_global_and_worktree_configuration_match_git() -> Result<()> {
 }
 
 #[test]
+fn copied_worktree_config_keeps_absolute_includes_but_delegates_relative_ones() -> Result<()> {
+    for relative in [false, true] {
+        let f = Fixture::new()?;
+        fs::write(f.source.join(".gitattributes"), "* text\n")?;
+        git(&f.source, &["add", "."])?;
+        git(&f.source, &["commit", "-m", "worktree include policy"])?;
+        git(&f.source, &["config", "extensions.worktreeConfig", "true"])?;
+        git(&f.source, &["config", "core.eol", "lf"])?;
+        let included = f.source.join(".git/source-only.inc");
+        fs::write(&included, "[core]\n eol = crlf\n")?;
+        let include_path = if relative {
+            "source-only.inc"
+        } else {
+            included.to_str().unwrap()
+        };
+        git(
+            &f.source,
+            &["config", "--worktree", "include.path", include_path],
+        )?;
+        assert_eq!(
+            git(&f.source, &["config", "--get", "core.eol"])?.stdout,
+            b"crlf\n"
+        );
+        // Source is a canonical CRLF checkout under its own effective config.
+        fs::write(f.source.join("hello.txt"), CRLF)?;
+        let output = compare_stock(&f, &["hello.txt", ".gitattributes"], !relative)?;
+        if relative {
+            let trace = String::from_utf8_lossy(&output.stderr);
+            assert!(
+                trace.contains("relative config.worktree includes require stock Git"),
+                "{trace}"
+            );
+            assert!(!trace.contains("CoW: verified"), "{trace}");
+            assert!(!f.staging_root().exists());
+            assert_eq!(fs::read(f.destination().join("hello.txt"))?, LF);
+        } else {
+            assert_eq!(fs::read(f.destination().join("hello.txt"))?, CRLF);
+        }
+        assert_eq!(fs::read(f.source.join("hello.txt"))?, CRLF);
+    }
+    Ok(())
+}
+
+#[test]
 fn expansion_and_encoding_attributes_delegate_before_native_installation() -> Result<()> {
     for attributes in [
         "hello.txt ident\n",

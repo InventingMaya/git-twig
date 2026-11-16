@@ -40,6 +40,10 @@ partial-failure contracts remain in force.
    Capture effective config and attribute results, recheck before registration
    and against the destination's private target-index context before installation.
    Conditional includes and externally redirected attribute sources delegate.
+   Ordinary worktree configuration remains eligible: Git copies config.worktree
+   (excluding location/bare settings). Direct relative include.path values in
+   that file delegate before staging because their anchor moves to the new Git
+   directory without copying the included files. Absolute includes remain eligible.
 3. Preserve bulk APFS candidate cloning and the Linux tracked-file walker.
    Private clones are normalized to checkout permissions and pruned as before.
    Missing/type-changed source trees may still cause whole-request fallback.
